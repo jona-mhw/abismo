@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ABISMO</title>
-<meta name="description" content="Atrapado en un submarino averiado a 3.000 metros. Algo respondió al sonar.">
+<meta name="description" content="K-417 Zarya, mar de Barents, 1989. Nueve años a bordo y hay un compartimento que no figura en los planos.">
 <meta property="og:title" content="ABISMO">
-<meta property="og:description" content="Atrapado en un submarino averiado a 3.000 metros. Algo respondió al sonar. Usa audífonos.">
+<meta property="og:description" content="K-417 Zarya, mar de Barents, 1989. El compartimento 7 no figura en los planos. Usa audífonos.">
 <meta property="og:image" content="https://jona-mhw.github.io/abismo/og.png">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,7 +93,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 @keyframes breathe{50%{box-shadow:0 0 40px rgba(63,208,201,.45),inset 0 0 24px rgba(63,208,201,.2)}}
 .howto{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 22px);left:0;right:0;font-size:11px;letter-spacing:.06em;opacity:.55;line-height:1.7}
 #intro{background:#000;cursor:pointer}
-#intro p{font-family:'Special Elite',serif;font-size:19px;line-height:1.6;max-width:340px;opacity:0;transition:opacity 1.2s}
+#intro p{font-family:'Special Elite',serif;font-size:19px;line-height:1.6;max-width:340px;opacity:0;transition:opacity .8s}
 #intro p.show{opacity:1}
 #intro p em{display:block;font-style:normal;font-family:'Share Tech Mono',monospace;color:var(--teal);font-size:12px;letter-spacing:.3em;margin-bottom:10px}
 #intro small{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 24px);opacity:.35;font-size:11px;letter-spacing:.2em}
@@ -116,6 +116,10 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 #pause{background:rgba(0,0,0,.8);cursor:pointer}
 #pause h2{font-family:'Cinzel',serif;letter-spacing:.2em;font-size:30px}
 #pause p{margin-top:12px;opacity:.6;font-size:12px;letter-spacing:.2em}
+#dgauge{position:fixed;top:calc(env(safe-area-inset-top) + 20px);left:0;right:0;text-align:center;z-index:3;pointer-events:none;color:#eafffb;text-shadow:0 0 10px rgba(0,0,0,.7)}
+#dgauge i{font-style:normal;font-size:10px;letter-spacing:.3em;opacity:.7}
+#dgauge b{display:block;font-weight:400;font-size:36px;letter-spacing:.06em;margin-top:2px}
+#skip{position:fixed;right:calc(12px + env(safe-area-inset-right));top:calc(env(safe-area-inset-top) + 12px);z-index:6;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.3);font-size:11px;letter-spacing:.2em;padding:10px 12px;border-radius:2px;color:#fff}
 #load{font-size:11px;letter-spacing:.25em;opacity:.6;margin-top:14px;min-height:14px}
 </style>
 <script type="importmap">
@@ -133,7 +137,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
     <div class="stat" id="sbat"><span>LUZ</span><div class="bar"><i id="batbar"></i></div><b id="battxt">100%</b></div>
   </div>
   <div id="right">
-    <div id="depth">PROF. 3.012 m</div>
+    <div id="depth">PROF. 412 m</div>
     <div id="contact" class="hidden">CONTACTO 480 m</div>
     <div id="systems"><span class="sys" id="sys0">ENERGÍA</span><span class="sys" id="sys1">O₂</span><span class="sys" id="sys2">LASTRE</span></div>
   </div>
@@ -147,9 +151,9 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 
 <div id="menu" class="screen">
   <div class="rings"><i></i><i></i><i></i></div>
-  <div class="kicker">SUMERGIBLE CALEUCHE · FOSA DE ATACAMA</div>
+  <div class="kicker">K-417 ZARYA · MAR DE BARENTS · 1989</div>
   <h1 class="title">ABISMO</h1>
-  <p class="tag">3.000 metros bajo el Pacífico.<br>La tripulación desapareció.<br>Algo respondió al sonar.</p>
+  <p class="tag">Nueve años a bordo.<br>Conozco cada válvula.<br>El compartimento 7 no está en los planos.</p>
   <div class="meta">
     <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14v-2a9 9 0 0118 0v2"/><rect x="2" y="14" width="5" height="7" rx="1.5"/><rect x="17" y="14" width="5" height="7" rx="1.5"/></svg>USA AUDÍFONOS</span>
     <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>~10 MIN</span>
@@ -161,8 +165,10 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 
 <div id="intro" class="screen hidden">
   <p id="i1"></p>
-  <small>TOCA PARA SALTAR</small>
+  <small>TOCA PARA SEGUIR</small>
 </div>
+<div id="dgauge" class="hidden"><i>ГЛУБИНА · PROFUNDIDAD</i><b id="dg">0 m</b></div>
+<button id="skip" class="hidden">SALTAR ▸</button>
 
 <div id="note" class="screen hidden"><div class="paper"><h3 id="nt"></h3><p id="nb"></p><small>toca para cerrar</small></div></div>
 <div id="pause" class="screen hidden"><h2>PAUSA</h2><p>TOCA PARA SEGUIR</p></div>
@@ -176,9 +182,9 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 
 <div id="endtxt" class="hidden"><p id="et"></p></div>
 <div id="end" class="screen hidden">
-  <div class="kicker">SUPERFICIE · 05:47 h</div>
+  <div class="kicker">MAR DE BARENTS · SUPERFICIE · 05:47</div>
   <h2>SOBREVIVISTE</h2>
-  <p id="ep">La cápsula rompió la superficie al amanecer.<br>Nadie preguntó por los golpes en la escotilla.</p>
+  <p id="ep">La cápsula rompió la superficie al amanecer.<br>Subí solo. El registro de a bordo anotó dos tripulantes.</p>
   <div class="stats">
     <span>TIEMPO</span><b id="st_t">--</b>
     <span>OXÍGENO</span><b id="st_o">--</b>
@@ -229,7 +235,7 @@ function resize() {
   camera.fov = w < h ? 80 : 68;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
-  PU.uScale.value = h * PR * 0.5;
+  PU.uScale.value = h * PR * 0.5; dv.pU.uScale.value = h * PR * 0.5;
 }
 addEventListener('resize', resize);
 
@@ -336,6 +342,7 @@ const SEC = [[-1.2, 0], [1.2, 0], [1.7, .6], [1.7, 1.9], [1.2, 2.6], [-1.2, 2.6]
 const Z0 = .5, NSEG = 27, Z1 = Z0 - 2 * NSEG; // -53.5
 const PORT_SEG = 13, PORT_Z = Z0 - 2 * PORT_SEG - 1; // -26.5
 const DOORS_Z = [-10, -22, -34, -46];
+const C7K = 7, C7Z = Z0 - 2 * C7K - 1; // compartimento 7: puerta en la banda de babor de máquinas (z = -14.5)
 const R = .25; // radio jugador
 
 function mk(geo, mat, x = 0, y = 0, z = 0, parent = scene, shadow = true) {
@@ -353,6 +360,7 @@ function buildHull() {
     const z0 = Z0 - 2 * k, z1 = z0 - 2;
     for (let j = 0; j < 8; j++) {
       if (j === 6 && k === PORT_SEG) continue;
+      if ((j === 6 || j === 7) && k === C7K) continue;
       const a = SEC[j], b = SEC[(j + 1) % 8], T = j === 0 ? F : H;
       const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), nx = -dy / l, ny = dx / l;
       const A = [a[0], a[1], z0], B = [b[0], b[1], z0], C = [b[0], b[1], z1], D = [a[0], a[1], z1];
@@ -405,6 +413,10 @@ function buildHull() {
   // tuberías longitudinales
   const L = Z0 - Z1, zc = (Z0 + Z1) / 2;
   for (const [x, y, r, m] of [[.85, 2.42, .07, M.pipe], [-.85, 2.42, .055, M.pipeG], [.55, 2.5, .04, M.steel], [-1.6, .78, .04, M.pipe], [1.6, .78, .05, M.pipeG], [1.6, 1.78, .035, M.steel], [-1.6, 1.8, .03, M.red]]) {
+    if (x < -1.5) { // se interrumpen frente a la puerta del compartimento 7
+      for (const [a, b] of [[Z0, C7Z + .62], [C7Z - .62, Z1]]) { const p = mk(CYL(r, r, a - b, 10, true), m, x, y, (a + b) / 2, scene, false); p.rotation.x = Math.PI / 2; }
+      continue;
+    }
     const p = mk(CYL(r, r, L, 10, true), m, x, y, zc, scene, false); p.rotation.x = Math.PI / 2;
   }
   // bandejas de cables
@@ -421,7 +433,7 @@ function roundRect(p, x, y, w, h, r) {
   p.lineTo(x, y + r); p.quadraticCurveTo(x, y, x + r, y);
 }
 const doors = [];
-const doorLabels = [['SALA DE MÁQUINAS', 'SECCIÓN 2'], ['SOPORTE VITAL', 'SECCIÓN 3'], ['SONAR · LASTRE', 'SECCIÓN 4'], ['CÁPSULA DE ESCAPE', 'SÓLO EMERGENCIAS']];
+const doorLabels = [['SALA DE MÁQUINAS', 'МАШИННОЕ ОТДЕЛЕНИЕ'], ['SOPORTE VITAL', 'РЕГЕНЕРАЦИЯ ВОЗДУХА'], ['SONAR · LASTRE', 'ГИДРОАКУСТИКА'], ['CÁPSULA DE ESCAPE', 'СПАСАТЕЛЬНАЯ КАМЕРА']];
 function buildDoors() {
   const sh = new THREE.Shape(); SEC.forEach((p, i) => i ? sh.lineTo(p[0], p[1]) : sh.moveTo(p[0], p[1]));
   const hole = new THREE.Path(); roundRect(hole, -.6, .12, 1.2, 1.95, .42); sh.holes.push(hole);
@@ -487,6 +499,7 @@ function buildLamps() {
   bs.scale.set(1.4, 1.4, 1); bs.position.copy(b.position); scene.add(bs);
   lamps.push({ z: Z1 + .4, pos: new THREE.Vector3(0, 2.0, Z1 + .5), m: b, sp: bs, ph: 0, k: 1, dead: 0, beacon: true, color: new THREE.Color(0xffa020) });
 }
+const c7 = { cur: 0, dim: 1, watch: 0, seen: 0, creak: false };
 const pool = [];
 for (let i = 0; i < 4; i++) { const l = new THREE.PointLight(0xff2a1a, 0, 8.5, 1.6); scene.add(l); pool.push(l); }
 const hemi = new THREE.HemisphereLight(0x24343a, 0x050303, .12); scene.add(hemi);
@@ -523,7 +536,7 @@ function updateLamps(dt) {
   near.forEach((L, i) => {
     const l = pool[i]; l.position.copy(L.pos); l.color.copy(L.color);
     const base = L.beacon ? 4 : (G.lightMode === 'power' ? 3.6 : 3.0);
-    l.intensity = base * L.k;
+    l.intensity = base * L.k * c7.dim;
   });
 }
 
@@ -664,7 +677,7 @@ function buildProps() {
   solid(-1.3, -.82, -20.05, -18.75);
   const n2 = mk(BOX(.21, .005, .29), M.paper, -.3, .01, -18.2); n2.rotation.y = -.7;
   act({ id: 'note2', x: -.3, y: .05, z: -18.2, label: 'Leer nota', mesh: n2, onDone: () => showNote(1) });
-  act({ id: 'gen', x: -.9, y: 1.0, z: -19.4, label: 'Reiniciar generador', hold: 3.2, en: () => !G.energy, onDone: onEnergy, onHold: p => { props.genLever.rotation.z = -p * 1.1; } });
+  act({ id: 'gen', x: -.9, y: 1.0, z: -19.4, label: 'Arrancar el auxiliar', hold: 3.2, en: () => !G.energy, onDone: onEnergy, onHold: p => { props.genLever.rotation.z = -p * 1.1; } });
 
   /* --- Sección 3: ojo de buey + soporte vital --- */
   const ring = mk(new THREE.TorusGeometry(.41, .06, 10, 32), M.brass, -1.66, 1.25, PORT_Z); ring.rotation.y = Math.PI / 2;
@@ -680,7 +693,7 @@ function buildProps() {
   mk(CYL(.04, .04, .12, 8), M.steel, .05, 0, 0, valve).rotation.z = Math.PI / 2;
   props.valve = valve;
   act({ id: 'o2', x: 1.15, y: 1.25, z: -32.4, label: 'Abrir válvula de O₂', hold: 3.6, en: () => G.energy && !G.oxygen, onDone: onOxygen, onHold: p => { props.valve.rotation.x = -p * 9; } });
-  act({ id: 'o2x', x: 1.15, y: 1.25, z: -32.4, label: 'Válvula sin presión', en: () => !G.energy, once: false, onDone: () => say('Sin energía no hay presión. Primero el generador.') });
+  act({ id: 'o2x', x: 1.15, y: 1.25, z: -32.4, label: 'Válvula sin presión', en: () => !G.energy, once: false, onDone: () => say('Sin energía no hay presión. Primero el auxiliar.') });
   const bat2 = makeBattery(.95, .1, -24.2);
   act({ id: 'bat2', x: .95, y: .15, z: -24.2, label: 'Tomar batería', mesh: bat2, onDone: () => pickBattery() });
 
@@ -693,8 +706,6 @@ function buildProps() {
   scr.position.set(-1.18, 1.13, -37.6); scr.rotation.y = Math.PI / 2; scr.rotation.x = 0; scr.rotateX(-.25); scene.add(scr);
   props.sonar = { c: sonarCanvas, g: sonarCanvas.getContext('2d'), t: sonarTex, acc: 0 };
   const chair = mk(BOX(.45, .06, .45), M.cloth, -.35, .48, -37.2); chair.rotation.y = .5; mk(CYL(.03, .03, .45, 6), M.steel, -.35, .23, -37.2);
-  const n3 = mk(BOX(.21, .005, .29), M.paper, -.85, .785, -38.15); n3.rotation.y = .2;
-  act({ id: 'note3', x: -.85, y: .8, z: -38.15, label: 'Leer registro', mesh: n3, onDone: () => showNote(2) });
   // lastre
   for (const z of [-41.2, -42.8]) mk(CYL(.32, .32, 2.3, 18), M.pipeG, 1.2, 1.15, z);
   mk(CYL(.12, .12, 2.0, 10), M.pipe, 1.0, .55, -42).rotation.x = Math.PI / 2;
@@ -714,7 +725,7 @@ function buildProps() {
   const hw = mk(new THREE.TorusGeometry(.32, .035, 8, 24), M.red, 0, 0, .18, hatch);
   for (let s = 0; s < 3; s++) { const sp = mk(BOX(.64, .03, .03), M.red, 0, 0, .18, hatch); sp.rotation.z = s * Math.PI / 3; }
   props.hatchWheel = hw;
-  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .375), new THREE.MeshStandardMaterial({ map: labelTex('CÁPSULA 1', 'TIRAR Y GIRAR'), transparent: true, depthWrite: false }));
+  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .375), new THREE.MeshStandardMaterial({ map: labelTex('CÁPSULA · ВСК', 'TIRAR Y GIRAR'), transparent: true, depthWrite: false }));
   pl.position.set(0, 2.25, Z1 + .03); scene.add(pl);
   act({ id: 'pod', x: 0, y: 1.15, z: Z1 + .3, r: 1.9, label: 'Entrar a la cápsula', hold: 1.4, en: () => G.ballast && doors[3].cur > .8, onDone: onEscape, onHold: p => { props.hatchWheel.rotation.z = p * 5; } });
 
@@ -722,6 +733,123 @@ function buildProps() {
   act({ id: 'd1', x: 0, y: 1.1, z: DOORS_Z[1] + .25, label: 'Compuerta sellada', once: false, en: () => !G.energy && doors[1].cur < .1, onDone: () => say('Sin energía la compuerta no abre.') });
   act({ id: 'd2', x: 0, y: 1.1, z: DOORS_Z[2] + .25, label: 'Compuerta sellada', once: false, en: () => !G.oxygen && doors[2].cur < .1, onDone: () => say('Presión inestable al otro lado. Primero el oxígeno.') });
   act({ id: 'd3', x: 0, y: 1.1, z: DOORS_Z[3] + .25, label: 'Compuerta sellada', once: false, en: () => !G.ballast && doors[3].cur < .1, onDone: () => say('La cápsula se libera al purgar el lastre.') });
+}
+/* ============================================================
+   COMPARTIMENTO 7
+   ============================================================ */
+function tagTex(text) {
+  return canvasTex(256, 64, (g, w, h) => {
+    g.fillStyle = '#c9c2a8'; g.fillRect(0, 0, w, h); noise(g, w, h, 34);
+    g.strokeStyle = 'rgba(40,30,20,.7)'; g.lineWidth = 3; g.strokeRect(4, 4, w - 8, h - 8);
+    g.fillStyle = '#1d1a14'; g.font = 'bold 34px "Arial Narrow", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(text, w / 2, h / 2 + 2);
+  });
+}
+function buildC7() {
+  const X0 = -1.8, X1 = -5.0, HW = 1.7, H = 2.2;
+  const wall = new THREE.MeshStandardMaterial({ map: panelTex, color: 0x8a8f8a, roughness: .85, metalness: .25, side: THREE.DoubleSide });
+  const rust = new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: .7, metalness: .6 });
+  // jambas hacia el pasillo y piso del umbral
+  for (const s of [1, -1]) mk(BOX(.58, 1.96, .42), M.rib, -1.5, .98, C7Z + s * .81, scene, false);
+  mk(BOX(.66, .06, 1.2), M.floor, -1.5, -.03, C7Z, scene, false);
+  for (const s of [1, -1]) mk(BOX(.1, 1.9, .07), M.steel, -1.2, .95, C7Z + s * .63, scene, false);
+  mk(BOX(.1, .08, 1.33), M.steel, -1.42, 1.92, C7Z, scene, false);
+  // sala
+  const pl = (w, h, x, y, z, ry, rx = 0, m = wall) => { const q = mk(new THREE.PlaneGeometry(w, h), m, x, y, z, scene, false); q.rotation.set(rx, ry, 0); return q; };
+  pl(X0 - X1, 2 * HW, (X0 + X1) / 2, 0, C7Z, 0, -Math.PI / 2, M.floor);
+  pl(X0 - X1, 2 * HW, (X0 + X1) / 2, H, C7Z, 0, Math.PI / 2);
+  pl(2 * HW, H, X1, H / 2, C7Z, Math.PI / 2);
+  pl(X0 - X1, H, (X0 + X1) / 2, H / 2, C7Z + HW, Math.PI);
+  pl(X0 - X1, H, (X0 + X1) / 2, H / 2, C7Z - HW, 0);
+  for (const s of [1, -1]) pl(HW - .6, H, X0, H / 2, C7Z + s * (HW + .6) / 2, -Math.PI / 2);
+  pl(1.2, H - 1.9, X0, (H + 1.9) / 2, C7Z, -Math.PI / 2);
+  // puerta (bisagra del lado de proa, abre hacia adentro)
+  const door = new THREE.Group(); door.position.set(-1.46, 0, C7Z - .6); scene.add(door);
+  mk(BOX(.07, 1.9, 1.2), M.dark, 0, .95, .6, door);
+  const lab = new THREE.Mesh(new THREE.PlaneGeometry(1.05, .26), new THREE.MeshStandardMaterial({ map: labelTex('ОТСЕК 7', 'ОПАСНО · НЕ ВСКРЫВАТЬ'), transparent: true, roughness: .8, depthWrite: false }));
+  lab.position.set(.04, 1.52, .6); lab.rotation.y = Math.PI / 2; door.add(lab);
+  const hz = mk(BOX(.01, .12, 1.0), M.hazard, .04, .3, .6, door, false);
+  // cordón de soldadura (se queda en el marco)
+  const bead = [];
+  for (let i = 0; i < 26; i++) { const g = new THREE.SphereGeometry(rnd(.022, .036), 5, 4); g.scale(1, rnd(1.6, 3), 1); g.translate(-1.4, .1 + i * .07, C7Z + .6); bead.push(g); const g2 = g.clone(); g2.translate(0, 0, -1.2); bead.push(g2); }
+  for (let i = 0; i < 16; i++) { const g = new THREE.SphereGeometry(rnd(.022, .034), 5, 4); g.scale(1, 1, rnd(1.6, 3)); g.translate(-1.4, 1.9, C7Z - .56 + i * .075); bead.push(g); }
+  mk(mergeGeometries(bead), rust, 0, 0, 0, scene, false);
+  // cadena cruzada y candado
+  const chain = new THREE.Group(); scene.add(chain);
+  const lg = new THREE.TorusGeometry(.034, .009, 5, 10), links = [];
+  for (const dir of [1, -1]) for (let i = 0; i < 19; i++) {
+    const u = i / 18, g = lg.clone(); g.rotateX(i % 2 ? Math.PI / 2 : 0); g.rotateZ(dir * .9);
+    g.translate(-1.385, .55 + u * 1.1 + Math.sin(u * Math.PI) * -.06, C7Z + dir * (u - .5) * 1.3); links.push(g);
+  }
+  mk(mergeGeometries(links), M.steel, 0, 0, 0, chain, false);
+  mk(BOX(.05, .11, .09), M.brass, -1.37, 1.04, C7Z, chain, false);
+  const pile = new THREE.Group(); scene.add(pile);
+  const pl2 = [];
+  for (let i = 0; i < 16; i++) { const g = lg.clone(); g.rotateX(Math.PI / 2 + rnd(-.4, .4)); g.rotateY(rnd(6)); g.translate(-1.28 + rnd(-.08, .08), .012 + rnd(.02), C7Z + .15 + Math.sin(i * .9) * .28 + rnd(-.03, .03)); pl2.push(g); }
+  mk(mergeGeometries(pl2), M.steel, 0, 0, 0, pile, false);
+  Object.assign(props, { c7door: door, c7chain: chain, c7pile: pile });
+  solid(-2.72, -1.8, C7Z - .66, C7Z - .52);
+  // cuatro literas hechas, con su placa
+  const sheet = new THREE.MeshStandardMaterial({ color: 0xb9b7a8, roughness: .95 });
+  const names = [['ВОЛКОВ', 1, .42], ['ОРЛОВ', 1, 1.32], ['СЕДЫХ', -1, 1.32], ['ГРИЦЕНКО', -1, .42]];
+  for (const s of [1, -1]) {
+    const z = C7Z + s * 1.28;
+    for (const y of [.42, 1.32]) { mk(BOX(2, .06, .75), M.steel, -3.6, y, z); mk(BOX(1.9, .12, .68), M.cloth, -3.6, y + .09, z); mk(BOX(.5, .03, .7), sheet, -4.1, y + .165, z); mk(BOX(.36, .09, .5), sheet, -4.3, y + .2, z); }
+    for (const dx of [-.98, .98]) mk(BOX(.04, 1.75, .04), M.steel, -3.6 + dx, .87, z - s * .37);
+    solid(-4.7, -2.55, Math.min(z - .42, z + .42), Math.max(z - .42, z + .42));
+  }
+  for (const [n, s, y] of names) {
+    const t = new THREE.Mesh(new THREE.PlaneGeometry(.34, .085), new THREE.MeshStandardMaterial({ map: tagTex(n), roughness: .8, emissive: 0x15140f }));
+    t.position.set(-3.1, y - .01, C7Z + s * (1.28 - .385)); t.rotation.y = s > 0 ? Math.PI : 0; scene.add(t);
+  }
+  // marcas de conteo en la pared del fondo: la última fila termina hoy
+  const tally = canvasTex(512, 320, (g, w, h) => {
+    g.clearRect(0, 0, w, h); g.strokeStyle = 'rgba(205,200,180,.8)'; g.lineCap = 'round';
+    let n = 0;
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 9; c++) {
+      if (r === 6 && c > 3) break;
+      const x = 26 + c * 53 + rnd(-3, 3), y = 22 + r * 38 + rnd(-2, 2), k = (r === 6 && c === 3) ? 2 : 4;
+      g.lineWidth = rnd(1.6, 2.6);
+      for (let i = 0; i < k; i++) { g.beginPath(); g.moveTo(x + i * 8 + rnd(-1, 1), y); g.lineTo(x + i * 8 + rnd(-2, 2), y + 26 + rnd(-3, 3)); g.stroke(); }
+      if (k === 4) { g.beginPath(); g.moveTo(x - 5, y + 20 + rnd(-3, 3)); g.lineTo(x + 30, y + 5 + rnd(-3, 3)); g.stroke(); }
+      n++;
+    }
+    g.fillStyle = 'rgba(205,200,180,.75)'; g.font = '22px "Special Elite", "Courier New", monospace'; g.fillText('14.10.89', 262, 290);
+  });
+  const tl = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.19), new THREE.MeshStandardMaterial({ map: tally, transparent: true, roughness: .9, depthWrite: false, emissive: 0x0c0c0a }));
+  tl.position.set(X1 + .012, 1.32, C7Z); tl.rotation.y = Math.PI / 2; scene.add(tl);
+  // la cuarta litera: manta abierta y la hoja del sonar
+  const bl = mk(BOX(.9, .04, .7), M.red, -3.2, .59, C7Z - 1.28); bl.rotation.z = -.05;
+  const n3 = mk(BOX(.29, .005, .21), M.paper, -3.75, .585, C7Z - 1.2); n3.rotation.y = .25;
+  act({ id: 'note3', x: -3.75, y: .6, z: C7Z - 1.2, r: 1.6, label: 'Leer registro', mesh: n3, onDone: () => { showNote(2); G.c7read = true; } });
+  act({ id: 'c7w', x: -1.35, y: 1.25, z: C7Z, r: 1.5, label: 'Puerta soldada', once: false, en: () => !G.c7open, onDone: () => say(BLURBS.c7weld, 3.6) });
+}
+function updateC7(dt) {
+  const near = Math.hypot(P.x + 1.4, P.z - C7Z) < 2.3 || P.x < -1.3;
+  const tgt = !G.c7open ? 0 : near ? 1 : .22;
+  if (tgt === 1 && c7.cur < .3 && !c7.creak && state === 'play') { c7.creak = true; AU.creak(new THREE.Vector3(-1.5, 1.2, C7Z), .5); }
+  c7.cur += clamp(tgt - c7.cur, -dt * .55, dt * .55);
+  props.c7door.rotation.y = -smooth(c7.cur) * 1.5;
+  props.c7chain.visible = !G.c7open; props.c7pile.visible = !!G.c7open;
+  c7.dim = lerp(c7.dim, P.x < -1.9 ? .07 : 1, 1 - Math.exp(-dt * 4));
+  // la figura en el umbral: desaparece cuando la miras
+  if (c7.watch > 0) {
+    c7.watch -= dt;
+    _v.set(MON.position.x - camera.position.x, 0, MON.position.z - camera.position.z).normalize(); camera.getWorldDirection(_v2); _v2.y = 0; _v2.normalize();
+    if (!c7.seen && _v.dot(_v2) > .8) { c7.seen = .5; AU.sting(.6); vib([70, 40, 160]); G.flick = .5; G.fear = 1; G.shake = .4; }
+    if (c7.seen > 0) { c7.seen -= dt; if (c7.seen <= 0) c7.watch = 0; }
+    if (c7.watch <= 0) { MON.visible = false; c7.seen = 0; }
+  }
+}
+function c7Scare() {
+  G.c7scare = true;
+  later(.9, () => {
+    const pos = new THREE.Vector3(-1.5, 1.3, C7Z);
+    AU.knock(pos, 3, .9); G.flick = .4; vib([60, 300, 60, 300, 60]);
+    MON.position.set(-1.55, 0, C7Z); MON.lookAt(P.x, 0, P.z); MON.visible = true; animMonster(.016, false);
+    c7.watch = 7; c7.seen = 0;
+    later(1.3, () => say(BLURBS.c7back, 2.6));
+  });
 }
 function makeBattery(x, y, z) {
   const g = new THREE.Group(); g.position.set(x, y, z); scene.add(g);
@@ -852,7 +980,7 @@ function updateEye(dt) {
   EYE.userData.pupil.scale.x = pupil;
   if (t > 2.2 && !eyeS.hit) {
     eyeS.hit = true; AU.sting(1); vib([90, 50, 260]); G.shake = .5; G.fear = 1;
-    later(.7, () => say('No. No, no, no…', 3));
+    later(.7, () => say('Eso no es una ballena.', 3));
   }
   if (t > 4.6 && !eyeS.bang) { eyeS.bang = true; AU.bang(new THREE.Vector3(-1.8, 1.2, PORT_Z), 1.2); G.shake = 1.1; G.flick = .8; vib([200]); }
   if (t > 6) { eyeS.t = -1; EYE.visible = false; }
@@ -1074,6 +1202,58 @@ const AU = {
     g.gain.setTargetAtTime(.05, this.ctx.currentTime, .2);
     this.alarmN = { o, l, g };
   },
+  op: null,
+  opStart() {
+    if (!this.ctx || this.op) return; const t = this.ctx.currentTime, op = this.op = { n: [] };
+    this.droneG.gain.cancelScheduledValues(t); this.droneG.gain.setTargetAtTime(0, t, .3);
+    this.rumbleG.gain.cancelScheduledValues(t); this.rumbleG.gain.setTargetAtTime(.07, t, .3);
+    // viento y mar
+    const wn = this.noise(), wf = this.filt('bandpass', 520, .7), wg = this.gain(0), wl = this.osc('sine', .13), wlg = this.gain(190);
+    wl.connect(wlg); wlg.connect(wf.frequency); wn.connect(wf); wf.connect(wg); this.out(wg, .15); wn.start(); wl.start();
+    const sn = this.noise(this.bn), sf = this.filt('lowpass', 420), sg = this.gain(0), sl = this.osc('sine', .17), slg = this.gain(.1);
+    sl.connect(slg); slg.connect(sg.gain); sn.connect(sf); sf.connect(sg); this.out(sg, .1); sn.start(); sl.start();
+    // pad luminoso (re mayor abierto) y pad grave
+    const pf = this.filt('lowpass', 2400, .7), pg = this.gain(0);
+    for (const f of [146.83, 220, 293.66, 369.99, 440, 554.37, 659.25]) for (const d of [-4, 5]) {
+      const o = this.osc(d < 0 ? 'sine' : 'triangle', f), og = this.gain(d < 0 ? .15 : .045), l = this.osc('sine', rnd(.05, .16)), lg = this.gain(.07);
+      o.detune.value = d; l.connect(lg); lg.connect(og.gain); o.connect(og); og.connect(pf); o.start(); l.start(); op.n.push(o, l);
+    }
+    pf.connect(pg); this.out(pg, 1.1);
+    const df = this.filt('lowpass', 230, 3), dg = this.gain(0);
+    for (const f of [36.7, 55, 55.4, 65.4, 87.3]) { const o = this.osc('sawtooth', f); o.connect(df); o.start(); op.n.push(o); }
+    df.connect(dg); this.out(dg, .5);
+    op.n.push(wn, wl, sn, sl); Object.assign(op, { wg, sg, pg, pf, dg });
+  },
+  opSet(wind, pad, cut, dark, drone) {
+    const op = this.op; if (!op) return; const t = this.ctx.currentTime;
+    op.wg.gain.setTargetAtTime(wind * .1, t, .4); op.sg.gain.setTargetAtTime(wind * .3, t, .4);
+    op.pg.gain.setTargetAtTime(pad * .17, t, .5); op.pf.frequency.setTargetAtTime(cut, t, .5);
+    op.dg.gain.setTargetAtTime(dark * .2, t, .25); this.droneG.gain.setTargetAtTime(drone * .16, t, .25);
+  },
+  opStop() {
+    const op = this.op; if (!op) return; this.op = null; const t = this.ctx.currentTime;
+    for (const g of [op.wg, op.sg, op.pg, op.dg]) g.gain.setTargetAtTime(0, t, .06);
+    setTimeout(() => op.n.forEach(n => { try { n.stop(); } catch (e) {} }), 900);
+    this.rumbleG.gain.setTargetAtTime(.5, t, 1.5);
+  },
+  whale(v = .2) {
+    if (!this.ctx) return; const t = this.ctx.currentTime, d = 4.2;
+    for (const [f0, f1, k] of [[196, 131, 1], [294, 207, .35]]) {
+      const o = this.osc('sine', f0), g = this.gain(), vb = this.osc('sine', 4.2), vg = this.gain(2.5);
+      o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f0 * 1.06, t + .7); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+      vb.connect(vg); vg.connect(o.frequency); o.connect(g);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * k, t + 1.1); g.gain.linearRampToValueAtTime(0, t + d);
+      this.out(g, 1.6); [o, vb].forEach(x => { x.start(t); x.stop(t + d); });
+    }
+  },
+  chain(pos) {
+    if (!this.ctx) return;
+    for (let i = 0; i < 9; i++) setTimeout(() => {
+      const t = this.ctx.currentTime, v = .5 * (1 - i / 11);
+      for (const f of [rnd(1900, 2600), rnd(3100, 4200)]) { const o = this.osc('square', f), bp = this.filt('bandpass', f, 12), g = this.gain(); o.connect(bp); bp.connect(g); this.env(g, t, .002, .09 * v, rnd(.06, .16)); this.out(g, .8, pos); this.out(g, .15); o.start(t); o.stop(t + .3); }
+      if (i === 0 || i === 8) this.thud(pos, .5);
+    }, i * rnd(70, 120) + (i > 5 ? 250 : 0));
+  },
   whoosh(d = 6) {
     if (!this.ctx) return; const t = this.ctx.currentTime;
     const n = this.noise(this.bn), bp = this.filt('bandpass', 200, 1.2), g = this.gain(); bp.frequency.exponentialRampToValueAtTime(1800, t + d); n.connect(bp); bp.connect(g);
@@ -1086,7 +1266,7 @@ const AU = {
    ESTADO DEL JUEGO
    ============================================================ */
 let state = 'menu', T = 0;
-const G0 = () => ({ energy: false, oxygen: false, ballast: false, o2: 100, bat: 100, light: true, picked: [], seenEye: false, enteredD: false, contact: -1, lightMode: 'emer', flick: 0, kill: 0, shake: 0, fear: 0, chase: false });
+const G0 = () => ({ energy: false, oxygen: false, ballast: false, o2: 100, bat: 100, light: true, picked: [], seenEye: false, enteredD: false, contact: -1, lightMode: 'emer', flick: 0, kill: 0, shake: 0, fear: 0, chase: false, lampSaid: false, c7seen: false, c7t: 0, c7k: false, c7open: false, c7in: false, c7read: false, c7scare: false });
 let G = G0();
 const P = { x: 0, z: -1.6, yaw: 0, pitch: -.05, bob: 0, moving: 0 };
 let snap = null, deaths = 0, playTime = 0;
@@ -1094,19 +1274,29 @@ const timers = [];
 function later(s, fn) { timers.push({ t: s, fn }); }
 
 const BLURBS = {
-  start: ['¿Hola…? ¿Hay alguien?', 'Las alarmas no paran. Tengo que llegar a la sala de máquinas.'],
+  start: ['Luces de emergencia. El reactor cayó en protección.', 'Nadie en su puesto. El auxiliar se arranca a mano, en máquinas.'],
+  lamp: 'Esa lámpara la cambié yo en marzo. No debería parpadear.',
+  c7pass: 'Nueve años aquí y jamás vi abierta esta puerta.',
+  c7weld: 'Compartimento 7. No figura en ningún plano que yo haya visto.',
+  c7knock: 'Tres golpes. Desde adentro del casco. Desde el siete.',
+  c7chain: 'Eso fue una cadena cayendo. En máquinas.',
+  c7in: ['Alguien llevó la cuenta en la pared. La última marca es de hoy.', 'Tres literas hechas: Vólkov, Orlov, Sedykh. La cuarta tiene mi apellido.'],
+  c7back: 'Detrás de mí.',
+  deck: ['Barents en octubre. Cuatro grados y bajando.', 'Agarrotada. Y la engrasé el martes.'],
 };
 const NOTES = [
-  { t: 'BITÁCORA DEL CAPITÁN · DÍA 6', b: 'El sonar captó algo a 400 metros. Grande. Demasiado grande para ser una ballena.\n\nOrdené silencio total. No sirvió: cuando apagamos el sonar, se acercó.\n\nSi alguien lee esto: primero la energía. El generador está en la sala de máquinas.' },
-  { t: 'NOTA DE LA INGENIERA', b: 'Algo golpeó el casco tres veces. Pausado. Como cuando uno toca una puerta.\n\nLos chicos dicen que es la presión. A 3.000 metros todo cruje.\n\nYo sé lo que escuché. Y sé que no venía de afuera la última vez.' },
-  { t: 'REGISTRO DE SONAR · 03:12', b: 'Contacto biológico. Cuarenta metros, mínimo.\n\nImita nuestro ping. Lo devuelve un segundo antes que el eco real.\n\nSi purgan el lastre, la esclusa se abre con el cambio de presión. Corran a la cápsula.\n\nNo le gusta la luz. La luz lo frena. Un poco.' },
+  { t: 'BITÁCORA DEL COMANDANTE · K-417 · 14 OCT 1989', b: 'Inmersión a 400 metros. Órdenes de la Flota: aquí, y sin preguntar por qué aquí.\n\nA las 03:00 el sonar devolvió nuestro propio ping antes de tiempo. Ordené silencio. Se acercó igual.\n\nSi cae el reactor: primero el generador auxiliar, en máquinas. Hrytsenko sabe cómo.' },
+  { t: 'OFICIAL MÉDICO · INFORME NO ENVIADO', b: 'Vólkov, 1978. Orlov, 1983. Sedykh, marzo de este año.\n\nTres hombres en once años. Los tres en la guardia de las 03:00. A los tres los hallaron en este pasillo, camino a la puerta del compartimento 7.\n\nEl 7 no figura en los planos. Lo soldaron en 1983. Pregunté quién dio la orden. Me dijeron que no volviera a preguntar.' },
+  { t: 'REGISTRO DE SONAR · HOY · 03:12', b: 'Contacto a 40 metros. Imita nuestro ping: lo devuelve un segundo antes que el eco.\n\nSegundo contacto. Demora cero. No está afuera. La marcación cae dentro del casco: compartimento 7.\n\nNo le gusta la luz. La luz lo frena. Un poco.\n\nSi purgan el lastre, corran a la cápsula.' },
 ];
 
 /* ============================================================
    UI
    ============================================================ */
-let subTO = 0;
+let subTO = 0, subEnd = 0;
+const SAID = [];
 function say(t, d = 3.6, cls = '') {
+  subEnd = T + d; SAID.push(t); if (SAID.length > 80) SAID.shift();
   const s = $('sub'); s.textContent = t; s.className = 'show ' + cls; clearTimeout(subTO);
   subTO = setTimeout(() => s.className = cls, d * 1000);
 }
@@ -1115,7 +1305,7 @@ function showNote(i) {
   $('nt').textContent = NOTES[i].t; $('nb').textContent = NOTES[i].b;
   $('note').classList.remove('hidden'); state = 'note'; AU.hold(null);
 }
-$('note').addEventListener('pointerdown', e => { e.preventDefault(); $('note').classList.add('hidden'); state = 'play'; held.act = false; });
+$('note').addEventListener('pointerdown', e => { e.preventDefault(); $('note').classList.add('hidden'); state = 'play'; held.act = false; if (G.c7read && !G.c7scare) c7Scare(); });
 function pickBattery() { G.bat = Math.min(100, G.bat + 45); AU.ok(); say('Batería nueva. +45% de luz.', 2.2); }
 function hudShow(on) {
   for (const id of ['hud', 'obj', 'cross', 'joy', 'lamp', 'act']) $(id).classList.toggle('hidden', !on);
@@ -1131,7 +1321,7 @@ function updateHUD(dt) {
   $('batbar').style.background = b < 15 ? 'var(--red)' : b < 35 ? 'var(--amber)' : '#e9f2d0';
   $('sbat').className = 'stat' + (b < 15 ? ' crit' : b < 35 ? ' warn' : '');
   $('sys0').classList.toggle('on', G.energy); $('sys1').classList.toggle('on', G.oxygen); $('sys2').classList.toggle('on', G.ballast);
-  $('depth').textContent = 'PROF. ' + (3012 + Math.round(Math.sin(T * .3) * 2)).toLocaleString('es-CL') + ' m';
+  $('depth').textContent = 'PROF. ' + (412 + Math.round(Math.sin(T * .3) * 2)) + ' m';
   const c = $('contact');
   if (G.contact >= 0) {
     c.classList.remove('hidden');
@@ -1150,11 +1340,12 @@ const joy = { id: null, ox: 0, oy: 0, x: 0, y: 0, run: false };
 const look = { id: null, lx: 0, ly: 0 };
 const JR = 52;
 const touchEl = $('touch');
+const inOpening = () => state === 'deck' || state === 'dive';
 touchEl.addEventListener('pointerdown', e => {
-  if (state !== 'play') return;
+  if (state !== 'play' && !inOpening()) return;
   e.preventDefault();
   const isMouse = e.pointerType === 'mouse';
-  if (!isMouse && e.clientX < innerWidth * .45 && joy.id === null) {
+  if (!isMouse && !inOpening() && e.clientX < innerWidth * .45 && joy.id === null) {
     joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.x = joy.y = 0;
     const j = $('joy'); j.style.left = e.clientX + 'px'; j.style.bottom = (innerHeight - e.clientY) + 'px'; j.classList.add('on');
     $('knob').style.transform = '';
@@ -1170,8 +1361,9 @@ touchEl.addEventListener('pointermove', e => {
     $('joy').classList.toggle('run', joy.run);
   } else if (e.pointerId === look.id) {
     const s = e.pointerType === 'mouse' ? .0042 : .0058;
-    P.yaw -= (e.clientX - look.lx) * s; P.pitch -= (e.clientY - look.ly) * s * .85;
-    P.pitch = clamp(P.pitch, -1.25, 1.2); look.lx = e.clientX; look.ly = e.clientY;
+    const L = inOpening() ? O : P; O.drag = O.clock;
+    L.yaw -= (e.clientX - look.lx) * s; L.pitch -= (e.clientY - look.ly) * s * .85;
+    L.pitch = clamp(L.pitch, -1.25, 1.35); look.lx = e.clientX; look.ly = e.clientY;
   }
 });
 function endPtr(e) {
@@ -1190,7 +1382,7 @@ $('lamp').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropa
 function toggleLight() { if (state !== 'play') return; G.light = !G.light; AU.step(.25); vib(15); }
 addEventListener('keydown', e => {
   keys[e.code] = true;
-  if (state !== 'play') return;
+  if (state !== 'play' && state !== 'deck') return;
   if (e.code === 'KeyF') toggleLight();
   if (e.code === 'KeyE' || e.code === 'Space') { if (!held.act) held.tap = true; held.act = true; }
   if (e.code === 'Escape' || e.code === 'KeyP') pause(true);
@@ -1203,13 +1395,24 @@ function pause(on) {
   else if (!on && state === 'paused') { state = 'play'; $('pause').classList.add('hidden'); AU.ctx && AU.ctx.resume(); last = performance.now(); }
 }
 $('pause').addEventListener('pointerdown', e => { e.preventDefault(); pause(false); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pause(true);
+  if (inOpening() && AU.ctx) { if (document.hidden) AU.ctx.suspend(); else { AU.ctx.resume(); last = performance.now(); } }
+});
 
 /* ============================================================
    COLISIÓN Y MOVIMIENTO
    ============================================================ */
 function blocked(x, z) {
-  if (Math.abs(x) > 1.22 - R + .2) return true;
+  if (x < -1.17) { // compartimento 7
+    const dz = Math.abs(z - C7Z);
+    if (c7.cur < .8) return true;
+    if (x > -2.05) { if (dz > .6 - R) return true; }
+    else if (x < -5 + R || dz > 1.7 - R) return true;
+    for (const s of solids) if (x > s.x0 - R && x < s.x1 + R && z > s.z0 - R && z < s.z1 + R) return true;
+    return false;
+  }
+  if (x > 1.17) return true;
   if (z > Z0 - .3 - R || z < Z1 + .3 + R) return true;
   for (const d of doors) {
     if (Math.abs(z - d.z) < .16 + R) { if (d.cur < .85 || Math.abs(x) > .6 - R) return true; }
@@ -1300,7 +1503,7 @@ function updateInteract(dt) {
 function checkpoint() { snap = JSON.parse(JSON.stringify({ G, P })); }
 function onEnergy() {
   G.energy = true; AU.power(true); AU.ok(); G.flick = 1;
-  later(1.3, () => { G.lightMode = 'power'; AU.hum(true); setDoor(1, true); say('Energía restaurada. La compuerta se abrió.', 3); obj('Restaura el oxígeno · soporte vital'); checkpoint(); });
+  later(1.3, () => { G.lightMode = 'power'; AU.hum(true); setDoor(1, true); say('Auxiliar en línea. La compuerta abrió.', 3); obj('Restaura el oxígeno · soporte vital'); checkpoint(); });
   later(4.6, () => { // susto 1: golpe y apagón
     const side = Math.random() < .5 ? -1 : 1;
     AU.bang(new THREE.Vector3(side * 1.8, 1.4, P.z - .5), 1.4); G.shake = 1.3; vib([140, 60, 260]);
@@ -1317,14 +1520,14 @@ function onEnergy() {
     AU.groan(MON.position.clone(), .5);
     later(.55, () => { G.flick = .35; });
     later(.75, () => { MON.visible = false; AU.sting(.55); vib([60]); });
-    later(2.4, () => say('…¿Hay alguien ahí?', 3));
+    later(2.4, () => say('Eso no era nadie de la guardia.', 3));
   });
   later(18, () => { AU.knock(new THREE.Vector3(1.8, 1.5, P.z - 2), 3, .6); });
 }
 function onOxygen() {
   G.oxygen = true; G.o2 = 100; AU.ok(); AU.thud(null, .5);
-  setDoor(2, true); say('Oxígeno estabilizado. Respira.', 3);
-  later(3.2, () => say('Falta el lastre. Sala de sonar, adelante.', 3.2));
+  setDoor(2, true); say('Regeneración en marcha. Esa válvula la engrasé yo.', 3);
+  later(3.2, () => say('Falta el lastre. Puesto de sonar, adelante.', 3.2));
   obj('Purga el lastre · sala de sonar'); checkpoint();
 }
 let ballastKnocks = 0;
@@ -1340,7 +1543,7 @@ function startChase() {
   AU.bang(new THREE.Vector3(0, 1, -22), 1.5); G.shake = 1; vib([200, 80, 200]);
   say('ESCLUSA ABIERTA · PRESIÓN COMPENSADA', 2.5, 'alert');
   later(1.2, () => { G.lightMode = 'chase'; AU.alarm(true); });
-  later(2.6, () => { say('Algo entró al casco. ¡Corre a la cápsula!', 3.5); obj('¡Llega a la cápsula de escape!'); setDoor(3, true); });
+  later(2.6, () => { say(G.c7open ? 'Entró. Y la puerta del siete quedó abierta. ¡A la cápsula!' : 'Algo entró al casco. ¡A la cápsula! La luz lo frena.', 3.8); obj('¡Llega a la cápsula de escape!'); setDoor(3, true); });
   later(1.0, () => {
     monState.x = 0; monState.z = -22.6; monState.speed = 0; MON.position.set(0, 0, monState.z); MON.visible = true;
     AU.groan(MON.position.clone(), 1.2);
@@ -1405,8 +1608,8 @@ function die(kind) {
   hudShow(false); MON.visible = false;
   $('dh').textContent = kind === 'o2' ? 'SIN OXÍGENO' : 'TE ENCONTRÓ';
   $('dp').textContent = kind === 'o2'
-    ? 'El aire se volvió espeso. Lo último que escuchaste fue el sonar… respondiendo.'
-    : 'No le gusta la luz. Pero tampoco la necesita para encontrarte.';
+    ? 'El aire se volvió espeso. Lo último que oíste fueron tres golpes. Venían del siete.'
+    : 'La luz lo frena. Nueve años a bordo y nunca supiste qué guardaba el siete.';
   $('retry').textContent = snap ? 'REINTENTAR' : 'REINTENTAR';
   $('dead').classList.remove('hidden');
 }
@@ -1414,7 +1617,7 @@ function onEscape() {
   state = 'ending'; AU.alarm(false); AU.hold(null); hudShow(false);
   vib([60]);
   const fb = $('fxb'); fb.style.transition = 'opacity 1.2s'; fb.style.opacity = 1;
-  const lines = ['La escotilla se cierra.', 'Los anclajes ceden.', '3.000 metros.', '2.000.', '1.000.', '…'];
+  const lines = ['La escotilla se cierra.', 'Los anclajes ceden.', '400 metros.', '200.', '50.', '…'];
   let t = 0;
   later(.4, () => { AU.thud(null, 1); AU.bang(null, .6); });
   later(1.6, () => { AU.whoosh(9); });
@@ -1424,8 +1627,8 @@ function onEscape() {
     later(1.2 + i * 1.7 + 1.3, () => $('et').classList.remove('show'));
   });
   const tk = 1.2 + lines.length * 1.7;
-  later(tk, () => { AU.knock(null, 3, .9); vib([100, 300, 100, 300, 100]); });
-  later(tk + 1.6, () => { $('et').textContent = 'toc. toc. toc.'; $('et').classList.add('show'); });
+  later(tk, () => { AU.ping(.3, .15); vib([100, 300, 100]); });
+  later(tk + 1.6, () => { $('et').innerHTML = 'CÁPSULA 1<br>TRIPULANTES A BORDO: 2'; $('et').classList.add('show'); });
   later(tk + 3.8, () => {
     $('et').classList.remove('show'); $('endtxt').classList.add('hidden');
     $('st_t').textContent = fmt(playTime); $('st_o').textContent = Math.ceil(G.o2) + '%'; $('st_d').textContent = deaths;
@@ -1478,9 +1681,27 @@ function updateTriggers(dt) {
     eyeS.wait = (eyeS.wait || 0) + dt;
     if (_v.dot(_v2) > .55 || eyeS.wait > 5) startEye();
   }
+  // comentarios de quien conoce la nave (no pisan otro subtítulo)
+  if (T > subEnd + .4) {
+    if (!G.lampSaid && playTime > 9 && P.z < -5.4 && !G.energy) { G.lampSaid = true; say(BLURBS.lamp, 4.2); }
+    else if (!G.c7seen && P.z < -12.8 && P.z > -17 && P.x > -1.17) { G.c7seen = true; say(BLURBS.c7pass, 4.2); }
+  }
+  // compartimento 7: golpes desde adentro tras el oxígeno; después aparece entreabierta
+  if (G.oxygen && !G.c7open && !G.chase) {
+    G.c7t += dt;
+    if (!G.c7k && G.c7t > 6.5) {
+      G.c7k = true; const pos = new THREE.Vector3(-1.6, 1.2, C7Z);
+      AU.knock(pos, 3, 1.3); AU.knock(null, 3, .22); G.flick = .5; vib([80, 280, 80, 280, 80]);
+      later(2.4, () => say(BLURBS.c7knock, 4));
+    }
+    if (G.c7t > 13) { G.c7open = true; c7.creak = false; AU.chain(new THREE.Vector3(-1.4, .3, C7Z)); later(1.8, () => say(BLURBS.c7chain, 3.6)); }
+  }
+  if (G.c7open && !G.c7in && P.x < -2.3) {
+    G.c7in = true; say(BLURBS.c7in[0], 4.2); later(4.8, () => say(BLURBS.c7in[1], 4.6));
+  }
   if (!G.enteredD && P.z < -35) {
     G.enteredD = true; G.contact = 480; amb.ping = .5;
-    later(1, () => say('El sonar marca un contacto. Se está acercando.', 3.5));
+    later(1, () => say('El sonar marca un contacto. Se acerca.', 3.5));
   }
 }
 function updateSonar(dt) {
@@ -1515,7 +1736,7 @@ function runTimers(dt) {
     if (timers[i].t <= 0) { const f = timers[i].fn; timers.splice(i, 1); f(); }
   }
 }
-let last = performance.now(), fpsAcc = 0, fpsN = 0;
+let last = performance.now(), fpsAcc = 0, fpsN = 0, FT = null;
 function loop(now) {
   requestAnimationFrame(loop);
   const raw = (now - last) / 1000; last = now;
@@ -1523,10 +1744,11 @@ function loop(now) {
   // resolución adaptativa
   fpsAcc += raw; fpsN++;
   if (fpsAcc > 2.5) { const avg = fpsAcc / fpsN; if (!HQ && avg > .03 && PR > .85) { PR = Math.max(.85, PR - .2); renderer.setPixelRatio(PR); resize(); } fpsAcc = 0; fpsN = 0; }
-  tick(dt);
-  renderer.render(scene, camera);
+  if (FT && state === 'dive') FT.push(raw * 1000);
+  tick(dt, Math.min(.25, raw));
+  renderer.render(inOpening() || state === 'intro' ? OS : scene, camera); // tras la cartela ya se dibuja la cubierta: sin tirón al cortar
 }
-function tick(dt) {
+function tick(dt, real) {
   T += dt;
   if (state === 'menu' || state === 'intro') {
     G.lightMode = 'emer';
@@ -1534,12 +1756,14 @@ function tick(dt) {
     camera.position.set(Math.sin(t) * .35, 1.55 + Math.sin(t * 1.7) * .05, -6.5 + Math.sin(t * .5) * .8);
     camera.rotation.set(-.05 + Math.sin(t * 1.3) * .03, Math.sin(t * .8) * .25, 0);
     G.light = true; G.bat = 100;
+    if (state === 'intro') { deckG.visible = true; diveG.visible = false; lookCam(0, 0, 3.14, 0); }
   }
+  if (state === 'deck') updateDeck(real); else if (state === 'dive') updateDive(real);
   if (state === 'play' || state === 'ending' || state === 'jump') runTimers(dt);
   if (state === 'play') {
     updatePlayer(dt); updateCamera(dt); updateResources(dt); updateInteract(dt); updateTriggers(dt); updateCreature(dt); updateAmbient(dt);
   } else if (state === 'jump') updateJump(dt);
-  updateLamps(dt); updateFlash(dt); updateParticles(dt); updateDoors(dt); updateEye(dt); updateSonar(dt);
+  updateC7(dt); updateLamps(dt); updateFlash(dt); updateParticles(dt); updateDoors(dt); updateEye(dt); updateSonar(dt);
   if (state === 'jump') { // luz fría desde abajo para la cara
     const hp = MON.userData.j.head.getWorldPosition(_v2); camera.getWorldDirection(_v);
     pool[0].position.copy(hp).addScaledVector(_v, -.35); pool[0].position.y -= .3; pool[0].color.setHex(0xff3a24); pool[0].intensity = 1.6 + Math.random() * 1.2;
@@ -1554,13 +1778,14 @@ function tick(dt) {
    ============================================================ */
 function startGame(s) {
   timers.length = 0; eyeS.t = -1; EYE.visible = false; MON.visible = false; ballastKnocks = 0; eyeS.hit = eyeS.bang = false; eyeS.wait = 0;
-  G = G0();
+  G = G0(); c7.watch = 0; c7.seen = 0; c7.creak = false;
   if (s) {
     Object.assign(G, JSON.parse(JSON.stringify(s.G)));
     Object.assign(P, s.P);
     G.o2 = Math.max(G.o2, 55); G.bat = Math.max(G.bat, 40); G.fear = 0; G.shake = 0; G.flick = 0; G.kill = 0; G.chase = false;
   } else { Object.assign(P, { x: 0, z: -1.6, yaw: 0, pitch: -.05 }); }
   for (const a of acts) { a.done = G.picked.includes(a.id); a.prog = 0; if (a.mesh) a.mesh.visible = !a.done; }
+  c7.cur = G.c7open ? .22 : 0;
   setDoor(0, true, true); setDoor(1, G.energy, true); setDoor(2, G.oxygen, true); setDoor(3, false, true);
   G.lightMode = G.energy ? 'power' : 'emer';
   AU.hum(G.energy); AU.alarm(false);
@@ -1583,30 +1808,18 @@ function startGame(s) {
   checkpoint();
 }
 
-const INTRO = [
-  ['SUMERGIBLE CALEUCHE', 'Fosa de Atacama.<br>3.012 metros de profundidad.'],
-  ['03:14 h', 'Despiertas en el camarote.<br>La tripulación no está.'],
-  ['', 'El oxígeno se acaba.<br>Algo golpea el casco.'],
-];
-let introI = 0, introTO = 0;
-function nextIntro() {
-  clearTimeout(introTO);
-  const p = $('i1');
-  if (introI >= INTRO.length) { endIntro(); return; }
-  p.classList.remove('show');
-  setTimeout(() => {
-    const [k, t] = INTRO[introI++];
-    p.innerHTML = (k ? `<em>${k}</em>` : '') + t; p.classList.add('show');
-    if (introI === 1) AU.ping(.3, 1.4);
-    if (introI === 3) AU.knock(null, 3, .45);
-    introTO = setTimeout(nextIntro, 3300);
-  }, introI ? 700 : 50);
+const INTRO = ['K-417 «ZARYA»', 'Mar de Barents · octubre de 1989'];
+let introTO = 0;
+function showIntro() {
+  const p = $('i1'); p.classList.remove('show');
+  p.innerHTML = `<em>${INTRO[0]}</em>${INTRO[1]}`;
+  setTimeout(() => p.classList.add('show'), 40);
+  AU.ping(.22, 1.5);
+  introTO = setTimeout(endIntro, 3000);
 }
 function endIntro() {
   if (state !== 'intro') return; clearTimeout(introTO);
-  $('intro').classList.add('hidden');
-  const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1;
-  startGame(null);
+  startOpening();
 }
 $('intro').addEventListener('pointerdown', e => { e.preventDefault(); endIntro(); });
 $('start').addEventListener('click', () => {
@@ -1614,11 +1827,456 @@ $('start').addEventListener('click', () => {
   try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
   try { screen.orientation && screen.orientation.lock && screen.orientation.lock('portrait').catch(() => {}); } catch (e) {}
   $('menu').classList.add('hidden'); $('intro').classList.remove('hidden');
-  state = 'intro'; introI = 0; nextIntro();
+  state = 'intro'; showIntro();
 });
 $('retry').addEventListener('click', () => { AU.init(); startGame(snap); });
 $('restart').addEventListener('click', () => { AU.init(); snap = null; startGame(null); });
 $('again').addEventListener('click', () => { snap = null; startGame(null); });
+
+/* ============================================================
+   APERTURA: CUBIERTA EN SUPERFICIE Y DESCENSO EN LA CÚPULA
+   ============================================================ */
+const OS = new THREE.Scene();
+OS.fog = new THREE.FogExp2(0x9a9490, .028);
+const O = { yaw: 0, pitch: 0, t: 0, D: 0, hatch: 0, opened: false, openT: 0, cut: -1, ev: {}, drag: -9, clock: 0, said: 0, ck: 0 };
+const CHUNK = '\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n';
+const CAUS = `
+  float caus(vec2 uv, float t){
+    vec2 p = mod(uv*6.2831853, 6.2831853) - 250.; vec2 i = p; float c = 1.;
+    for (int n = 0; n < 4; n++){
+      float tt = t*(1. - 3.5/float(n+1));
+      i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+      c += 1./length(vec2(p.x/(sin(i.x+tt)/.005), p.y/(cos(i.y+tt)/.005)));
+    }
+    c /= 4.; c = 1.17 - pow(c, 1.4); return pow(abs(c), 8.);
+  }`;
+const oFog = { uFog: { value: new THREE.Color() }, uFogD: { value: .02 }, uTime: { value: 0 } };
+
+// cielo / fondo de agua
+const skyU = { uTop: { value: new THREE.Color() }, uMid: { value: new THREE.Color() }, uBot: { value: new THREE.Color() }, uSun: { value: new THREE.Vector3() }, uGlowC: { value: new THREE.Color() }, uGlow: { value: 1 }, uPow: { value: 4 } };
+const oSky = new THREE.Mesh(new THREE.SphereGeometry(62, 24, 16), new THREE.ShaderMaterial({
+  uniforms: skyU, side: THREE.BackSide, depthWrite: false, fog: false,
+  vertexShader: `varying vec3 vD; void main(){ vD = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader: `uniform vec3 uTop,uMid,uBot,uSun,uGlowC; uniform float uGlow,uPow; varying vec3 vD;
+    void main(){ vec3 d = normalize(vD);
+      vec3 c = mix(uTop, uMid, pow(1. - clamp(d.y, 0., 1.), uPow));
+      c = mix(c, uBot, smoothstep(0., -.7, d.y));
+      float s = max(dot(d, uSun), 0.);
+      c += uGlowC*(pow(s, 6.)*.45 + pow(s, 60.)*1.4)*uGlow;
+      gl_FragColor = vec4(c, 1.);${CHUNK}}`,
+}));
+oSky.renderOrder = -10; oSky.frustumCulled = false; OS.add(oSky);
+const oHemi = new THREE.HemisphereLight(0xffffff, 0x000000, 1); OS.add(oHemi);
+const oDir = new THREE.DirectionalLight(0xffffff, 1); OS.add(oDir); OS.add(oDir.target);
+const oLamp = new THREE.SpotLight(0xdff2ff, 0, 46, .56, .85, 1.1); oLamp.position.set(0, .7, -1.3); oLamp.target.position.set(0, -1.6, -9); OS.add(oLamp); OS.add(oLamp.target);
+
+/* ---------- cubierta ---------- */
+const deckG = new THREE.Group(); OS.add(deckG);
+const SUN = new THREE.Vector3(-.3, .105, -1).normalize();
+{
+  const seaU = Object.assign({ uSky: { value: new THREE.Color(0xc9b7a6) }, uDeep: { value: new THREE.Color(0x2f3d47) }, uSunC: { value: new THREE.Color(0xffc890) }, uSunD: { value: SUN } }, oFog);
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.ShaderMaterial({
+    uniforms: seaU, fog: false,
+    vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `varying vec3 vW; uniform float uTime,uFogD; uniform vec3 uSky,uDeep,uSunC,uSunD,uFog;
+      void main(){ vec2 p = vW.xz; float t = uTime;
+        vec2 n = vec2(cos(p.x*.55 + t*.9) + .6*cos(p.x*1.7 - p.y*1.1 + t*1.6), cos(p.y*.42 + t*.7) + .6*cos(p.y*2.1 + p.x*.9 - t*1.3))*.09;
+        n += vec2(cos(p.x*4.3 + p.y*2.7 + t*2.3), cos(p.y*5.1 - p.x*3.3 + t*2.7))*.035;
+        vec3 N = normalize(vec3(n.x, 1., n.y)); vec3 V = normalize(cameraPosition - vW);
+        float fr = pow(1. - max(dot(N, V), 0.), 3.);
+        vec3 c = mix(uDeep, uSky, .12 + .88*fr);
+        vec3 R = reflect(-V, N); c += uSunC*(pow(max(dot(R, uSunD), 0.), 90.)*2.2 + pow(max(dot(R, uSunD), 0.), 12.)*.22);
+        float d = length(cameraPosition - vW); c = mix(c, uFog, 1. - exp(-uFogD*uFogD*d*d));
+        gl_FragColor = vec4(c, 1.);${CHUNK}}`,
+  }));
+  sea.rotation.x = -Math.PI / 2; deckG.add(sea);
+  const tiles = panelTex.clone(); tiles.repeat.set(2, 36); tiles.needsUpdate = true;
+  const mHull = new THREE.MeshStandardMaterial({ color: 0x1a1e20, roughness: .42, metalness: .35 });
+  const mDeck = new THREE.MeshStandardMaterial({ map: tiles, color: 0x565c5e, roughness: .38, metalness: .4 });
+  const hull = mk(CYL(6.2, 6.2, 110, 40), mHull, 0, -4.75, -20, deckG, false); hull.rotation.x = Math.PI / 2;
+  mk(BOX(3.4, .1, 72), mDeck, 0, 1.47, -8, deckG, false);
+  // vela
+  const sail = mk(CYL(2.3, 2.6, 6.2, 28), mHull, 0, 4.5, -17, deckG, false); sail.scale.set(1, 1, 2.6);
+  mk(CYL(2.32, 2.32, .5, 28), mHull, 0, 7.75, -17, deckG, false).scale.set(1, 1, 2.6);
+  for (const [x, h, z] of [[.5, 4.2, -15.6], [-.7, 2.8, -16.4], [.1, 6, -18.5]]) mk(CYL(.07, .09, h, 8), mHull, x, 7.9 + h / 2, z, deckG, false);
+  const num = new THREE.Mesh(new THREE.PlaneGeometry(2.6, .9), new THREE.MeshBasicMaterial({ map: paintTex('К-417', '#d9d6c8'), transparent: true, opacity: .8, depthWrite: false }));
+  num.position.set(0, 5.6, -10.3); deckG.add(num);
+  for (const s of [1, -1]) for (let i = 0; i < 9; i++) { mk(CYL(.02, .02, .95, 6), mHull, s * 1.62, 1.97, 2 - i * 3.2, deckG, false); }
+  for (const s of [1, -1]) for (const y of [2.42, 2.05]) { const r = mk(CYL(.013, .013, 26, 5), mHull, s * 1.62, y, -10.8, deckG, false); r.rotation.x = Math.PI / 2; }
+  // escotilla
+  const hg = new THREE.Group(); hg.position.set(0, 1.52, -1.55); deckG.add(hg);
+  const mRing = new THREE.MeshStandardMaterial({ color: 0x4d5557, roughness: .4, metalness: .7 });
+  const mWheel = new THREE.MeshStandardMaterial({ color: 0x8a231a, roughness: .45, metalness: .4 });
+  mk(CYL(.66, .72, .16, 30), mRing, 0, .08, 0, hg, false);
+  mk(new THREE.CircleGeometry(.56, 30), new THREE.MeshBasicMaterial({ color: 0x000000 }), 0, .165, 0, hg, false).rotation.x = -Math.PI / 2;
+  for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; mk(CYL(.03, .03, .05, 6), mRing, Math.cos(a) * .64, .18, Math.sin(a) * .64, hg, false); }
+  const lid = new THREE.Group(); lid.position.set(0, .17, -.58); hg.add(lid);
+  mk(CYL(.58, .58, .09, 30), mRing, 0, .045, .58, lid, false);
+  const wheel = new THREE.Group(); wheel.position.set(0, .2, .58); lid.add(wheel);
+  mk(new THREE.TorusGeometry(.27, .03, 8, 26), mWheel, 0, 0, 0, wheel, false).rotation.x = Math.PI / 2;
+  for (let s = 0; s < 3; s++) mk(BOX(.54, .03, .035), mWheel, 0, 0, 0, wheel, false).rotation.y = s * Math.PI / 3;
+  mk(CYL(.05, .05, .2, 10), mRing, 0, -.08, 0, wheel, false);
+  O.lid = lid; O.wheel = wheel;
+  // sol y bruma
+  const sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb877, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false, opacity: .9 }));
+  sun.scale.set(20, 20, 1); sun.position.copy(SUN).multiplyScalar(56); deckG.add(sun);
+  O.mist = [];
+  for (let i = 0; i < 9; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xd8c4b4, depthWrite: false, transparent: true, fog: false, opacity: rnd(.05, .11) }));
+    m.scale.set(rnd(26, 44), rnd(5, 9), 1); m.position.set(rnd(-36, 30), rnd(1.5, 4.5), rnd(-46, -22)); deckG.add(m); O.mist.push(m);
+  }
+}
+function paintTex(text, color) {
+  return canvasTex(512, 180, (g, w, h) => {
+    g.clearRect(0, 0, w, h); g.fillStyle = color; g.font = 'bold 150px "Arial Narrow", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(text, w / 2, h / 2 + 8);
+    g.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(0,0,0,${rnd(.15, .7)})`; g.fillRect(rnd(w), rnd(h), rnd(.6, 2.4), rnd(1, 9)); }
+    for (let i = 0; i < 9; i++) { const x = rnd(w), y = rnd(h), r = rnd(6, 20), gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,.8)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
+  });
+}
+
+/* ---------- descenso ---------- */
+const diveG = new THREE.Group(); OS.add(diveG); diveG.visible = false;
+const dv = {};
+{
+  // superficie vista desde abajo
+  dv.surfU = Object.assign({ uSD: { value: .011 } }, oFog);
+  dv.surf = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), new THREE.ShaderMaterial({
+    uniforms: dv.surfU, fog: false, transparent: true, depthWrite: false,
+    vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `varying vec3 vW; uniform float uTime,uSD; uniform vec3 uFog; ${CAUS}
+      void main(){ vec2 p = vW.xz; float h = max(vW.y, .6);
+        float c = caus(p*.045 + uTime*.006, uTime*.55) + .7*caus(p*.017 - uTime*.003, uTime*.3 + 3.);
+        float win = smoothstep(1.25, .25, length(p - vec2(-.25, -.25)*h)/(h*1.13));
+        vec3 col = mix(vec3(.02, .26, .36), vec3(.2, .82, .86), win) + vec3(.75, 1., .9)*c*(.22 + win*.8);
+        float d = length(cameraPosition - vW); col = mix(col, uFog, 1. - exp(-uSD*uSD*d*d));
+        gl_FragColor = vec4(col, 1. - smoothstep(30., 64., d));${CHUNK}}`,
+  }));
+  dv.surf.rotation.x = Math.PI / 2; dv.surf.renderOrder = -5; diveG.add(dv.surf);
+
+  // rayos de luz: planos aditivos con vetas animadas
+  dv.rayU = [];
+  dv.rays = new THREE.Group(); diveG.add(dv.rays);
+  const rayGeo = new THREE.PlaneGeometry(1, 1);
+  for (let i = 0; i < 15; i++) {
+    const u = { uTime: oFog.uTime, uI: { value: 0 }, uSeed: { value: rnd(40) }, uF: { value: rnd(2.2, 4.6) } };
+    const m = new THREE.Mesh(rayGeo, new THREE.ShaderMaterial({
+      uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+      fragmentShader: `varying vec2 vUv; uniform float uTime,uI,uSeed,uF;
+        float h1(float x){ return fract(sin(x*127.1)*43758.5453); }
+        float sn(float x){ float i = floor(x), f = fract(x); f = f*f*(3. - 2.*f); return mix(h1(i), h1(i + 1.), f); }
+        void main(){
+          float x = vUv.x*uF + uSeed;
+          float s = sn(x*1.3 + uTime*.045)*sn(x*3.1 - uTime*.07 + 7.);
+          s = pow(s, 2.2)*3.4 + pow(sn(x*7. + uTime*.11 + 3.), 6.)*.8;
+          float edge = smoothstep(0., .3, vUv.x)*smoothstep(1., .7, vUv.x);
+          float v = smoothstep(0., .55, vUv.y)*smoothstep(1., .6, vUv.y);
+          float sh = .78 + .22*sin(uTime*.8 + uSeed*3. + vUv.x*11.);
+          vec3 col = mix(vec3(.05, .5, .58), vec3(.62, 1., .9), clamp(vUv.y*s*.8, 0., 1.));
+          gl_FragColor = vec4(col*s*edge*v*sh*uI, 1.);
+        }`,
+    }));
+    const a = (i / 15) * Math.PI * 2 + rnd(-.15, .15), r = i % 3 === 0 ? rnd(5, 9) : rnd(10, 26), w = rnd(7, 15);
+    m.position.set(Math.sin(a) * r - 2.5, 8, -Math.cos(a) * r - 2.5);
+    m.scale.set(w, 52, 1); m.rotation.order = 'YXZ'; m.rotation.y = -a; m.rotation.z = .24 + rnd(-.12, .12); m.rotation.x = rnd(-.08, .08);
+    m.renderOrder = 5; dv.rays.add(m); dv.rayU.push(u);
+  }
+
+  // partículas: polvo luminoso arriba, nieve marina abajo
+  const N = 650, B = 9; dv.pn = N; dv.pb = B;
+  const pp = new Float32Array(N * 3), ps = new Float32Array(N);
+  for (let i = 0; i < N; i++) { pp[i * 3] = rnd(-B, B); pp[i * 3 + 1] = rnd(-B, B); pp[i * 3 + 2] = rnd(-B, B); ps[i] = rnd(); }
+  dv.pg = new THREE.BufferGeometry(); dv.pg.setAttribute('position', new THREE.BufferAttribute(pp, 3)); dv.pg.setAttribute('seed', new THREE.BufferAttribute(ps, 1));
+  dv.pU = { uTime: oFog.uTime, uScale: { value: 400 }, uB: { value: 1 }, uSize: { value: 1 }, uNear: { value: .05 }, uCol: { value: new THREE.Color(1, 1, 1) } };
+  dv.pts = new THREE.Points(dv.pg, new THREE.ShaderMaterial({
+    uniforms: dv.pU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    vertexShader: `attribute float seed; uniform float uTime,uScale,uB,uSize,uNear; varying float vA;
+      void main(){ vec3 p = position; p.x += sin(uTime*.4 + seed*30.)*.25; p.z += cos(uTime*.3 + seed*17.)*.25;
+        vec4 mv = modelViewMatrix*vec4(p, 1.); gl_Position = projectionMatrix*mv; float z = -mv.z;
+        float tw = .55 + .45*sin(uTime*(1. + seed*3.) + seed*50.);
+        vA = uB*tw*exp(-z*uNear)*smoothstep(.2, 1., z);
+        gl_PointSize = (.014 + seed*.03)*uSize*uScale/max(z, .3); }`,
+    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ float a = smoothstep(.5, 0., length(gl_PointCoord - .5)); gl_FragColor = vec4(uCol*a*vA, 1.); }`,
+  }));
+  dv.pts.frustumCulled = false; dv.pts.renderOrder = 6; diveG.add(dv.pts);
+
+  // casco propio bajo la cúpula, con cáusticas
+  dv.hullU = Object.assign({ uCaus: { value: 1 }, uSun: { value: 1 }, uAlpha: { value: 1 }, uTint: { value: new THREE.Color(0x1d7f92) } }, oFog);
+  const mh = new THREE.ShaderMaterial({
+    uniforms: dv.hullU, transparent: true, fog: false,
+    vertexShader: `varying vec3 vW; varying vec3 vN; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; vN = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `varying vec3 vW; varying vec3 vN; uniform float uTime,uCaus,uSun,uAlpha,uFogD; uniform vec3 uFog,uTint; ${CAUS}
+      void main(){ float nl = max(vN.y, 0.);
+        float seam = smoothstep(.04, .0, abs(fract(vW.z*.4) - .5) - .46) + smoothstep(.03, .0, abs(fract(vW.x*.7 + .5) - .5) - .47);
+        vec3 col = vec3(.02, .03, .038) + uTint*(.04 + nl*.3)*uSun; col *= 1. - .35*clamp(seam, 0., 1.);
+        col += vec3(.45, .95, .9)*caus(vW.xz*.1, uTime*.6)*uCaus*nl*.75;
+        float d = length(cameraPosition - vW); col = mix(col, uFog, 1. - exp(-uFogD*uFogD*d*d));
+        gl_FragColor = vec4(col, uAlpha);${CHUNK}}`,
+  });
+  dv.hull = new THREE.Group(); diveG.add(dv.hull);
+  const hb = new THREE.Mesh(CYL(6, 6, 96, 40), mh); hb.rotation.x = Math.PI / 2; hb.position.set(0, -10.4, -34); dv.hull.add(hb);
+  const hs = new THREE.Mesh(CYL(2.5, 2.9, 2.6, 28), mh); hs.position.set(0, -3.2, 2.4); hs.scale.set(1, 1, 2.4); dv.hull.add(hs);
+  const hd = new THREE.Mesh(BOX(3.2, .08, 70), mh); hd.position.set(0, -4.36, -40); dv.hull.add(hd);
+
+  // cúpula: aros y nervios (el frente queda limpio)
+  const mRib = new THREE.MeshStandardMaterial({ color: 0x4a4f4c, roughness: .5, metalness: .55 });
+  dv.dome = new THREE.Group(); diveG.add(dv.dome);
+  const ribs = [];
+  for (const a of [0, 60, 120, 180, 240, 300]) { const g = new THREE.TorusGeometry(1.7, .035, 6, 18, Math.PI / 2); g.rotateY(a * Math.PI / 180); g.translate(0, -1.1, 0); ribs.push(g); }
+  for (const [y, r, t] of [[-1.1, 1.7, .06], [.6, .16, .04]]) { const g = new THREE.TorusGeometry(r, t, 6, 30); g.rotateX(Math.PI / 2); g.translate(0, y, 0); ribs.push(g); }
+  { const g = CYL(1.72, 1.72, .56, 30, true); g.translate(0, -1.38, 0); ribs.push(g); }
+  const dm = new THREE.Mesh(mergeGeometries(ribs), mRib); dm.material.side = THREE.DoubleSide; dv.dome.add(dm);
+  const df = new THREE.Mesh(new THREE.CircleGeometry(1.72, 30), new THREE.MeshStandardMaterial({ map: grateTex, color: 0x777777, roughness: .6, metalness: .5 })); df.rotation.x = -Math.PI / 2; df.position.y = -1.64; dv.dome.add(df);
+  dv.glass = new THREE.Mesh(new THREE.SphereGeometry(1.69, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9fe9ee, transparent: true, opacity: .035, side: THREE.BackSide, depthWrite: false, fog: false }));
+  dv.glass.position.y = -1.1; dv.dome.add(dv.glass);
+
+  // cardumen
+  const fg = new THREE.SphereGeometry(1, 8, 6); fg.scale(.2, .06, .028);
+  const ft = new THREE.ConeGeometry(.055, .1, 4); ft.rotateZ(-Math.PI / 2); ft.scale(1, 1, .25); ft.translate(.23, 0, 0);
+  dv.fishN = 120;
+  dv.fish = new THREE.InstancedMesh(mergeGeometries([fg, ft]), new THREE.MeshStandardMaterial({ color: 0xa9c7d2, roughness: .3, metalness: .75, emissive: 0x0a2c38 }), dv.fishN);
+  dv.fish.frustumCulled = false; dv.fish.visible = false; diveG.add(dv.fish);
+  dv.fo = []; for (let i = 0; i < dv.fishN; i++) { const a = rnd(6.28), r = Math.sqrt(rnd()); dv.fo.push([Math.cos(a) * r * 4.6 + rnd(-1, 1), rnd(-1, 1) * 1.3 * (1 - r * .4), Math.sin(a) * r * 2.2, rnd(6.28), rnd(.8, 1.25)]); }
+
+  // (a) ballena muerta
+  const wt = canvasTex(256, 256, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#39454b'); gr.addColorStop(.3, '#4a565a'); gr.addColorStop(.5, '#a7ada3'); gr.addColorStop(.7, '#4a565a'); gr.addColorStop(1, '#39454b');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(60,70,70,.5)'; g.lineWidth = 2; for (let x = 96; x < 162; x += 7) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + rnd(-2, 2), h * .55); g.stroke(); }
+    for (let i = 0; i < 46; i++) { const x = rnd(w), y = rnd(h), r = rnd(5, 26), q = g.createRadialGradient(x, y, 0, x, y, r); q.addColorStop(0, `rgba(190,196,184,${rnd(.15, .5)})`); q.addColorStop(1, 'rgba(190,196,184,0)'); g.fillStyle = q; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
+    g.strokeStyle = 'rgba(205,208,196,.45)'; g.lineWidth = 1.2; for (let i = 0; i < 26; i++) { const x = rnd(w), y = rnd(h); g.beginPath(); g.moveTo(x, y); g.lineTo(x + rnd(-14, 14), y + rnd(10, 50)); g.stroke(); }
+    noise(g, w, h, 22);
+  });
+  const mw = new THREE.MeshStandardMaterial({ map: wt, roughness: .8, metalness: 0 });
+  dv.whale = new THREE.Group(); diveG.add(dv.whale); dv.whale.visible = false;
+  const prof = [[0, -6.4], [.4, -6.3], [.85, -5.8], [1.2, -4.8], [1.42, -3.2], [1.46, -1.4], [1.3, .4], [1.02, 2.2], [.68, 3.8], [.38, 5.1], [.2, 6], [.13, 6.5]].map(p => new THREE.Vector2(p[0], p[1]));
+  const wb = new THREE.Mesh(new THREE.LatheGeometry(prof, 20), mw); wb.scale.set(1, 1, .9); dv.whale.add(wb);
+  for (const s of [1, -1]) {
+    const fl = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 6), mw); fl.scale.set(1.7, .62, .1); fl.position.set(s * 1.45, 6.75, 0); fl.rotation.z = s * -.55; dv.whale.add(fl);
+    const pc = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 6), mw); pc.scale.set(.4, 1.9, .1); pc.position.set(s * 1.85, -1.9, .3); pc.rotation.set(.3, 0, s * 1.0); dv.whale.add(pc);
+  }
+
+  // (b) el otro casco, hundido en la pared, con el mismo número
+  dv.wreck = new THREE.Group(); diveG.add(dv.wreck); dv.wreck.visible = false;
+  const rg = new THREE.PlaneGeometry(56, 84, 26, 38), rp = rg.attributes.position;
+  for (let i = 0; i < rp.count; i++) { const x = rp.getX(i), y = rp.getY(i); rp.setZ(i, Math.sin(x * .31 + y * .17) * 1.3 + Math.sin(y * .43 - x * .11) * 1.1 + rnd(-.55, .55) - Math.exp(-((x * x) / 90 + (y * y) / 30)) * 1.5); }
+  rg.computeVertexNormals();
+  const mRock = new THREE.MeshStandardMaterial({ color: 0x3d4442, roughness: 1, metalness: 0, flatShading: true });
+  const rock = new THREE.Mesh(rg, mRock); rock.position.z = -5.2; dv.wreck.add(rock);
+  const wtex = panelTex.clone(); wtex.repeat.set(7, 2); wtex.needsUpdate = true;
+  const mWr = new THREE.MeshStandardMaterial({ map: wtex, color: 0x77726a, roughness: .8, metalness: .3 });
+  const wh = new THREE.Group(); wh.rotation.set(0, .3, -.2); wh.position.set(1.2, 0, -1.6); dv.wreck.add(wh);
+  const whc = new THREE.Mesh(CYL(2.5, 2.5, 22, 26), mWr); whc.rotation.z = Math.PI / 2; wh.add(whc);
+  const wn = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 12), mWr); wn.scale.set(1.5, 1, 1); wn.position.x = -11; wh.add(wn);
+  const wsl = new THREE.Mesh(CYL(.9, 1.05, 2.4, 16), mWr); wsl.scale.set(2.4, 1, 1); wsl.position.set(2.5, 3.2, 0); wh.add(wsl);
+  const wnum = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 1.55), new THREE.MeshStandardMaterial({ map: paintTex('К-417', '#e6e2d2'), transparent: true, roughness: .9, depthWrite: false, emissive: 0x24231f }));
+  wnum.position.set(-2.7, .3, 2.56); wh.add(wnum);
+  for (let i = 0; i < 9; i++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(.8, 2.2), 0), mRock); b.position.set(rnd(-13, 13), rnd(-6, 6), rnd(-4.5, -2.6)); b.rotation.set(rnd(3), rnd(3), rnd(3)); dv.wreck.add(b); }
+
+  // (c) fondo y la figura
+  dv.floor = new THREE.Group(); diveG.add(dv.floor); dv.floor.visible = false;
+  const fgeo = new THREE.PlaneGeometry(90, 90, 30, 30), fp = fgeo.attributes.position;
+  for (let i = 0; i < fp.count; i++) { const x = fp.getX(i), y = fp.getY(i); fp.setZ(i, (Math.sin(x * .5) * Math.cos(y * .4) * .22 + rnd(-.05, .05)) * clamp((Math.hypot(x, y) - 2) / 6, 0, 1)); }
+  fgeo.computeVertexNormals();
+  const sed = new THREE.Mesh(fgeo, new THREE.MeshStandardMaterial({ color: 0x555a53, roughness: 1 })); sed.rotation.x = -Math.PI / 2; dv.floor.add(sed);
+  for (let i = 0; i < 14; i++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(.2, .9), 0), mRock); const a = rnd(6.28), r = rnd(4.5, 16); b.position.set(Math.cos(a) * r, rnd(-.1, .2), Math.sin(a) * r - 6); b.rotation.set(rnd(3), rnd(3), rnd(3)); dv.floor.add(b); }
+  const mCoat = new THREE.MeshStandardMaterial({ color: 0x14181b, roughness: .9 }), mSkin = new THREE.MeshStandardMaterial({ color: 0xa3aaa4, roughness: 1 });
+  const fig = new THREE.Group(); fig.position.set(.55, 0, -6.4); fig.rotation.y = 2.5; dv.floor.add(fig);
+  const fm = (geo, m, x, y, z, par = fig) => { const q = new THREE.Mesh(geo, m); q.position.set(x, y, z); par.add(q); return q; };
+  fm(CYL(.2, .33, 1.02, 12), mCoat, 0, .92, 0); fm(CYL(.23, .2, .12, 12), mCoat, 0, 1.49, 0);
+  for (const s of [1, -1]) { fm(CYL(.075, .085, .44, 8), mCoat, s * .1, .22, 0); fm(new THREE.CapsuleGeometry(.062, .62, 3, 8), mCoat, s * .27, 1.1, 0).rotation.z = s * .05; fm(new THREE.SphereGeometry(.05, 8, 6), mSkin, s * .29, .7, 0); }
+  dv.head = new THREE.Group(); dv.head.position.set(0, 1.62, 0); fig.add(dv.head);
+  fm(CYL(.05, .06, .1, 8), mSkin, 0, -.04, 0, dv.head);
+  fm(new THREE.SphereGeometry(.112, 14, 10), mSkin, 0, .09, 0, dv.head).scale.set(.88, 1.12, 1);
+  for (const s of [1, -1]) fm(new THREE.SphereGeometry(.021, 8, 6), mCoat, s * .04, .105, .095, dv.head);
+  fm(CYL(.135, .125, .05, 14), mCoat, 0, .19, 0, dv.head); fm(CYL(.15, .15, .012, 14), mCoat, 0, .165, .05, dv.head).scale.set(1, 1, 1.15);
+  dv.fig = fig; dv.hq = new THREE.Quaternion();
+}
+
+// perfil del descenso: [segundo, metros]
+const DIVE_K = [[0, 1], [8, 15], [23, 60], [30.5, 128], [41.5, 214], [46, 262], [53, 330], [57, 386], [59.8, 400], [99, 400]];
+const DIVE_END = 60.3;
+// colores por profundidad: [m, arriba, medio, abajo, niebla]
+const DIVE_C = [[0, 0x7ff0e6, 0x1fb0c2, 0x0a5f80, .017], [30, 0x46cadc, 0x148fae, 0x064468, .02], [60, 0x1f84b4, 0x0c5e8c, 0x042c50, .025], [120, 0x0c4270, 0x062a4e, 0x021126, .034], [220, 0x041c34, 0x021222, 0x01070f, .046], [330, 0x010911, 0x01070c, 0x000304, .056], [400, 0x000406, 0x000405, 0x000101, .06]]
+  .map(r => [r[0], new THREE.Color(r[1]), new THREE.Color(r[2]), new THREE.Color(r[3]), r[4]]);
+const ramp = (a, b, x) => clamp((x - a) / (b - a), 0, 1);
+function diveDepth(t) { for (let i = 1; i < DIVE_K.length; i++) if (t <= DIVE_K[i][0]) { const a = DIVE_K[i - 1], b = DIVE_K[i]; return lerp(a[1], b[1], (t - a[0]) / (b[0] - a[0])); } return 400; }
+
+function startOpening() {
+  state = 'deck'; hudShow(false);
+  Object.assign(O, { yaw: 0, pitch: -.3, t: 0, D: 0, hatch: 0, opened: false, openT: 0, cut: -1, ev: {}, drag: -9, clock: 0, said: 0, ck: 0 });
+  deckG.visible = true; diveG.visible = false;
+  OS.fog.color.setHex(0xa69a92); OS.fog.density = .026; oFog.uFog.value.copy(OS.fog.color); oFog.uFogD.value = .021;
+  skyU.uTop.value.setHex(0x4f6276); skyU.uMid.value.setHex(0xf0b98c); skyU.uBot.value.setHex(0x5a6570); skyU.uGlowC.value.setHex(0xffb46e); skyU.uGlow.value = 1; skyU.uPow.value = 5; skyU.uSun.value.copy(SUN);
+  oHemi.color.setHex(0x9aa6b6); oHemi.groundColor.setHex(0x4a4642); oHemi.intensity = 1.5;
+  oDir.color.setHex(0xffc890); oDir.intensity = 2.6; oDir.position.copy(SUN).multiplyScalar(30); oDir.target.position.set(0, 1.5, 0);
+  oLamp.intensity = 0; O.lid.rotation.x = 0; O.wheel.rotation.y = 0;
+  $('intro').classList.add('hidden'); $('dgauge').classList.add('hidden');
+  $('skip').classList.toggle('hidden', !SEEN());
+  const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1;
+  requestAnimationFrame(() => { fb.style.transition = 'opacity 2s'; fb.style.opacity = 0; });
+  $('cross').classList.remove('hidden');
+  AU.opStart();
+}
+const SEEN = () => { try { return localStorage.getItem('abismo_v2') === '1'; } catch (e) { return false; } };
+function lookCam(dt, x, y, z) {
+  let yaw = O.yaw, pitch = O.pitch + Math.sin(O.clock * .7) * .004, roll = 0;
+  if (G.shake > 0) { const s = G.shake * G.shake * .06; yaw += rnd(-s, s); pitch += rnd(-s, s); roll += rnd(-s, s); G.shake = Math.max(0, G.shake - dt * 1.4); }
+  camera.position.set(x, y, z); camera.rotation.set(pitch, yaw, roll); camera.updateMatrixWorld();
+  oSky.position.copy(camera.position);
+}
+function updateDeck(dt) {
+  O.t += dt; O.clock += dt; oFog.uTime.value = O.clock;
+  O.yaw = clamp(O.yaw, -1.5, 1.5); O.pitch = clamp(O.pitch, -1.15, .5);
+  for (const m of O.mist) { m.position.x += dt * .5; if (m.position.x > 40) m.position.x = -40; }
+  AU.opSet(1, 0, 2400, 0, 0);
+  const btn = $('act'), ring = btn.querySelector('circle');
+  let cy = 3.14 + Math.sin(O.clock * .55) * .025, cz = 0;
+  if (!O.opened) {
+    if (!O.said && O.t > .9) { O.said = 1; say(BLURBS.deck[0], 3.2); }
+    const ready = O.t > 1.6;
+    btn.classList.toggle('hidden', !ready); btn.classList.toggle('off', !ready); $('cross').classList.toggle('on', ready);
+    if (ready && $('actlbl').innerHTML.indexOf('escotilla') < 0) $('actlbl').innerHTML = 'Abrir la escotilla<small>MANTÉN</small>';
+    const p = O.hatch, stuck = (p > .16 && p < .36) || (p > .62 && p < .72);
+    if (ready && held.act) {
+      O.hatch = Math.min(1, p + dt * (stuck ? .27 : 1) / 2.9); AU.hold(p * .5);
+      O.ck -= dt; if (stuck && O.ck < 0) { O.ck = rnd(.45, .8); AU.creak(null, .45); vib(18); G.shake = Math.max(G.shake, .22); }
+      if (stuck && O.said < 2) { O.said = 2; say(BLURBS.deck[1], 3.4); }
+    } else { O.hatch = Math.max(0, p - dt * .2); AU.hold(null); }
+    held.tap = false;
+    O.wheel.rotation.y = -O.hatch * 5.5 + (stuck && held.act ? Math.sin(O.clock * 38) * .015 : 0);
+    ring.style.strokeDashoffset = 358 * (1 - O.hatch);
+    if (O.hatch >= 1) {
+      O.opened = true; AU.hold(null); held.act = false; vib(40); AU.thud(null, 1); AU.door(null);
+      btn.classList.add('hidden', 'off'); $('cross').classList.add('hidden'); ring.style.strokeDashoffset = 358;
+    }
+  } else {
+    O.openT += dt;
+    O.lid.rotation.x = -smooth(clamp(O.openT / 1.2, 0, 1)) * 1.75;
+    const k = smooth(clamp((O.openT - .8) / 1.1, 0, 1));
+    cy -= k * 1.1; cz = -k * 1.25; O.pitch = lerp(O.pitch, -1.05, k * dt * 4); O.yaw = lerp(O.yaw, 0, k * dt * 4);
+    if (O.openT > .9 && !O.ev.fade) { O.ev.fade = 1; const fb = $('fxb'); fb.style.transition = 'opacity 1s'; fb.style.opacity = 1; }
+    if (O.openT > 2) startDive();
+  }
+  lookCam(dt, 0, cy, cz);
+}
+function startDive() {
+  state = 'dive'; O.t = 0; O.D = 1; O.yaw = 0; O.pitch = .34; O.ev = {}; O.cut = -1; O.drag = -9;
+  deckG.visible = false; diveG.visible = true; dv.fish.visible = dv.whale.visible = dv.wreck.visible = dv.floor.visible = false; dv.hull.visible = true;
+  skyU.uSun.value.set(-.24, .94, -.24).normalize(); skyU.uGlowC.value.setHex(0xc8fff0); skyU.uPow.value = 1.6;
+  oDir.color.setHex(0xcffff2); oDir.position.set(-6, 30, -6); oDir.target.position.set(0, 0, 0);
+  $('act').classList.add('hidden', 'off'); $('cross').classList.add('hidden'); AU.hold(null);
+  $('dgauge').classList.remove('hidden');
+  const fb = $('fxb'); fb.style.transition = 'opacity 1.8s'; fb.style.opacity = 0;
+  AU.whoosh(5); vib(30);
+  updateDive(.016);
+}
+const _c = new THREE.Color(), _d = new THREE.Object3D(), _m4 = new THREE.Matrix4();
+function updateDive(dt) {
+  O.t += dt; O.clock += dt; oFog.uTime.value = O.clock;
+  const t = O.t, D = O.D = lerp(O.D, diveDepth(t), 1 - Math.exp(-dt * 2.2));
+  $('dg').textContent = Math.round(D) + ' m';
+  // color del agua
+  let i = 1; while (i < DIVE_C.length - 1 && D > DIVE_C[i][0]) i++;
+  const a = DIVE_C[i - 1], b = DIVE_C[i], u = ramp(a[0], b[0], D);
+  skyU.uTop.value.lerpColors(a[1], b[1], u); skyU.uMid.value.lerpColors(a[2], b[2], u); skyU.uBot.value.lerpColors(a[3], b[3], u);
+  OS.fog.color.copy(skyU.uMid.value); OS.fog.density = lerp(a[4], b[4], u); oFog.uFog.value.copy(OS.fog.color); oFog.uFogD.value = OS.fog.density;
+  skyU.uGlow.value = 1 - ramp(20, 130, D);
+  const sun = 1 - ramp(0, 210, D);
+  oHemi.color.copy(skyU.uTop.value); oHemi.groundColor.copy(skyU.uBot.value); oHemi.intensity = lerp(.5, 1.5, sun);
+  oDir.intensity = 2.4 * sun * sun;
+  const lampOn = ramp(92, 135, D); oLamp.intensity = lampOn * (D > 320 ? 85 : 120) * (t > DIVE_END - .05 ? 0 : 1) * (Math.sin(O.clock * 47) > .995 ? .6 : 1);
+  // superficie, rayos, cáusticas
+  dv.surf.position.y = D + .9; dv.surf.visible = D < 63;
+  const rI = ramp(0, 1.6, t) * (1 - smooth(ramp(10, 86, D))) * .52;
+  dv.rays.visible = rI > .002; for (const r of dv.rayU) r.uI.value = rI;
+  dv.rays.rotation.y = Math.sin(O.clock * .05) * .06;
+  dv.hullU.uCaus.value = 1 - ramp(4, 70, D); dv.hullU.uSun.value = sun; dv.hullU.uAlpha.value = 1 - ramp(170, 235, D); dv.hull.visible = D < 236;
+  dv.glass.material.opacity = .035 * sun + .012;
+  // partículas
+  const deep = ramp(55, 190, D), bub = 1 - ramp(0, 5, t);
+  dv.pU.uB.value = lerp(.85, .5, deep) + bub * .5; dv.pU.uSize.value = lerp(1, 1.5, deep) + bub * 2.2; dv.pU.uNear.value = lerp(.06, .34, deep);
+  dv.pU.uCol.value.setRGB(lerp(.75, .72, deep), lerp(1, .8, deep), lerp(.95, .86, deep));
+  const vy = lerp(.9, 2.4, deep) + bub * 5, pa = dv.pg.attributes.position, pp = pa.array, B = dv.pb;
+  for (let k = 1; k < dv.pn * 3; k += 3) { pp[k] += dt * vy * (.7 + (k % 7) * .09); if (pp[k] > B) pp[k] -= 2 * B; }
+  pa.needsUpdate = true;
+  // cardumen (10 a 22 s)
+  const fu = (t - 9.5) / 12.5; dv.fish.visible = fu > 0 && fu < 1;
+  if (dv.fish.visible) {
+    const cx = lerp(15, -16, fu), cy = lerp(-6.5, 5, fu), cz = -9.5 - Math.sin(fu * Math.PI) * 3, head = Math.cos(fu * Math.PI) * .32;
+    for (let k = 0; k < dv.fishN; k++) {
+      const f = dv.fo[k], w = Math.sin(O.clock * 9 * f[4] + f[3]);
+      _d.position.set(cx + f[0] + Math.sin(O.clock * .7 + f[3]) * .3, cy + f[1] + Math.sin(O.clock * 1.1 + f[3] * 2) * .15, cz + f[2] + w * .04);
+      _d.rotation.set(0, head + w * .22, .37 + Math.sin(f[3]) * .08); _d.scale.setScalar(f[4]); _d.updateMatrix(); dv.fish.setMatrixAt(k, _d.matrix);
+    }
+    dv.fish.instanceMatrix.needsUpdate = true;
+  }
+  // (a) ballena
+  const wu = (t - 30.2) / 11.6; dv.whale.visible = wu > 0 && wu < 1;
+  let aim = null;
+  if (dv.whale.visible) {
+    const y = lerp(19, -20, wu);
+    dv.whale.position.set(lerp(1.2, -.6, wu), y, -15.5); dv.whale.rotation.set(.15 + wu * .2, -.25 + wu * .5, .85 + wu * .32);
+    if (Math.abs(y) < 13) aim = [0, Math.atan2(y, 15.5) * .75];
+  }
+  // (b) el otro K-417
+  const ku = (t - 40.6) / 12.6; dv.wreck.visible = ku > 0 && ku < 1;
+  if (dv.wreck.visible) {
+    const s = 2 * ku - 1, y = 44 * Math.sign(s) * Math.pow(Math.abs(s), 1.9);
+    dv.wreck.position.set(0, y, -10.5);
+    if (Math.abs(y) < 9) aim = [.06, Math.atan2(y, 10) * .6];
+  }
+  // (c) la figura en el fondo
+  const fl = ramp(53.2, 58.3, t); dv.floor.visible = fl > 0;
+  if (dv.floor.visible) {
+    dv.floor.position.y = lerp(-46, -3.5, 1 - Math.pow(1 - fl, 2.4));
+    if (t > 55.2) {
+      aim = [-.085, -.27];
+      dv.head.getWorldPosition(_v); _m4.lookAt(camera.position, _v, camera.up); dv.hq.setFromRotationMatrix(_m4);
+      dv.fig.getWorldQuaternion(_q); dv.hq.premultiply(_q.invert());
+      if (t > 56.6) dv.head.quaternion.slerp(dv.hq, 1 - Math.exp(-dt * 1.3));
+    } else dv.head.quaternion.identity();
+  }
+  // la cámara vuelve sola hacia lo que hay que ver si no la estás moviendo
+  if (aim && look.id === null && O.clock - O.drag > 1.3) {
+    let dy = aim[0] - O.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    const k = 1 - Math.exp(-dt * 1.1); O.yaw += dy * k; O.pitch += (aim[1] - O.pitch) * k;
+  }
+  O.pitch = clamp(O.pitch, -1.2, 1.35);
+  // sonido
+  AU.opSet(0, ramp(0, 2, t) * (1 - ramp(45, 170, D)), lerp(2600, 500, ramp(20, 160, D)), ramp(60, 300, D) * (t > 57.2 ? .35 : 1), ramp(210, 390, D) * (t > 57.2 ? .4 : 1));
+  const ev = (k, at, fn) => { if (!O.ev[k] && t >= at) { O.ev[k] = 1; fn(); } };
+  ev('p1', 6, () => AU.ping(.09, 1.7)); ev('p2', 19, () => AU.ping(.09, 1.6)); ev('p3', 29, () => AU.ping(.08, 1.3));
+  ev('w1', 32, () => AU.whale(.2)); ev('w2', 37.5, () => AU.whale(.13));
+  ev('lamp', 27.6, () => AU.step(.3));
+  ev('p4', 42.5, () => AU.ping(.08, .8)); ev('k1', 45, () => { AU.creak(new THREE.Vector3(0, 0, -6), .4); AU.groan(new THREE.Vector3(2, -2, -9), .22); });
+  ev('p5', 52, () => AU.ping(.08, .3));
+  ev('h1', 57.3, () => { AU.heart(.5); G.fear = 1; }); ev('h2', 58.3, () => AU.heart(.6)); ev('h3', 59.2, () => AU.heart(.7)); ev('h4', 59.8, () => AU.heart(.8));
+  ev('bang', DIVE_END, () => {
+    AU.bang(null, 1.7); AU.thud(null, 1); vib([260]); G.shake = 1.2; O.cut = 0;
+    const f = $('fxf'); f.style.transition = 'none'; f.style.background = '#cfe'; f.style.opacity = .55;
+    requestAnimationFrame(() => { f.style.transition = 'opacity .12s'; f.style.opacity = 0; });
+  });
+  if (O.cut >= 0) {
+    O.cut += dt;
+    if (O.cut > .1 && !O.ev.black) { O.ev.black = 1; const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1; AU.opSet(0, 0, 500, 0, 0); }
+    if (O.cut > 1.3) { endOpening(); return; }
+  }
+  lookCam(dt, Math.sin(O.clock * .31) * .03, Math.sin(O.clock * .23) * .03, 0);
+}
+function endOpening() {
+  if (state !== 'deck' && state !== 'dive') return;
+  try { localStorage.setItem('abismo_v2', '1'); } catch (e) {}
+  for (const id of ['dgauge', 'skip']) $(id).classList.add('hidden');
+  $('act').querySelector('circle').style.strokeDashoffset = 358; $('actlbl').innerHTML = ''; $('sub').className = '';
+  deckG.visible = diveG.visible = false; G.shake = 0; held.act = false;
+  AU.hold(null); AU.opStop();
+  const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1;
+  startGame(null);
+}
+$('skip').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); endOpening(); });
 
 /* grano de película */
 {
@@ -1630,24 +2288,28 @@ $('again').addEventListener('click', () => { snap = null; startGame(null); });
 /* ============================================================
    ARRANQUE
    ============================================================ */
-buildHull(); buildDoors(); buildLamps(); buildProps();
+buildHull(); buildDoors(); buildLamps(); buildProps(); buildC7();
 resize();
 // precompilar shaders de lo que aparece en los sustos
 MON.visible = true; EYE.visible = true; MON.position.set(0, 0, -8); EYE.position.set(-3.7, 1.2, -8);
 renderer.compile(scene, camera);
 MON.visible = false; EYE.visible = false;
+diveG.visible = true; for (const k of ['fish', 'whale', 'wreck', 'floor']) dv[k].visible = true;
+renderer.compile(OS, camera);
+diveG.visible = false;
 requestAnimationFrame(loop);
 $('start').disabled = false; $('load').textContent = '';
 if (!matchMedia('(pointer:coarse)').matches) $('howto').innerHTML = 'WASD: moverte · Shift: correr · Arrastra el mouse: mirar<br>E (mantén): interactuar · F: linterna · Esc: pausa';
 
 // ganchos de prueba
 window.ABISMO = {
-  get G() { return G; }, P, get state() { return state; }, get monVisible() { return MON.visible; }, get eyeT() { return eyeS.t; },
+  get T() { return T; }, get G() { return G; }, P, get state() { return state; }, get monVisible() { return MON.visible; }, get eyeT() { return eyeS.t; },
   go(z, yaw = 0, x = 0) { P.z = z; P.x = x; P.yaw = yaw; },
   energy: () => onEnergy(), oxygen: () => { if (!G.energy) { G.energy = true; setDoor(1, true, true); G.lightMode = 'power'; } onOxygen(); },
   eye: () => { G.energy = true; G.lightMode = 'power'; startEye(); },
   chase: () => { G.energy = G.oxygen = true; setDoor(1, true, true); setDoor(2, true, true); onBallast(); },
-  jump: () => caught(), win: () => onEscape(),
+  jump: () => caught(), win: () => onEscape(), O, c7, said: SAID, skip: () => endOpening(), ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
+  c7open: () => { G.energy = G.oxygen = true; setDoor(1, true, true); setDoor(2, true, true); G.lightMode = 'power'; G.c7k = G.c7open = true; },
   mon: (z) => { MON.visible = true; MON.position.set(0, 0, z); MON.lookAt(P.x, 0, P.z); animMonster(.016, false); },
 };
 </script>
