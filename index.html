@@ -2735,26 +2735,93 @@ const oLamp = new THREE.SpotLight(0xdff2ff, 0, 46, .56, .85, 1.1); oLamp.positio
 const deckG = new THREE.Group(); OS.add(deckG);
 const SUN = new THREE.Vector3(-.3, .105, -1).normalize();
 {
-  const seaU = Object.assign({ uFoam: { value: 1 }, uSky: { value: new THREE.Color(0xc9b7a6) }, uDeep: { value: new THREE.Color(0x2f3d47) }, uSunC: { value: new THREE.Color(0xffc890) }, uSunD: { value: SUN } }, oFog);
-  const sea = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.ShaderMaterial({
+  // mar de Barents: olas de Gerstner sobre una malla radial (densa junto a la cámara), normales analíticas de las mismas olas,
+  // reflejo del mismo cielo, camino de destellos del sol, luz que atraviesa las crestas y espuma en crestas y contra el casco
+  const seaU = Object.assign({ uFoam: { value: 1 }, uSky: { value: new THREE.Color(0xc9b7a6) }, uDeep: { value: new THREE.Color(0x2f3d47) }, uSunC: { value: new THREE.Color(0xffc890) }, uSunD: { value: SUN }, uW: { value: [] }, uQ: { value: [] } }, oFog, skyU);
+  { // [longitud de onda, amplitud, rumbo relativo al viento]
+    const WV = [[41, .3, .1], [24.5, .19, -.42], [15.5, .12, .58], [9.6, .07, -.95], [6.3, .043, 1.12], [4.2, .028, -.28], [2.8, .017, .86], [1.9, .01, -1.3]];
+    for (const [L, A, a] of WV) { const k = 2 * Math.PI / L, d = 1.25 + a; seaU.uW.value.push(new THREE.Vector4(Math.cos(d), Math.sin(d), k, A)); seaU.uQ.value.push(new THREE.Vector2(Math.sqrt(9.81 * k), .8 / (k * A * WV.length))); }
+  }
+  const SEA_COM = `uniform float uTime,uFoam; uniform vec4 uW[8]; uniform vec2 uQ[8]; varying vec3 vW; varying vec2 vP; varying float vH;
+    float seaAtt(vec2 p){ // agua más mansa junto al casco (o alrededor de la cápsula en el epílogo): nunca sube a la cubierta
+      float hull = 1. - .6*(1. - smoothstep(4.2, 11., abs(p.x)))*smoothstep(-86., -74., p.y)*smoothstep(44., 32., p.y);
+      float cap = 1. - .65*(1. - smoothstep(1.2, 7., length(p)));
+      return mix(cap, hull, uFoam); }`;
+  const seaGeo = new THREE.BufferGeometry();
+  { const NR = 84, NA = 200, pos = new Float32Array((NR + 1) * NA * 3), idx = [];
+    for (let j = 0; j <= NR; j++) { const r = j ? .3 + 74.7 * Math.pow(j / NR, 2.3) : 0; for (let i = 0; i < NA; i++) { const a = i / NA * Math.PI * 2, o = (j * NA + i) * 3; pos[o] = Math.cos(a) * r; pos[o + 2] = Math.sin(a) * r; } }
+    for (let j = 0; j < NR; j++) for (let i = 0; i < NA; i++) { const a = j * NA + i, b = j * NA + (i + 1) % NA, c = a + NA, d = b + NA; idx.push(a, b, c, b, d, c); }
+    seaGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); seaGeo.setIndex(idx); seaGeo.computeBoundingSphere(); }
+  const sea = new THREE.Mesh(seaGeo, new THREE.ShaderMaterial({
     uniforms: seaU, fog: false,
-    vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
-    fragmentShader: `varying vec3 vW; uniform float uTime,uFogD,uFoam; uniform vec3 uSky,uDeep,uSunC,uSunD,uFog;
-      void main(){ vec2 p = vW.xz; float t = uTime;
-        vec2 n = vec2(cos(p.x*.55 + t*.9) + .6*cos(p.x*1.7 - p.y*1.1 + t*1.6), cos(p.y*.42 + t*.7) + .6*cos(p.y*2.1 + p.x*.9 - t*1.3))*.09;
-        n += vec2(cos(p.x*4.3 + p.y*2.7 + t*2.3), cos(p.y*5.1 - p.x*3.3 + t*2.7))*.035;
-        vec3 N = normalize(vec3(n.x, 1., n.y)); vec3 V = normalize(cameraPosition - vW);
-        float fr = pow(1. - max(dot(N, V), 0.), 3.);
-        vec3 c = mix(uDeep, uSky, .12 + .88*fr);
-        vec3 R = reflect(-V, N); c += uSunC*(pow(max(dot(R, uSunD), 0.), 90.)*2.2 + pow(max(dot(R, uSunD), 0.), 12.)*.22);
-        float hz = step(-75., p.y)*step(p.y, 34.)*uFoam;
-        float fe = abs(abs(p.x) - 3.98), fn = .5 + .5*sin(p.y*3.1 + t*2.2 + sin(p.y*.7 - t)*2.) * cos(p.y*1.3 - t*1.7);
-        float foam = hz*(smoothstep(.55, 0., fe)*(.55 + .45*fn) + smoothstep(1.6, .2, fe)*.25*fn);
-        c = mix(c*(1. - hz*smoothstep(1.4, 0., fe)*.35), vec3(.82, .8, .76), clamp(foam, 0., 1.)*.75);
-        float d = length(cameraPosition - vW); c = mix(c, uFog, 1. - exp(-uFogD*uFogD*d*d));
+    vertexShader: `${SEA_COM}
+      void main(){ vec2 p = (modelMatrix*vec4(position, 1.)).xz; float r = distance(p, cameraPosition.xz), at = seaAtt(p);
+        vec3 o = vec3(0.);
+        for (int i = 0; i < 8; i++){ vec4 w = uW[i]; float L = 6.2832/w.z, A = w.w*at*(1. - smoothstep(L*7., L*16., r));
+          float ph = w.z*dot(w.xy, p) - uQ[i].x*uTime; o.xz += uQ[i].y*A*w.xy*cos(ph); o.y += A*sin(ph); }
+        vP = p; vH = o.y; vW = vec3(p.x + o.x, o.y, p.y + o.z);
+        gl_Position = projectionMatrix*viewMatrix*vec4(vW, 1.); }`,
+    fragmentShader: `${SEA_COM}
+      uniform float uFogD,uGlow,uPow; uniform vec3 uDeep,uSunC,uFog,uTop,uMid,uBot,uSun,uGlowC;
+      float hsh(vec2 p){ vec3 q = fract(vec3(p.xyx)*.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y)*q.z); }
+      float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3. - 2.*f); return mix(mix(hsh(i), hsh(i + vec2(1., 0.)), f.x), mix(hsh(i + vec2(0., 1.)), hsh(i + 1.), f.x), f.y); }
+      vec3 sky(vec3 d){ vec3 c = mix(uTop, uMid, pow(1. - clamp(d.y, 0., 1.), uPow)); c = mix(c, uBot, smoothstep(0., -.7, d.y));
+        float s = max(dot(d, uSun), 0.); return c + uGlowC*(pow(s, 6.)*.45 + pow(s, 60.)*1.4)*uGlow; }
+      void main(){ vec2 p = vP; float t = uTime, at = seaAtt(p);
+        vec3 toC = cameraPosition - vW; float d = length(toC); vec3 V = toC/d, L = uSun;
+        float fw = max(length(fwidth(p)), 1e-3); // metros por pixel: apaga el detalle que ya no cabe
+        // las mismas olas que mueven la malla: normal y compresión (para la espuma de las crestas)
+        vec3 g = vec3(0., 1., 0.); float jxx = 1., jzz = 1., jxz = 0.;
+        for (int i = 0; i < 8; i++){ vec4 w = uW[i]; float wa = w.z*w.w*at, ph = w.z*dot(w.xy, p) - uQ[i].x*t, c = cos(ph), s = sin(ph);
+          float f = 1. - smoothstep(.08, .4, fw*w.z*.159);
+          g.xz -= w.xy*wa*c*f; g.y -= uQ[i].y*wa*s*f;
+          float q = uQ[i].y*wa*s; jxx -= q*w.x*w.x; jzz -= q*w.y*w.y; jxz -= q*w.x*w.y; }
+        // rizos finos y ráfagas de viento que oscurecen parches del mar
+        float gust = .35 + 1.1*vn(p*.045 + vec2(t*.03, -t*.05))*vn(p*.11 - vec2(t*.04, 0.));
+        for (int i = 0; i < 7; i++){ float fi = float(i), a = 1.1 + fi*2.39996, k = 4.6*pow(1.42, fi);
+          vec2 D = vec2(cos(a), sin(a)); float ph = k*dot(D, p) - sqrt(9.81*k)*t + fi*1.7;
+          g.xz -= D*.055*gust*cos(ph)*(1. - smoothstep(.06, .32, fw*k*.159)); }
+        vec3 N = normalize(g); float nv = max(dot(N, V), 0.);
+        float F = .02 + .98*pow(1. - nv, 5.);
+        vec3 R = reflect(-V, N); vec3 refl = sky(vec3(R.x, abs(R.y), R.z))*mix(.55, 1., smoothstep(-.12, .02, R.y));
+        // el cuerpo del agua: fría, oscura, iluminada por el mismo cielo
+        vec3 amb = uTop*.55 + uMid*.3 + uBot*.15;
+        vec3 body = uDeep*(uTop*2.4 + uMid*.55)*(.75 + .5*smoothstep(-.3, .4, vH));
+        // contraluz: el sol bajo atraviesa las crestas
+        vec2 sh = normalize(L.xz + 1e-4), vh = normalize(-V.xz + 1e-4);
+        float sss = pow(max(dot(vh, sh), 0.), 3.)*smoothstep(-.12, .45, vH)*(.35 + .65*pow(1. - nv, 2.));
+        body += uGlowC*vec3(.14, .5, .4)*sss*uGlow*2.4 + uDeep*uGlowC*smoothstep(-.2, .5, vH)*.4;
+        vec3 c = mix(body, refl, F);
+        // sol: lóbulo afilado cerca, ancho lejos (camino de destellos), más chispas que titilan
+        float n = mix(1400., 50., smoothstep(.004, .3, fw));
+        vec3 H = normalize(V + L); float nh = max(dot(N, H), 0.);
+        float spec = pow(nh, n)*(n + 2.)*.06*(.02 + .98*pow(1. - max(dot(V, H), 0.), 5.));
+        // chispas: cada celda (del tamaño de un par de pixeles) es una faceta; su densidad sigue un lóbulo ancho del sol
+        float lv = exp2(floor(log2(fw*2.2))), lb = pow(nh, mix(260., 70., smoothstep(.01, .3, fw)));
+        float spk = step(hsh(floor(p/lv) + floor(t*9.)*vec2(17., 31.)), lb*.6)*mix(1., .5, smoothstep(.05, .5, fw));
+        c += uGlowC*uGlow*(spec*5. + spk*12.);
+        // espuma: crestas que rompen + agua batida contra el casco
+        // encaje de espuma: dos redes de crestas de ruido que se cruzan y derivan
+        vec2 fp = p + g.xz*.6 + (vec2(vn(p*.6 + t*.05), vn(p*.6 + 7.3 - t*.04)) - .5)*2.4;
+        float r1 = 1. - abs(vn(fp*1.7 + vec2(t*.13, t*.31))*2. - 1.), r2 = 1. - abs(vn(fp*4.4 - vec2(t*.21, t*.17))*2. - 1.);
+        float lace = smoothstep(.7, .97, r1)*.75 + smoothstep(.66, .95, r2)*.55 + r1*r2*.25;
+        float det = jxx*jzz - jxz*jxz;
+        float wc = smoothstep(.8, .58, det)*smoothstep(.04, .3, vH)*smoothstep(.45, .85, lace + gust*.12);
+        float hz = smoothstep(-80., -73., p.y)*smoothstep(38., 32., p.y)*uFoam;
+        float hy = vH + 4.75, hw = sqrt(max(38.44 - hy*hy, 1.)), fe = max(abs(vW.x) - hw, 0.);
+        float wash = .6 + .4*sin(p.y*.9 - t*1.7 + vn(p*.3)*4.);
+        float hf = hz*(smoothstep(.5, 0., fe)*(.6 + .4*lace) + smoothstep(3.6, .15, fe)*clamp(lace*wash*1.15 + .3*smoothstep(1.4, 0., fe), 0., 1.));
+        c *= 1. - hz*smoothstep(1.6, 0., fe)*.3;
+        float foam = clamp(max(wc*.9, hf), 0., 1.)*(1. - smoothstep(.15, .6, fw));
+        vec3 fc = mix(vec3(dot(amb, vec3(.3, .5, .2))), amb, .45)*1.25 + uGlowC*uGlow*(max(dot(N, L), 0.)*.9 + .1);
+        c = mix(c, fc*.92, foam);
+        // bruma: se funde con el cielo en el horizonte, sin costura con la esfera del fondo
+        vec3 hc = sky(-V);
+        c = mix(c, mix(uFog, hc, .55), 1. - exp(-uFogD*uFogD*d*d));
+        c = mix(c, hc, smoothstep(46., 69., d));
         gl_FragColor = vec4(c, 1.);${CHUNK}}`,
   }));
-  sea.rotation.x = -Math.PI / 2; deckG.add(sea); O.seaU = seaU;
+  deckG.add(sea); O.seaU = seaU;
   // casco con losetas anecoicas, sal y óxido; metal de verdad gracias al entorno del cielo
   const HT = rep(hullTex(3, false), 8, 22), ST = rep(hullTex(7, true), 5, 1.2), DT = rep(hullTex(5, false), .8, 15);
   const rubber = (T, c = 0xffffff) => new THREE.MeshStandardMaterial({ map: T.map, bumpMap: T.bump, bumpScale: .55, roughnessMap: T.rough, roughness: 1, metalness: .05, color: c, envMapIntensity: .55 });
@@ -2873,52 +2940,73 @@ const dv = {};
   }));
   dv.surf.rotation.x = Math.PI / 2; dv.surf.renderOrder = -5; diveG.add(dv.surf);
 
-  // rayos de luz: planos aditivos con vetas animadas
+  // rayos de sol: cilindros concéntricos alineados con la luz refractada. Vistos desde dentro, sus vetas convergen
+  // hacia la superficie como haces de verdad, y las capas a distinta distancia dan volumen con el parallax
   dv.rayU = [];
   dv.rays = new THREE.Group(); diveG.add(dv.rays);
-  const rayGeo = new THREE.PlaneGeometry(1, 1);
-  for (let i = 0; i < 15; i++) {
-    const u = { uTime: oFog.uTime, uI: { value: 0 }, uSeed: { value: rnd(40) }, uF: { value: rnd(2.2, 4.6) } };
-    const m = new THREE.Mesh(rayGeo, new THREE.ShaderMaterial({
-      uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
-      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-      fragmentShader: `varying vec2 vUv; uniform float uTime,uI,uSeed,uF;
-        float h1(float x){ return fract(sin(x*127.1)*43758.5453); }
-        float sn(float x){ float i = floor(x), f = fract(x); f = f*f*(3. - 2.*f); return mix(h1(i), h1(i + 1.), f); }
+  const rayTilt = new THREE.Group(); dv.rays.add(rayTilt);
+  rayTilt.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-.24, .94, -.24).normalize());
+  for (const [R, F, sh, sd] of [[3.4, 22, .45, 3], [7.5, 38, .55, 11], [15, 60, .6, 23], [27, 84, .5, 37]]) {
+    const u = { uTime: oFog.uTime, uI: { value: 0 }, uSeed: { value: sd }, uF: { value: F }, uSh: { value: sh }, uTop: skyU.uTop, uSun: skyU.uSun };
+    const m = new THREE.Mesh(CYL(R, R, 90, 64, true), new THREE.ShaderMaterial({
+      uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.BackSide, fog: false,
+      vertexShader: `varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix*vec4(position, 1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
+      fragmentShader: `varying vec2 vUv; varying vec3 vW; uniform float uTime,uI,uSeed,uF,uSh; uniform vec3 uTop,uSun;
+        float h1(float x){ return fract(sin(x*127.1 + uSeed*31.7)*43758.5453); }
+        float sp(float x, float P){ float i = floor(x), f = fract(x); f = f*f*(3. - 2.*f); return mix(h1(mod(i, P)), h1(mod(i + 1., P)), f); }
         void main(){
-          float x = vUv.x*uF + uSeed;
-          float s = sn(x*1.3 + uTime*.045)*sn(x*3.1 - uTime*.07 + 7.);
-          s = pow(s, 2.2)*3.4 + pow(sn(x*7. + uTime*.11 + 3.), 6.)*.8;
-          float edge = smoothstep(0., .3, vUv.x)*smoothstep(1., .7, vUv.x);
-          float v = smoothstep(0., .55, vUv.y)*smoothstep(1., .6, vUv.y);
-          float sh = .78 + .22*sin(uTime*.8 + uSeed*3. + vUv.x*11.);
-          vec3 col = mix(vec3(.05, .5, .58), vec3(.62, 1., .9), clamp(vUv.y*s*.8, 0., 1.));
-          gl_FragColor = vec4(col*s*edge*v*sh*uI, 1.);
+          float x = vUv.x*uF, t = uTime;
+          float s = sp(x + t*.05, uF)*sp(x*2. - t*.075 + 3., uF*2.);
+          s = pow(s, 1.7)*2.8 + pow(sp(x*4. + t*.13, uF*4.), 6.)*.8;
+          float L = vUv.y*90.;
+          float br = .5 + .5*sin(L*.11 + x*2.3 - t*.5 + uSeed) * sin(L*.047 - x*1.3 + t*.3);
+          float ax = smoothstep(.32, .78, vUv.y)*smoothstep(1., .9, vUv.y);
+          vec3 V = normalize(vW - cameraPosition); float c = dot(V, uSun);
+          float ph = (.3 + .7*pow(max(c, 0.), 2.))*smoothstep(.985, .93, abs(c));
+          vec3 col = mix(uTop*1.3, vec3(.72, 1., .94), .5);
+          gl_FragColor = vec4(col*s*(.45 + .55*br)*ax*ph*uI*uSh, 1.);
         }`,
     }));
-    const a = (i / 15) * Math.PI * 2 + rnd(-.15, .15), r = i % 3 === 0 ? rnd(5, 9) : rnd(10, 26), w = rnd(7, 15);
-    m.position.set(Math.sin(a) * r - 2.5, 8, -Math.cos(a) * r - 2.5);
-    m.scale.set(w, 52, 1); m.rotation.order = 'YXZ'; m.rotation.y = -a; m.rotation.z = .24 + rnd(-.12, .12); m.rotation.x = rnd(-.08, .08);
-    m.renderOrder = 5; dv.rays.add(m); dv.rayU.push(u);
+    m.renderOrder = 5; m.frustumCulled = false; rayTilt.add(m); dv.rayU.push(u);
   }
 
-  // partículas: polvo luminoso arriba, nieve marina abajo
+  // partículas: polvo luminoso arriba, nieve marina abajo; lo cercano se desenfoca y lo que cruza el haz del foco brilla
   const N = 650, B = 9; dv.pn = N; dv.pb = B;
   const pp = new Float32Array(N * 3), ps = new Float32Array(N);
   for (let i = 0; i < N; i++) { pp[i * 3] = rnd(-B, B); pp[i * 3 + 1] = rnd(-B, B); pp[i * 3 + 2] = rnd(-B, B); ps[i] = rnd(); }
   dv.pg = new THREE.BufferGeometry(); dv.pg.setAttribute('position', new THREE.BufferAttribute(pp, 3)); dv.pg.setAttribute('seed', new THREE.BufferAttribute(ps, 1));
-  dv.pU = { uTime: oFog.uTime, uScale: { value: 400 }, uB: { value: 1 }, uSize: { value: 1 }, uNear: { value: .05 }, uCol: { value: new THREE.Color(1, 1, 1) } };
-  dv.pts = new THREE.Points(dv.pg, new THREE.ShaderMaterial({
-    uniforms: dv.pU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
-    vertexShader: `attribute float seed; uniform float uTime,uScale,uB,uSize,uNear; varying float vA;
+  dv.lampD = new THREE.Vector3(0, -.3, -1).normalize(); dv.rise = 0;
+  dv.pU = { uTime: oFog.uTime, uScale: { value: 400 }, uB: { value: 1 }, uSize: { value: 1 }, uNear: { value: .05 }, uCol: { value: new THREE.Color(1, 1, 1) }, uLamp: { value: 0 }, uLP: { value: oLamp.position }, uLD: { value: dv.lampD }, uRise: { value: 0 }, uBox: { value: B } };
+  const PV = `attribute float seed; uniform float uTime,uScale,uB,uSize,uNear,uLamp,uRise,uBox; uniform vec3 uLP,uLD; varying float vA, vS;
       void main(){ vec3 p = position; p.x += sin(uTime*.4 + seed*30.)*.25; p.z += cos(uTime*.3 + seed*17.)*.25;
-        vec4 mv = modelViewMatrix*vec4(p, 1.); gl_Position = projectionMatrix*mv; float z = -mv.z;
+        #ifdef FAR
+        p.y += uRise*(.7 + seed*.6); p = mod(p + uBox, 2.*uBox) - uBox;
+        #endif
+        vec4 w = modelMatrix*vec4(p, 1.), mv = viewMatrix*w; gl_Position = projectionMatrix*mv; float z = -mv.z;
         float tw = .55 + .45*sin(uTime*(1. + seed*3.) + seed*50.);
-        vA = uB*tw*exp(-z*uNear)*smoothstep(.2, 1., z);
-        gl_PointSize = (.014 + seed*.03)*uSize*uScale/max(z, .3); }`,
-    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ float a = smoothstep(.5, 0., length(gl_PointCoord - .5)); gl_FragColor = vec4(uCol*a*vA, 1.); }`,
-  }));
+        vec3 lv = w.xyz - uLP; float al = dot(lv, uLD), pr = length(lv - uLD*al);
+        float beam = step(0., al)*smoothstep(al*.6 + .15, al*.18, pr)*exp(-al*.09)*uLamp;
+        float near = smoothstep(.2, 1., z), bok = 1. - smoothstep(.5, 2.2, z);
+        #ifdef FAR
+        vA = (uB*tw*.8*exp(-z*uNear*.5) + beam*1.4)*near;
+        gl_PointSize = (.03 + seed*.045)*uSize*uScale/max(z, .3);
+        #else
+        vA = (uB*tw*exp(-z*uNear) + beam*2.2*exp(-z*.06))*near*(1. - bok*.55);
+        gl_PointSize = (.014 + seed*.03)*uSize*uScale/max(z, .3)*(1. + bok*1.6);
+        #endif
+        vS = bok; }`;
+  const PF = `uniform vec3 uCol; varying float vA, vS; void main(){ float r = length(gl_PointCoord - .5);
+      float a = mix(smoothstep(.5, 0., r), smoothstep(.5, .38, r)*.7 + smoothstep(.38, 0., r)*.35, vS); gl_FragColor = vec4(uCol*a*vA, 1.); }`;
+  dv.pts = new THREE.Points(dv.pg, new THREE.ShaderMaterial({ uniforms: dv.pU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, vertexShader: PV, fragmentShader: PF }));
   dv.pts.frustumCulled = false; dv.pts.renderOrder = 6; diveG.add(dv.pts);
+  { // capa lejana: más fina, se mueve en la GPU (sin bucle en la CPU)
+    const N2 = 1800, B2 = 22, p2 = new Float32Array(N2 * 3), s2 = new Float32Array(N2);
+    for (let i = 0; i < N2; i++) { p2[i * 3] = rnd(-B2, B2); p2[i * 3 + 1] = rnd(-B2, B2); p2[i * 3 + 2] = rnd(-B2, B2); s2[i] = rnd(); }
+    const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.BufferAttribute(p2, 3)); g2.setAttribute('seed', new THREE.BufferAttribute(s2, 1));
+    const u2 = Object.assign({}, dv.pU, { uBox: { value: B2 } });
+    dv.pts2 = new THREE.Points(g2, new THREE.ShaderMaterial({ uniforms: u2, defines: { FAR: 1 }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, vertexShader: PV, fragmentShader: PF }));
+    dv.pts2.frustumCulled = false; dv.pts2.renderOrder = 6; diveG.add(dv.pts2);
+  }
 
   // casco propio bajo la cúpula: las mismas losetas, con cáusticas arriba y oscuridad abajo
   dv.hullU = Object.assign({ uCaus: { value: 1 }, uSun: { value: 1 }, uAlpha: { value: 1 }, uTint: { value: new THREE.Color(0x1d7f92) }, uLamp: { value: 0 } }, oFog);
@@ -2960,13 +3048,87 @@ const dv = {};
   dv.glass = new THREE.Mesh(new THREE.SphereGeometry(1.69, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9fe9ee, transparent: true, opacity: .035, side: THREE.BackSide, depthWrite: false, fog: false }));
   dv.glass.position.y = -1.1; dv.dome.add(dv.glass);
 
-  // cardumen: rodea la cúpula por arriba de la vela y después huye hacia la superficie
-  const fg = new THREE.SphereGeometry(1, 10, 6); fg.scale(.2, .06, .03);
-  const ft = new THREE.ConeGeometry(.06, .11, 4); ft.rotateZ(-Math.PI / 2); ft.scale(1, 1, .2); ft.translate(.24, 0, 0);
-  dv.fishN = 150;
-  dv.fish = new THREE.InstancedMesh(mergeGeometries([fg, ft]), new THREE.MeshStandardMaterial({ color: 0xc4dde4, roughness: .32, metalness: .35, emissive: 0x0c2a33 }), dv.fishN);
+  // cardumen: arenques. Cuerpo fusiforme aplanado, cola ahorquillada y aletas; la onda del nado va en el vertex shader
+  // (fase por pez), con contrasombreado y flancos de espejo que reflejan el agua y destellan cuando el pez gira hacia la luz
+  const fishGeo = (() => {
+    const X0 = -.23, XT = .305, U = x => (x - X0) / (XT - X0);
+    const PRF = [[0, 0], [.05, .027], [.14, .046], [.28, .061], [.42, .064], [.56, .057], [.7, .043], [.84, .026], [.94, .016], [1, .013]];
+    const hh = u => { for (let i = 1; i < PRF.length; i++) if (u <= PRF[i][0]) { const a = PRF[i - 1], b = PRF[i]; return lerp(a[1], b[1], (u - a[0]) / (b[0] - a[0])); } return .013; };
+    const pos = [], au = [], ak = [], idx = [], NA = 8, us = [.045, .1, .18, .28, .4, .52, .64, .76, .88, 1];
+    pos.push(X0, -.003, 0); au.push(0); ak.push(0);
+    for (const u of us) { const x = X0 + u * .4, h = hh(u), w = h * .46;
+      for (let j = 0; j < NA; j++) { const a = j / NA * Math.PI * 2, s = Math.sin(a); pos.push(x, s * h * (s < 0 ? 1.08 : .94) - .003, Math.cos(a) * w); au.push(U(x)); ak.push(0); } }
+    const ring = i => 1 + i * NA;
+    for (let j = 0; j < NA; j++) idx.push(0, ring(0) + (j + 1) % NA, ring(0) + j);
+    for (let i = 0; i < us.length - 1; i++) for (let j = 0; j < NA; j++) { const a = ring(i) + j, b = ring(i) + (j + 1) % NA, c = ring(i + 1) + j, d = ring(i + 1) + (j + 1) % NA; idx.push(a, b, c, b, d, c); }
+    const body = new THREE.BufferGeometry(); body.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); body.setIndex(idx); body.computeVertexNormals();
+    if (body.attributes.normal.getY(ring(4) + 2) < 0) { idx.reverse(); body.setIndex(idx); body.computeVertexNormals(); }
+    body.setAttribute('aU', new THREE.Float32BufferAttribute(au, 1)); body.setAttribute('aK', new THREE.Float32BufferAttribute(ak, 1));
+    // aletas planas, con las dos caras
+    const fp = [], fn = [], fu = [], fk = [], v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+    const tri = (a, b, c) => { const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize();
+      for (const [p, q] of [[[a, b, c], n], [[a, c, b], n.clone().negate()]]) for (const v of p) { fp.push(v.x, v.y, v.z); fn.push(q.x, q.y, q.z); fu.push(U(v.x)); fk.push(1); } };
+    const A = v3(.165, .015, 0), A2 = v3(.165, -.015, 0), M = v3(.232, .052, 0), B = v3(.305, .09, 0), C = v3(.24, .006, 0), C2 = v3(.24, -.006, 0), M2 = v3(.232, -.052, 0), B2 = v3(.305, -.09, 0);
+    tri(A, M, C); tri(M, B, C); tri(A2, C2, M2); tri(M2, C2, B2); tri(A, C, C2); tri(A, C2, A2);
+    tri(v3(-.04, .056, 0), v3(.045, .046, 0), v3(-.012, .098, 0)); // dorsal
+    tri(v3(.06, -.044, 0), v3(.125, -.026, 0), v3(.11, -.07, 0)); // anal
+    for (const s of [1, -1]) tri(v3(-.13, -.026, s * .026), v3(-.07, -.022, s * .03), v3(-.075, -.042, s * .058)); // pectorales
+    const fins = new THREE.BufferGeometry(); fins.setAttribute('position', new THREE.Float32BufferAttribute(fp, 3)); fins.setAttribute('normal', new THREE.Float32BufferAttribute(fn, 3));
+    fins.setAttribute('aU', new THREE.Float32BufferAttribute(fu, 1)); fins.setAttribute('aK', new THREE.Float32BufferAttribute(fk, 1));
+    fins.setIndex([...Array(fp.length / 3).keys()]);
+    return mergeGeometries([body, fins]);
+  })();
+  dv.fishN = 300;
+  const fIn = new Float32Array(dv.fishN * 4);
+  dv.fishU = Object.assign({ uSwim: { value: 0 }, uAmp: { value: 1 }, uSunI: { value: 1 } }, oFog, skyU);
+  dv.fish = new THREE.InstancedMesh(fishGeo, new THREE.ShaderMaterial({
+    uniforms: dv.fishU, fog: false,
+    vertexShader: `attribute float aU, aK; attribute vec4 aIn; uniform float uSwim,uAmp,uTime;
+      varying vec3 vN, vW, vLp; varying float vK, vB, vF, vV;
+      void main(){ vec3 p = position, n = normal;
+        float ph = uSwim*aIn.y + aIn.x, A = uAmp*(.005 + .085*aU*aU), K = 5.2;
+        float s = sin(ph - aU*K), c = cos(ph - aU*K);
+        p.z += A*s; n.x -= n.z*(uAmp*.17*aU*s - A*K*c)/.535;
+        // destello: una ola de giro recorre el cardumen y cada pez inclina el flanco hacia la luz
+        vec3 ip = instanceMatrix[3].xyz;
+        float fl = pow(max(sin(dot(ip, vec3(.55, .35, .42)) - uTime*2.1 + aIn.w*1.3), 0.), 8.);
+        float rl = fl*.8*sign(aIn.w) + sin(ph*.5)*.05, cr = cos(rl), sr = sin(rl);
+        mat2 rot = mat2(cr, sr, -sr, cr); p.yz = rot*p.yz; n.yz = rot*n.yz;
+        vB = smoothstep(.05, .75, normal.y + position.y*6.); vLp = position; vK = aK; vF = fl; vV = aIn.z;
+        mat4 m = modelMatrix*instanceMatrix; vec4 w = m*vec4(p, 1.); vW = w.xyz; vN = normalize(mat3(m)*n);
+        gl_Position = projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `uniform vec3 uTop,uMid,uBot,uSun,uGlowC,uFog; uniform float uGlow,uPow,uFogD,uSunI;
+      varying vec3 vN, vW, vLp; varying float vK, vB, vF, vV;
+      vec3 env(vec3 d){ vec3 c = mix(uTop, uMid, pow(1. - clamp(d.y, 0., 1.), uPow)); c = mix(c, uBot, smoothstep(0., -.7, d.y));
+        float s = max(dot(d, uSun), 0.); return c + uGlowC*(pow(s, 6.)*.45 + pow(s, 60.)*1.4)*uGlow; }
+      void main(){ vec3 N = normalize(vN), toC = cameraPosition - vW; float d = length(toC); vec3 V = toC/d;
+        float nv = clamp(dot(N, V), 0., 1.); vec3 R = reflect(-V, N);
+        // lomo azul verdoso con barras onduladas; flancos de espejo; vientre blanco
+        float bars = smoothstep(.25, .85, sin(vLp.x*72. + sin(vLp.x*23.)*2.2 + vLp.y*80.))*smoothstep(.005, .04, vLp.y);
+        vec3 backC = vec3(.016, .055, .062)*(1. + vV*.35)*(1. - bars*.5);
+        vec3 silv = mix(vec3(.74, .82, .86), vec3(.88, .87, .8), vV*.5 + .5);
+        float F = .04 + .96*pow(1. - nv, 5.), metal = (1. - vB)*(1. - vK*.65);
+        vec3 diff = backC*(env(N)*1.3 + uGlowC*uSunI*max(dot(N, uSun), 0.)*.7);
+        vec3 iri = .55 + .45*cos(6.2832*(vec3(0., .33, .67) + nv*1.4 + vLp.x*3.));
+        vec3 refl = env(R)*mix(silv, silv*iri*1.3, .45*(1. - nv));
+        vec3 col = mix(diff, refl, metal*mix(.72, 1., F)) + env(R)*F*.3*vB;
+        col += uGlowC*uSunI*pow(max(dot(R, uSun), 0.), 24.)*metal*1.6;
+        // banda iridiscente sobre la línea lateral y brillo difuso del espejo (el agua de arriba rebota en las escamas)
+        float band = smoothstep(.0, .012, vLp.y)*smoothstep(.034, .016, vLp.y)*(1. - vK);
+        col += refl*iri*band*.35 + silv*uTop*metal*.18;
+        col = mix(col, vec3(.004, .01, .012), smoothstep(.012, .007, length(vLp.xy - vec2(-.178, .011)))*.9); // ojo
+        col = mix(col, env(N)*.45 + backC*1.5, vK*.45); // aletas translúcidas
+        col += silv*env(vec3(0., 1., 0.))*vF*.55*(1. - vK);
+        col = mix(col, uFog, 1. - exp(-uFogD*uFogD*d*d));
+        gl_FragColor = vec4(col, 1.);${CHUNK}}`,
+  }), dv.fishN);
   dv.fish.frustumCulled = false; dv.fish.visible = false; diveG.add(dv.fish);
-  dv.fo = []; for (let i = 0; i < dv.fishN; i++) dv.fo.push({ a: rnd(-1, 1), r: rnd(-1, 1), y: rnd(-1, 1), ph: rnd(6.28), s: rnd(.8, 1.25), fl: rnd(.6, 1.4), fx: rnd(-1, 1) });
+  const gs = () => clamp((rnd(-1, 1) + rnd(-1, 1) + rnd(-1, 1)) / 1.6, -1.25, 1.25);
+  dv.fo = []; for (let i = 0; i < dv.fishN; i++) {
+    const f = { a: rnd(-1, 1), r: gs(), y: gs(), ph: rnd(6.28), sp: rnd(.85, 1.2), s: rnd(.8, 1.2), fl: rnd(.6, 1.4), fx: rnd(-1, 1) };
+    dv.fo.push(f); fIn.set([f.ph, f.sp, rnd(-1, 1), rnd(-1, 1)], i * 4);
+  }
+  dv.fish.geometry.setAttribute('aIn', new THREE.InstancedBufferAttribute(fIn, 4));
 
   // (a) ballena jorobada que sube huyendo
   dv.whale = makeWhale(); diveG.add(dv.whale.g); dv.whale.g.visible = false;
@@ -3001,45 +3163,95 @@ const dv = {};
   const SF = makeSailor(); dv.fig = SF.g; dv.head = SF.head; dv.fig.position.set(.35, -4.32, -7.4); dv.fig.rotation.y = 2.7; diveG.add(dv.fig); dv.fig.visible = false;
   dv.hq = new THREE.Quaternion();
 }
+// piel de la ballena: percebes, surcos ventrales, cicatrices, aletas moteadas y la luz del agua que la envuelve
+// (kind: 0 cuerpo, 1 aletas pectorales, 2 cola, 3 piel lisa)
+function whaleSkin(m, kind) {
+  const PAT = [
+    `float u = vB.x, a = vB.y, sa = sin(a); vec2 q = vec2(u*13., a*1.45);
+      vec3 c = diffuseColor.rgb*(.84 + .26*wn(q*3.3));
+      float bel = smoothstep(.1, -.45, sa)*smoothstep(0., .08, u)*smoothstep(.9, .6, u);
+      c = mix(c, c*.3, bel*smoothstep(.42, .62, wn(q*.38 + 9.) + wn(q*1.6)*.25)*.9);
+      float gm = smoothstep(-.2, -.5, sa)*smoothstep(.015, .06, u)*smoothstep(.5, .38, u);
+      c *= 1. - gm*smoothstep(.3, .95, abs(sin(a*26. + sin(u*40.)*.2)))*.62;
+      float sc = 1. - abs(wn(vec2(q.x*.16, q.y*2.4) + 17.)*2. - 1.);
+      c = mix(c, vec3(.4, .42, .41), smoothstep(.982, .997, sc)*.7*smoothstep(.3, .6, wn(q*.7 + 4.)));
+      vec2 br = barn(q, clamp(smoothstep(.12, .02, u)*1.3 + smoothstep(.68, .88, wn(q*.9 + 2.)), 0., 1.));`,
+    `vec2 q = vOP.xz; vec3 c = diffuseColor.rgb*(.85 + .2*wn(q*4.));
+      c = mix(c, vec3(.05, .06, .065), smoothstep(.1, .5, vON.y)*smoothstep(.55, .75, wn(q*1.1 + 3.))*.6);
+      vec2 br = barn(q, smoothstep(3.2, 4.3, vOP.x)*.9 + smoothstep(.72, .9, wn(q*1.7))*.6);`,
+    `vec2 q = vOP.xz; vec3 c = diffuseColor.rgb*(.85 + .2*wn(q*4.));
+      c = mix(c, vec3(.62, .64, .62), smoothstep(.2, -.4, vON.y)*smoothstep(.42, .58, wn(q*1.4 + 5.))*smoothstep(1.9, 1.2, abs(vOP.z)));
+      vec2 br = vec2(0.);`,
+    `vec2 q = vOP.xy; vec3 c = diffuseColor.rgb*(.8 + .4*wn(q*9.)); vec2 br = vec2(0.);`,
+  ];
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uWTop = skyU.uTop;
+    const B = kind === 0;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>
+      varying vec3 vOP, vON;${B ? ' attribute vec2 aB; varying vec2 vB;' : ''}`).replace('#include <begin_vertex>', `#include <begin_vertex>
+      vOP = position; vON = normal;${B ? ' vB = aB;' : ''}`);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      uniform vec3 uWTop; varying vec3 vOP, vON;${B ? ' varying vec2 vB;' : ''}
+      float wh(vec2 p){ vec3 q = fract(vec3(p.xyx)*.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y)*q.z); }
+      float wn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3. - 2.*f); return mix(mix(wh(i), wh(i + vec2(1., 0.)), f.x), mix(wh(i + vec2(0., 1.)), wh(i + 1.), f.x), f.y); }
+      vec2 barn(vec2 q, float m){ float pm = m*smoothstep(.35, .6, wn(q*2.6 + 5.)); // costras de percebes, en grupos
+        return pm*vec2(smoothstep(.42, .72, wn(q*11.)), step(.82, wn(q*24. + 3.))*.7); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      ${PAT[kind]}
+      c = mix(c, vec3(.3, .31, .29)*(.75 + .5*wn(q*23.)), br.x); c = mix(c, vec3(.02), br.y); diffuseColor.rgb = c;`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n      roughnessFactor = mix(roughnessFactor, .95, br.x);')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      { float rim = pow(1. - abs(dot(normal, normalize(vViewPosition))), 2.5); vec3 wN = inverseTransformDirection(normal, viewMatrix);
+        totalEmissiveRadiance += uWTop*(diffuseColor.rgb*.35*(.5 + .5*wN.y) + rim*.25); }`);
+  };
+  m.customProgramCacheKey = () => 'whale' + kind;
+  return m;
+}
 // ballena jorobada procedural: cuerpo con ondulación vertical, aletas pectorales largas y blancas, cola con escotadura
 function makeWhale() {
-  const L = 13, R = 1.5, NU = 46, NA = 24;
+  const L = 13, R = 1.5, NU = 56, NA = 32;
   const prof = [[0, 0], [.015, .28], [.05, .5], [.13, .74], [.28, .96], [.4, 1], [.55, .87], [.7, .6], [.8, .38], [.88, .2], [.95, .12], [1, .09]];
   const rad = u => { for (let i = 1; i < prof.length; i++) if (u <= prof[i][0]) { const a = prof[i - 1], b = prof[i]; return lerp(a[1], b[1], smooth((u - a[0]) / (b[0] - a[0]))); } return .09; };
-  const pos = [], col = [], us = [], idx = [], c = new THREE.Color();
+  const pos = [], col = [], us = [], ab = [], idx = [], c = new THREE.Color();
   for (let i = 0; i <= NU; i++) {
     const u = Math.pow(i / NU, 1.15), r = rad(u) * R, x = L * (.42 - u);
+    const keel = smooth(clamp((u - .62) / .3, 0, 1)); // pedúnculo de la cola: alto y aplastado de lado
     for (let j = 0; j <= NA; j++) {
       const a = j / NA * Math.PI * 2, sy = Math.sin(a), cz = Math.cos(a);
-      let y = sy * r * .9; if (sy < 0) y *= .82; if (sy > 0 && u < .22) y *= .78;
-      pos.push(x, y + (u < .2 ? -(.2 - u) * .9 : 0), cz * r); us.push(u);
-      // lomo oscuro, vientre claro con surcos ventrales y manchas
+      let y = sy * r * .9; if (sy < 0) y *= .82 * (u > .04 && u < .46 ? 1.07 : 1); if (sy > 0 && u < .22) y *= .78;
+      y *= 1 + keel * .25;
+      pos.push(x, y + (u < .2 ? -(.2 - u) * .9 : 0), cz * r * (1 - keel * .5)); us.push(u); ab.push(u, a);
+      // lomo negro, vientre claro (los surcos, percebes y cicatrices van en el shader)
       const belly = smooth(clamp(-sy * 1.6 + .2, 0, 1));
-      const groove = (u > .04 && u < .46 && sy < -.25) ? (Math.sin(a * 46) > .55 ? .55 : 1) : 1;
       const mott = .85 + .15 * Math.sin(u * 61 + a * 7) * Math.sin(u * 23 - a * 11);
       const bl = belly * (.55 + .45 * smooth(clamp((u - .05) / .3, 0, 1)) * smooth(clamp((.85 - u) / .3, 0, 1)));
-      c.setRGB(lerp(.07, .5, bl) * groove * mott, lerp(.085, .53, bl) * groove * mott, lerp(.1, .52, bl) * groove * mott);
+      c.setRGB(lerp(.045, .36, bl) * mott, lerp(.052, .38, bl) * mott, lerp(.06, .375, bl) * mott);
       col.push(c.r, c.g, c.b);
     }
   }
   for (let i = 0; i < NU; i++) for (let j = 0; j < NA; j++) { const a = i * (NA + 1) + j, b = a + NA + 1; idx.push(a, a + 1, b, b, a + 1, b + 1); }
   const geo = new THREE.BufferGeometry(); geo.setIndex(idx);
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  geo.computeVertexNormals();
+  geo.setAttribute('aB', new THREE.Float32BufferAttribute(ab, 2));
+  const NRM = () => { geo.computeVertexNormals(); const n = geo.attributes.normal; // sin costura donde se cierra el anillo
+    for (let i = 0; i <= NU; i++) { const a = i * (NA + 1), b = a + NA; _v.fromBufferAttribute(n, a).add(_v2.fromBufferAttribute(n, b)).normalize(); n.setXYZ(a, _v.x, _v.y, _v.z); n.setXYZ(b, _v.x, _v.y, _v.z); } };
+  NRM();
   const base = Float32Array.from(pos);
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: 0 });
+  const mat = whaleSkin(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5, metalness: 0 }), 0);
   const outer = new THREE.Group(), g = new THREE.Group(); outer.add(g); g.rotation.y = -Math.PI / 2;
   g.add(new THREE.Mesh(geo, mat));
-  const white = new THREE.MeshStandardMaterial({ color: 0xc9cfcb, roughness: .6 });
+  const white = whaleSkin(new THREE.MeshStandardMaterial({ color: 0xc4cac6, roughness: .6 }), 1), dark = whaleSkin(new THREE.MeshStandardMaterial({ color: 0x0e1113, roughness: .5 }), 3);
   // tubérculos en la cabeza
-  for (let i = 0; i < 16; i++) { const u = rnd(.02, .2), b = new THREE.Mesh(new THREE.SphereGeometry(rnd(.05, .09), 6, 4), mat); b.position.set(L * (.42 - u), rad(u) * R * .7 - (.2 - u) * .9, rnd(-.35, .35)); g.add(b); }
-  // aletas pectorales: largas, con borde festoneado
+  for (let i = 0; i < 16; i++) { const u = rnd(.02, .2), b = new THREE.Mesh(new THREE.SphereGeometry(rnd(.05, .09), 6, 4), dark); b.position.set(L * (.42 - u), rad(u) * R * .7 - (.2 - u) * .9, rnd(-.35, .35)); g.add(b); }
+  // aletas pectorales: un tercio del cuerpo, blancas, curvadas hacia atrás y con tubérculos en el borde de ataque
   const fins = [];
   for (const s of [1, -1]) {
-    const sh = new THREE.Shape(), Lf = 4.4, n = 16;
-    sh.moveTo(0, .45);
-    for (let i = 1; i <= n; i++) { const t = i / n; sh.lineTo(t * Lf, .45 * Math.pow(1 - t, .5) + .06 + (i % 2 ? .05 : 0) * (1 - t)); }
-    for (let i = n; i >= 0; i--) { const t = i / n; sh.lineTo(t * Lf, -.35 * Math.pow(1 - t, .7) - .02); }
+    const sh = new THREE.Shape(), Lf = 4.4, n = 30;
+    const le = t => .5 * Math.pow(1 - t, .55) * (.4 + .6 * smooth(clamp(t / .12, 0, 1))) + .05 + .05 * Math.pow(Math.abs(Math.sin(t * Math.PI * 8)), .5) * (1 - t * .8) - .3 * t * t;
+    const te = t => -.42 * Math.pow(1 - t, .8) * (.5 + .5 * smooth(clamp(t / .25, 0, 1))) - .3 * t * t;
+    sh.moveTo(0, le(0));
+    for (let i = 1; i <= n; i++) { const t = i / n; sh.lineTo(t * Lf, le(t)); }
+    for (let i = n; i >= 0; i--) { const t = i / n; sh.lineTo(t * Lf, te(t)); }
     const fgeo = new THREE.ExtrudeGeometry(sh, { depth: .07, bevelEnabled: true, bevelSize: .03, bevelThickness: .03, bevelSegments: 1, curveSegments: 2 });
     fgeo.translate(0, 0, -.035); fgeo.rotateX(Math.PI / 2);
     const pv = new THREE.Group(); pv.position.set(L * (.42 - .3), -R * .55, s * R * .8); g.add(pv);
@@ -3049,7 +3261,7 @@ function makeWhale() {
   // aleta dorsal
   const ds = new THREE.Shape(); ds.moveTo(-.5, 0); ds.quadraticCurveTo(-.05, .1, .15, .42); ds.lineTo(.4, 0);
   const dg = new THREE.ExtrudeGeometry(ds, { depth: .08, bevelEnabled: false }); dg.translate(0, 0, -.04);
-  const dorsal = new THREE.Mesh(dg, mat); g.add(dorsal);
+  const dorsal = new THREE.Mesh(dg, dark); g.add(dorsal);
   // cola
   const fs = new THREE.Shape(), fl = [], span = 2.3;
   fl.push([0, 0], [-.45, .5], [-.9, 1.3], [-1.05, span], [-.8, span], [-.62, 1.6], [-.5, 1.1], [-.62, .7], [-.5, .4], [-.62, .15], [-.55, 0]);
@@ -3058,14 +3270,14 @@ function makeWhale() {
   fs.lineTo(0, 0);
   const flg = new THREE.ExtrudeGeometry(fs, { depth: .06, bevelEnabled: true, bevelSize: .02, bevelThickness: .02, bevelSegments: 1 }); flg.translate(0, 0, -.03); flg.rotateX(Math.PI / 2);
   const fluke = new THREE.Group(); g.add(fluke);
-  const fm = new THREE.Mesh(flg, new THREE.MeshStandardMaterial({ color: 0x1c2226, roughness: .5 })); fm.position.x = .25; fluke.add(fm);
+  const fm = new THREE.Mesh(flg, whaleSkin(new THREE.MeshStandardMaterial({ color: 0x15191c, roughness: .5 }), 2)); fm.position.x = .25; fluke.add(fm);
   const P = geo.attributes.position;
   const disp = (u, t) => .5 * Math.pow(smooth(clamp((u - .3) / .7, 0, 1)), 1.4) * Math.sin(t * 2.6 - u * 3.4);
   return {
     g: outer,
     update(t) {
       for (let k = 0; k < P.count; k++) P.setY(k, base[k * 3 + 1] + disp(us[k], t));
-      P.needsUpdate = true; geo.computeVertexNormals();
+      P.needsUpdate = true; NRM();
       const xe = L * (.42 - 1), ye = disp(1, t), sl = (disp(1, t) - disp(.97, t)) / (L * .03);
       fluke.position.set(xe, ye, 0); fluke.rotation.z = Math.atan(sl) * 1.6;
       dorsal.position.set(L * (.42 - .68), rad(.68) * R * .86 + disp(.68, t), 0);
@@ -3194,23 +3406,27 @@ function updateDive(dt) {
   const vy = lerp(.9, 2.4, deep) + bub * 5, pa = dv.pg.attributes.position, pp = pa.array, B = dv.pb;
   for (let k = 1; k < dv.pn * 3; k += 3) { pp[k] += dt * vy * (.7 + (k % 7) * .09); if (pp[k] > B) pp[k] -= 2 * B; }
   pa.needsUpdate = true;
+  dv.rise = (dv.rise + dt * vy) % 4400; dv.pU.uRise.value = dv.rise; dv.pU.uLamp.value = oLamp.intensity / 120;
+  dv.lampD.subVectors(oLamp.target.position, oLamp.position).normalize();
   // cardumen: llega por la derecha, gira alrededor de la cúpula y a los 18 s huye hacia arriba
   dv.fish.visible = t > 7.5 && t < 25.5;
   if (dv.fish.visible) {
+    const fU = dv.fishU; fU.uSwim.value += dt * (t > 18 ? 20 : 8.5); fU.uAmp.value = lerp(fU.uAmp.value, t > 18 ? 1.35 : 1, 1 - Math.exp(-dt * 3)); fU.uSunI.value = sun;
     const fpos = (f, tt, out) => {
       const arr = smooth(clamp((tt - 7.5) / 3, 0, 1)), fu = clamp((tt - 18) / 5.5, 0, 1), fe = Math.pow(fu, 1.7);
       const th = 1.9 - (tt - 7.5) * .3 + f.a * .85 + fu * f.fx * .6;
-      const R = 5.7 + f.r * 1.1 + (1 - arr) * 16 + fe * 6 * f.fl;
-      let y = .7 + f.y * .85 + Math.sin(tt * .8 + f.ph) * .2 + fe * 30 * f.fl - (1 - arr) * 3;
+      // olas compartidas: la superficie del cardumen respira y ondula como un solo cuerpo
+      const R = 5.7 + f.r * 1.1 + (1 - arr) * 16 + fe * 6 * f.fl + Math.sin(th * 3 + tt * 1.2) * .4 * (1 - fe);
+      let y = .7 + f.y * .85 + Math.sin(tt * .8 + f.ph) * .12 + Math.sin(th * 2.2 - tt * 1.4) * .32 + fe * 30 * f.fl - (1 - arr) * 3;
       y = Math.max(y, -.6); // nunca por debajo de la vela ni del casco
       return out.set(Math.sin(th) * R, y, -Math.cos(th) * R);
     };
     for (let k = 0; k < dv.fishN; k++) {
-      const f = dv.fo[k], w = Math.sin(O.clock * (t > 18 ? 22 : 9) * f.s + f.ph);
+      const f = dv.fo[k], w = Math.sin(dv.fishU.uSwim.value * f.sp + f.ph);
       fpos(f, t, _v); fpos(f, t + .05, _v2); _v2.sub(_v);
       const hz = Math.hypot(_v2.x, _v2.z);
       _d.position.copy(_v);
-      _d.rotation.set(0, Math.atan2(_v2.z, -_v2.x) + w * .25, -Math.atan2(_v2.y, hz)); _d.scale.setScalar(f.s); _d.updateMatrix(); dv.fish.setMatrixAt(k, _d.matrix);
+      _d.rotation.set(0, Math.atan2(_v2.z, -_v2.x) + w * .05, -Math.atan2(_v2.y, hz)); _d.scale.setScalar(f.s); _d.updateMatrix(); dv.fish.setMatrixAt(k, _d.matrix);
     }
     dv.fish.instanceMatrix.needsUpdate = true;
   }
