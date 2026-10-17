@@ -691,6 +691,9 @@ function updateSelf() {
   SELF.g.visible = state === 'play' || state === 'wake' || state === 'note';
   SELF.g.position.set(P.x, P.y - 1.72, P.z); SELF.g.rotation.y = P.yaw + Math.PI;
   SELF.head.rotation.x = clamp(-P.pitch, -.5, .5) * .8;
+  // en el espejo, tu reflejo se da vuelta antes que tú
+  const mt = G.mirror === 1 ? MG.t : -1;
+  SELF.head.rotation.y = mt > 1.4 && mt < 3 ? .75 * smooth(clamp((mt - 1.4) / .5, 0, 1)) : 0;
   SELF.arms[1].rotation.x = flashOn() ? -1.25 : 0; SELF.arms[1].rotation.y = flashOn() ? .25 : 0;
 }
 // el otro, detrás de ti respecto de un vidrio: sobre la línea vidrio→cámara, un poco atrás y al costado
@@ -881,7 +884,7 @@ function buildProps() {
 
   // compuertas cerradas: avisos
   act({ id: 'd1', x: 0, y: 1.1, z: DOORS_Z[1] + .25, label: 'Compuerta sellada', once: false, en: () => !G.energy && doors[1].cur < .1, onDone: () => say('Sin energía la compuerta no abre.') });
-  act({ id: 'd2', x: 0, y: 1.1, z: DOORS_Z[2] + .25, label: 'Compuerta sellada', once: false, en: () => G.h03 < 2 && doors[2].cur < .1, onDone: () => say(G.oxygen ? 'Sigue sellada. La presión no termina de igualarse.' : 'Presión inestable al otro lado. Primero el oxígeno.') });
+  act({ id: 'd2', x: 0, y: 1.1, z: DOORS_Z[2] + .25, label: 'Compuerta sellada', once: false, en: () => !G.c7done && doors[2].cur < .1, onDone: () => say(G.h03 === 2 ? 'No iguala. Hay una fuga… y viene del siete.' : G.oxygen ? 'Sigue sellada. La presión no termina de igualarse.' : 'Presión inestable al otro lado. Primero el oxígeno.') });
   act({ id: 'd3', x: 0, y: 1.1, z: DOORS_Z[3] + .25, label: 'Compuerta de la cápsula', once: false, en: () => !G.ballast && doors[3].cur < .1, onDone: () => say('La cápsula de proa solo se suelta purgando el lastre.') });
 }
 /* ============================================================
@@ -1594,7 +1597,7 @@ const AU = {
   },
   // intercomunicador: estática y una voz que no se entiende del todo (el subtítulo sí)
   radio(d = 2.5, o = {}) {
-    if (!this.ctx) return; const C = this.ctx, t = C.currentTime, f0 = o.low ? 78 : 112;
+    if (!this.ctx) return; const C = this.ctx, t = C.currentTime, f0 = o.child ? 245 : o.low ? 78 : 112, fk = o.child ? 1.22 : o.low ? .85 : 1;
     const FM = { a: [730, 1090, 2440], e: [530, 1840, 2480], i: [290, 2250, 3000], o: [570, 840, 2410], u: [320, 870, 2240] }, V = 'aeiou';
     const bus = this.gain(1), hp = this.filt('highpass', 380), lp = this.filt('lowpass', 2900), ws = C.createWaveShaper(); ws.curve = this.soft;
     bus.connect(ws); ws.connect(hp); hp.connect(lp); const outG = this.gain(o.v || .5); lp.connect(outG); this.out(outG, .12);
@@ -1611,7 +1614,7 @@ const AU = {
       g.connect(bus); g.gain.setValueAtTime(0, t);
       for (const [s0, l, v, p] of syl) {
         const s1 = s0 + off; if (s1 < t) continue; const F = FM[v];
-        fs.forEach((b, i) => b.frequency.setTargetAtTime(F[i] * (o.low ? .85 : 1), s1, .02));
+        fs.forEach((b, i) => b.frequency.setTargetAtTime(F[i] * fk, s1, .02));
         src.frequency.setTargetAtTime(f0 * p, s1, .03);
         g.gain.setTargetAtTime(k, s1, .015); g.gain.setTargetAtTime(0, s1 + l * .8, .025);
       }
@@ -1673,7 +1676,7 @@ let state = 'menu', T = 0;
 const G0 = () => ({
   woke: false, energy: false, prime: false, fails: 0, oxygen: false, oxyT: 0, ballast: false, o2: 100, bat: 100, light: true, picked: [],
   seenEye: false, enteredD: false, contact: -1, lightMode: 'emer', flick: 0, kill: 0, shake: 0, fear: 0, chase: false,
-  lampSaid: false, c7seen: false, c7open: false, c7in: false, h03: 0, sonar: false, reveal: false, kingRoute: false, king: false,
+  lampSaid: false, c7seen: false, c7open: false, c7in: false, c7done: false, c7t: 0, h03: 0, sonar: false, reveal: false, kingRoute: false, king: false,
   tclock: 0, clockStop: false, lock: false, held: false, noise: 0, lumpGone: false, said: {}, mirror: 0, hand: 0, port: 0, mimic: 0,
 });
 let G = G0();
@@ -1686,13 +1689,13 @@ const WHO = () => G.reveal ? 'INTERCOM · ——' : 'INTERCOM · BÉLOV';
 
 const BLURBS = {
   deck: ['Barents en octubre. Cuatro grados y bajando.', 'Agarrotada. Y la engrasé el martes.', 'Nueve años en el Zarya. Última patrulla. Se lo prometí a Lena.'],
-  dive: ['«Mira y anota todo», dijo Bélov. Nada más.', 'Se van. Todos hacia arriba.', 'El eco volvió antes que el ping.', 'Hasta las ballenas huyen.', 'Ese casco tiene nuestro número.', 'Hay alguien en la cubierta.', 'Sin traje.'],
-  wake: ['Estoy en el suelo. Empapado.', 'Agua de mar. No recuerdo haber bajado de la cúpula.'],
+  dive: ['Hrytsenko. Cuatrocientos metros. Mira y anota todo.', 'Se van. Todos hacia arriba.', 'El eco volvió antes que el ping.', 'Hasta las ballenas huyen.', 'Ese casco tiene nuestro número.', 'Hay alguien en la cubierta.', 'Sin traje.'],
+  wake: ['Estoy en el suelo. Empapado.', 'Agua de mar. No recuerdo haber bajado de la cúpula.', 'Ocho minutos para mi guardia. La de las tres.'],
   empty: 'Nadie en su puesto. Nadie.',
   dome: 'La escotilla de la cúpula. Sellada. Arriba solo hay agua.',
   mirror: 'Nueve años afeitándome en este espejo.',
   mirrorAfter: 'Cansancio. Es el cansancio.',
-  photo: 'Lena. Tenía tres meses cuando me embarqué. En diciembre cumple nueve.',
+  photo: 'Lena. En diciembre cumple nueve. Me perdí ocho cumpleaños. Este no.',
   lamp: 'Esa lámpara la cambié yo en marzo. No debería parpadear.',
   c7pass: 'Nueve años aquí y jamás vi abierta esta puerta.',
   c7weld: 'Compartimento 7. No figura en ningún plano que yo haya visto.',
@@ -1704,16 +1707,18 @@ const BLURBS = {
   port: 'A esta profundidad el vidrio es un espejo.',
   eye: 'Eso no es una ballena.',
   valveJam: 'Agarrotada… vamos…',
-  o2ok: 'Regeneración en marcha. Esa válvula la engrasé yo.',
+  o2ok: 'Regeneración en marcha. El aire vuelve a oler a metal.',
   misha: 'Bélov nunca me dice Misha.',
   h03: ['Las tres.', 'La guardia de las tres.'],
   h03after: 'Salió del siete. Volvió al siete.',
   c7in: ['Alguien llevó la cuenta en la pared. La última marca es de hoy.', 'Tres literas hechas: Vólkov, Orlov, Sedykh. La cuarta tiene mi apellido.'],
   myBunk: 'La manta está empapada. Agua de mar. Como yo esta noche.',
   lock: 'Una esclusa de buzos. Para salir al mar. O para entrar.',
-  king0: 'El kingston del siete. Inunda el compartimento… con lo que haya adentro.',
+  king0: 'El kingston del siete. Si alguien lo abre, el Zarya no vuelve a subir.',
   sonarFirst: 'Antes de purgar quiero oír qué hay afuera. El sonar.',
   sonarAfter: 'Estaba detrás de mí. En el vidrio.',
+  heard: 'Eso nunca lo dije en voz alta.',
+  c7eq: 'El siete estaba abierto al mar. Por eso no igualaba.',
   reveal: ['Me dieron por muerto.', 'Entonces… ¿quién me habla?'],
   back: 'Si lo abro, el siete se inunda conmigo adentro.',
 };
@@ -1724,7 +1729,7 @@ const RADIO = {
   h03: 'Misha. El lastre. Te estamos esperando.',
   reveal: 'Purga el lastre, Misha.',
   wrongWay: 'Misha… ese no es el camino.',
-  lena: 'Lena te espera, Misha.',
+  lena: 'Papá… ¿llegas a mi cumpleaños?',
   kingNo: 'No. No, Misha.',
   thanks: 'Gracias, Misha.',
 };
@@ -1734,7 +1739,7 @@ const NOTES = {
   med: { t: 'OFICIAL MÉDICO · INFORME NO ENVIADO', b: 'Vólkov, 1978. Orlov, 1983. Sedykh, marzo de este año.\n\nTres hombres en once años. Los tres en la guardia de las 03:00. A los tres los hallaron en este pasillo, camino a la puerta del compartimento 7. Los tres con agua de mar en los pulmones. Dentro del casco.\n\nEl 7 no figura en los planos. Lo soldaron en 1983. Pregunté quién dio la orden. Me dijeron que no volviera a preguntar.' },
   sedykh: { t: 'SEDYKH · DIARIO · MARZO 1989', b: 'Me llama desde el siete con la voz de mamá. Sabe cosas que solo sabía ella.\n\nGolpeo tres veces y contesta tres veces. Antes que yo.\n\nEsta noche tengo la guardia de las tres. Voy a abrir.' },
   sonar: { t: 'REGISTRO DE SONAR · HOY · 02:12', b: 'Contacto a 40 metros. Imita nuestro ping: lo devuelve un segundo antes que el eco.\n\nSegundo contacto. Demora cero. No está afuera: la marcación cae dentro del casco. Compartimento 7.\n\nNo le gusta la luz. La luz lo frena.' },
-  belov: { long: true, t: 'PEGADA A LA PALANCA · 02:38', b: 'NO PURGAR.\n\nMisha: la cúpula se inundó a las 02:31. Te vimos ahí, con el agua al cuello, mirando hacia abajo. No quisiste bajar.\n\nNos vamos en la cápsula de popa. Perdóname.\n\nLa purga suelta la cápsula de proa, pero también abre el siete. Así lo diseñó la Flota.\nEn el 83 debí abrir el kingston del siete. Solo se abre desde adentro.\n\nSi oyes mi voz por el intercomunicador, no soy yo.\n— Bélov' },
+  belov: { long: true, t: 'PEGADA A LA PALANCA · 02:38', b: 'NO PURGAR.\n\nMisha: la cúpula se inundó a las 02:31. Te vimos con el agua al cuello, mirando hacia abajo. No quisiste bajar. Perdóname.\n\nNos vamos en la cápsula de popa.\n\nLa purga suelta la de proa, pero también abre el siete. Así lo diseñó la Flota. Lo que hay ahí no puede subir solo.\nSi sube contigo, sube con tu cara.\n\nEl kingston del siete lo deja aquí abajo. Solo se abre desde adentro. En el 83 no tuve valor.\n\nSi oyes mi voz por el intercomunicador, no soy yo.\n— Bélov' },
 };
 
 /* ============================================================
@@ -2058,7 +2063,7 @@ function updateWake(dt) {
 function finishWake() {
   state = 'play'; G.woke = true; P.y = 1.62; hudShow(true); $('act').classList.add('off');
   obj('Arranca el auxiliar · sala de máquinas');
-  line(BLURBS.wake[1], 3.6); radio(RADIO.wake, 6.6);
+  line(BLURBS.wake[1], 3.6); radio(RADIO.wake, 6.6); line(BLURBS.wake[2], 3.4);
   later(1.2, () => hint(matchMedia('(pointer:coarse)').matches ? 'Izquierda: moverte (al borde corres) · Derecha: mirar' : 'WASD: moverte · Shift: correr · F: linterna', 5));
   checkpoint();
 }
@@ -2203,18 +2208,21 @@ function update03(dt) {
 function end03() {
   G.h03 = 2; G.force = null; G.held = false; G.noise = 0; AU.muffle(); MON.visible = false;
   G.lightMode = 'power'; G.flick = .6; AU.red(0); AU.hum(true); AU.vent(true); AU.power(true); G.kill = 0;
-  setDoor(1, true); setDoor(2, true);
-  say(BLURBS.h03after, 3.4); later(3.8, () => radio(RADIO.h03, 3.6)); later(9, () => line('Y el siete quedó abierto.', 3));
-  obj('Ve a la sala de sonar'); checkpoint();
+  setDoor(1, true);
+  say(BLURBS.h03after, 3.4); later(3.8, () => radio(RADIO.h03, 3.6)); later(9, () => { if (!G.c7in) line('Y el siete quedó abierto.', 3); });
+  obj('La compuerta del sonar no iguala · revisa el 7'); checkpoint();
 }
 
 /* --- compartimento 7 --- */
 function c7Shut() {
-  if (P.x > -2.4) { AU.knock(C7POS, 3, .8); return; }
-  c7.shut = 7;
+  if (G.c7done || P.x > -2.4) { AU.knock(C7POS, 3, .8); return; }
+  G.c7done = true; c7.shut = 7; G.c7t = 0;
   later(1.7, () => { G.kill = 2.2; EYES.c7.visible = true; AU.revPing(new THREE.Vector3(-4.7, 1.6, C7Z + 1), .25); });
   later(2.6, () => { AU.whisper(camBack(.35), .6); vib([30, 60, 30]); G.fear = 1; });
   later(3.9, () => { EYES.c7.visible = false; AU.knock(C7POS, 3, .8); });
+  // con el siete cerrado, la presión iguala y la compuerta del sonar cede
+  later(5.6, () => { setDoor(2, true); AU.hiss(new THREE.Vector3(0, 1.2, DOORS_Z[2])); G.shake = .25; });
+  later(6.6, () => { line(BLURBS.c7eq, 3.6); obj('Ve a la sala de sonar'); checkpoint(); });
 }
 
 /* --- sonar: los auriculares --- */
@@ -2226,7 +2234,7 @@ function sonarScene() {
   later(5.8, () => AU.pingEarly(.34));
   later(7, () => AU.breath(.13));
   later(8.3, () => { AU.whisper(camera.position.clone().add(new THREE.Vector3(.2, 0, 0)), .75); vib(30); });
-  later(9.4, () => radio('Ya casi, Misha.', 2.6, { low: true, early: true, bad: true, who: 'AURICULARES' }));
+  later(9, () => radio('«Última patrulla. Se lo prometí a Lena.»', 3, { low: true, early: true, bad: true, who: 'AURICULARES' }));
   later(12.2, () => {
     AU.muffle(20000, .02); AU.bang(null, .8); AU.sting(.5); G.shake = .6; vib([100, 50, 200]);
     props.crt.u.uOvK.value = 0; props.crt.u.uK.value = 1.5; ghostGlow(.6); ghostBehind(props.crt, .55, .4); G.flick = .25; G.fear = 1;
@@ -2234,7 +2242,7 @@ function sonarScene() {
   later(14, () => { G.flick = .7; later(.2, () => { GH.g.visible = false; }); });
   later(14.9, () => {
     props.crt.u.uOvK.value = 1; props.crt.u.uK.value = .07; G.lock = false; SC.on = false; G.sonar = true; AU.vent(true);
-    say(BLURBS.sonarAfter, 3.4); obj('Purga el lastre · palanca de estribor'); checkpoint();
+    say(BLURBS.sonarAfter, 3.4); line(BLURBS.heard, 3.4); obj('Purga el lastre · palanca de estribor'); checkpoint();
   });
 }
 function updateSonarScene(dt) {
@@ -2280,7 +2288,7 @@ function updateKing(dt) {
     const holding = held.act && cand === a;
     KG.rel = holding || lit ? Math.max(0, KG.rel - dt * 2) : KG.rel + dt;
     if (KG.rel > 1.7) caught('king');
-    if (p > .55 && !KG.w) { KG.w = 1; radio(RADIO.lena, 2.6, { low: true, early: true, bad: true }); }
+    if (p > .55 && !KG.w) { KG.w = 1; radio(RADIO.lena, 3, { child: true, early: true, bad: true }); }
     if (p > .86 && KG.w === 1) { KG.w = 2; AU.whisper(camBack(.3), .8); vib([40, 40, 120]); G.fear = 1; }
   }
 }
@@ -2413,11 +2421,11 @@ function showEnd(k) {
   const E = $('end'); E.classList.toggle('b', k === 'b');
   if (k === 'a') {
     $('ek').textContent = 'MAR DE BARENTS · SUPERFICIE · 05:47'; $('eh').textContent = 'SUBISTE';
-    $('ep').innerHTML = 'La cápsula rompió la superficie al amanecer.<br>Subí solo. El registro anotó dos tripulantes.';
+    $('ep').innerHTML = 'La cápsula rompió la superficie al amanecer.<br>Subí solo. El registro anotó dos tripulantes.<br>En diciembre llegué a tiempo al cumpleaños de Lena.';
     $('eo').textContent = 'FINAL 1 DE 2 · HAY OTRA SALIDA';
   } else {
     $('ek').textContent = 'K-417 «ZARYA» · 412 m · 03:21'; $('eh').textContent = 'TE QUEDASTE';
-    $('ep').innerHTML = 'El Zarya descansa a 412 metros, con el compartimento 7 inundado. Nadie volvió a ese punto.<br>Lena cumplió nueve en diciembre.';
+    $('ep').innerHTML = 'El Zarya descansa a 412 metros, con el compartimento 7 inundado. Nadie volvió a ese punto.<br>Si alguna vez bajan, van a ver un casco con nuestro número.<br>Lena cumplió nueve en diciembre.';
     $('eo').textContent = 'FINAL 2 DE 2 · HAY OTRA SALIDA';
   }
   try { const k2 = 'abismo_end_' + k; localStorage.setItem(k2, '1'); if (localStorage.getItem('abismo_end_a') && localStorage.getItem('abismo_end_b')) $('eo').textContent = 'VISTE LOS DOS FINALES'; } catch (e) {}
@@ -2505,8 +2513,9 @@ function updateTriggers(dt) {
   if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 12.5) start03(); }
   // compartimento 7
   if (G.c7open && !G.c7in && P.x < -2.3) {
-    G.c7in = true; line(BLURBS.c7in[0], 4.2); line(BLURBS.c7in[1], 4.6);
+    G.c7in = true; G.c7t = 0; line(BLURBS.c7in[0], 4.2); line(BLURBS.c7in[1], 4.6);
   }
+  if (G.c7in && !G.c7done && state === 'play' && !G.reveal) { if (P.x < -2.4) G.c7t += dt; if (G.c7t > 14) c7Shut(); }
   if (!G.enteredD && P.z < -35 && G.h03 === 2 && !G.reveal) {
     G.enteredD = true; G.contact = 480; amb.ping = .5;
     later(1, () => say('El sonar marca un contacto. Se acerca.', 3.5));
@@ -2643,7 +2652,7 @@ function startGame(s) {
   const gen = acts.find(a => a.id === 'gen'); gen.win = G.fails >= 3 ? [.58, .9] : [.66, .86];
   c7.cur = G.c7open ? .22 : 0;
   for (const d of doors) d.slow = false;
-  setDoor(0, true, true); setDoor(1, G.energy, true); setDoor(2, G.h03 === 2, true); setDoor(3, false, true);
+  setDoor(0, true, true); setDoor(1, G.energy, true); setDoor(2, !!G.c7done, true); setDoor(3, false, true);
   G.lightMode = G.energy ? 'power' : 'emer';
   AU.hum(G.energy); AU.vent(G.energy); AU.red(0); AU.alarm(false); AU.water(0); AU.muffle(20000, .05);
   props.genLever.rotation.z = G.energy ? -1.1 : 0; props.bLever.rotation.z = 0; props.kWheel.rotation.x = 0;
@@ -3246,7 +3255,9 @@ function updateDive(dt) {
   AU.opSet(0, ramp(0, 2, t) * (1 - ramp(45, 170, D)), lerp(2600, 500, ramp(20, 160, D)), ramp(60, 300, D) * (t > 57.2 ? .35 : 1), ramp(210, 390, D) * (t > 57.2 ? .4 : 1));
   const ev = (k, at, fn) => { if (!O.ev[k] && t >= at) { O.ev[k] = 1; fn(); } };
   ev('p1', 6, () => AU.ping(.09, 1.7));
-  ev('s1', 2.4, () => say(BLURBS.dive[0], 3.8));
+  const belov = (t, d) => showSub({ t, d, cls: 'radio', who: 'INTERCOM · BÉLOV', radio: {} });
+  ev('s1', 2.4, () => belov(BLURBS.dive[0], 3.8));
+  ev('b2', 31, () => belov('Sonar, repita el ping.', 2.6));
   ev('fl', 18, () => { AU.flurry(); vib(20); }); ev('s2', 19.6, () => say(BLURBS.dive[1], 3));
   ev('p3', 25.6, () => AU.pingEarly(.1)); ev('s3', 27.4, () => say(BLURBS.dive[2], 3.4));
   ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 35.5, () => say(BLURBS.dive[3], 3));
@@ -3310,7 +3321,7 @@ window.ABISMO = {
   energy: () => onEnergy(), oxygen: () => { if (!G.energy) { G.energy = true; setDoor(1, true, true); G.lightMode = 'power'; G.hand = 2; } onOxygen(); },
   eye: () => { G.energy = true; G.lightMode = 'power'; startEye(); },
   h03: () => { G.energy = G.oxygen = true; G.hand = 2; setDoor(1, true, true); G.lightMode = 'power'; start03(); },
-  post03: () => { G.energy = G.oxygen = true; G.hand = 2; G.h03 = 2; G.c7open = true; G.clockStop = true; setDoor(1, true, true); setDoor(2, true, true); G.lightMode = 'power'; },
+  post03: () => { G.energy = G.oxygen = true; G.hand = 2; G.h03 = 2; G.c7open = true; G.c7done = true; G.clockStop = true; setDoor(1, true, true); setDoor(2, true, true); G.lightMode = 'power'; },
   reveal: () => { window.ABISMO.post03(); G.sonar = true; onReveal(); },
   chase: () => { window.ABISMO.reveal(); onBallast(); },
   jump: () => caught(), win: () => onEscape(), king: () => onKingston(), O, c7, said: SAID, skip: () => endOpening(), ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
