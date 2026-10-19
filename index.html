@@ -1701,7 +1701,7 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   port2: { s: 'hale', t: 'There was someone behind me.', es: 'Había alguien detrás de mí.', st: 'breathless' },
   o2jam: { s: 'hale', t: 'Seized… come on…', es: 'Agarrotada… vamos…', st: 'straining hard' },
   o2ok: { s: 'hale', t: 'Scrubbers are running. The air tastes like metal again.', es: 'La regeneración funciona. El aire vuelve a saber a metal.' },
-  o2b: { s: 'belov', t: 'Хорошо. Good. Now wait. Stay away from the seven. It is almost three.', es: 'Bien. Ahora espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio' },
+  o2b: { s: 'belov', t: 'Хорошо. Now the ballast… no. Wait. Stay away from the seven. It is almost three.', es: 'Bien. Ahora el lastre… no. Espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio, hesitant, quick' },
   h1: { s: 'hale', t: 'Three o\'clock.', es: 'Las tres.', st: 'dread' },
   h2: { s: 'hale', t: 'The wheel… it\'s turning. From the inside!', es: 'La rueda… está girando. ¡Desde adentro!', st: 'panicking' },
   h3: { s: 'belov', t: 'Держите дверь! Hold the door! If seven opens, you drown!', es: '¡Sujete la puerta! ¡Si el siete se abre, se ahoga!', st: 'shouting over a crackling radio' },
@@ -2548,7 +2548,7 @@ function updateTriggers(dt) {
   // la puerta sigue golpeando hasta que la escuchas
   if (G.walk === 2 && !G.listened) { G.knockAt -= dt; if (G.knockAt < 0) { G.knockAt = rnd(5.5, 8); AU.knock(C7POS, 3, .75); } }
   // 03:00 llega después del oxígeno
-  if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 14) start03(); }
+  if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 24 || (G.oxyT > 14 && !subQ.length && T > subEnd + 1)) start03(); } // las tres llegan cuando Bélov termina
   // adentro del siete
   if (G.c7open && !G.c7in && P.x < -2.3) { G.c7in = true; vo('in1'); vo('in2'); }
   if (G.c7open && !G.air && P.x < -2 && LS.t < 0) { G.k7 = (G.k7 ?? 3) - dt; if (G.k7 < 0) { G.k7 = rnd(4, 7); AU.knock(new THREE.Vector3(-5, 1.4, C7Z + rnd(-1, 1)), 3, .3); } }
@@ -2655,7 +2655,7 @@ function currentObjective() {
   if (G.air) return '¡Corre a la palanca de lastre!';
   if (G.c7open) return 'Abre el aire de emergencia · al fondo del 7';
   if (G.reveal) return 'El aire para subir está en el 7 · ábrelo';
-  if (G.h03 === 2) return 'Ve a la sala de sonar · ponte los auriculares';
+  if (G.h03 === 2) return '¿Es el casco? · escúchalo desde la sala de sonar';
   if (G.oxygen) return 'Son casi las 03:00 · aléjate del 7';
   if (G.listened) return 'El aire se acaba · restaura el oxígeno en soporte vital';
   if (G.walk === 2) return 'Los golpes vienen del 7 · pega la oreja a la puerta';
@@ -2671,7 +2671,7 @@ function startGame(s) {
     Object.assign(G, { fear: 0, shake: 0, flick: 0, kill: 0, force: null, held: false, lock: false, tilt: 0, sonarOn: false });
     if (G.h03 === 1) { G.h03 = 0; G.clockStop = false; G.oxyT = 8; }
     if (G.walk === 1) G.walk = 0;
-    if (G.energy && !G.call) later(2.5, () => { vo('call1'); vo('call2'); vo('call3', { fn: () => { G.call = 1; later(9.4, knockWalk); } }); });
+    if (G.energy && !G.call) later(2.5, () => { vo('call1'); vo('call2'); vo('call3', { fn: () => { G.call = 1; later((AU.vob.call3 ? AU.vob.call3.duration : 12) + 1.4, knockWalk); } }); });
     if (G.call === 1 && !G.walk) later(2, knockWalk);
     if (G.flood === 1) { G.flood = 0; G.air = false; }
     if (G.ballast && !G.surfaced) { G.ballast = false; G.flood = 0; G.air = false; }
@@ -3496,9 +3496,12 @@ function updateDive(dt) {
   if (t > 54.2) aim = [-.05, -.3];
   if (dv.fig.visible) {
     if (t > 56.4) {
-      dv.head.getWorldPosition(_v); _m4.lookAt(camera.position, _v, camera.up); dv.hq.setFromRotationMatrix(_m4);
-      dv.fig.getWorldQuaternion(_q); dv.hq.premultiply(_q.invert());
-      dv.head.quaternion.slerp(dv.hq, 1 - Math.exp(-dt * 1.4));
+      // se da vuelta entero, despacio; la cabeza se adelanta, pero sin pasar de lo que gira un cuello
+      dv.fig.parent.worldToLocal(_v.copy(camera.position)); _v.sub(dv.fig.position);
+      let dy = Math.atan2(_v.x, _v.z) - dv.fig.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      dv.fig.rotation.y += dy * (1 - Math.exp(-dt * .45));
+      const hy = clamp(dy, -1.1, 1.1), hp = clamp(-Math.atan2(_v.y - 1.6, Math.hypot(_v.x, _v.z)), -.6, .3);
+      _q.setFromEuler(_he.set(hp, hy, 0)); dv.head.quaternion.slerp(_q, 1 - Math.exp(-dt * 1.4));
     } else dv.head.quaternion.identity();
   }
   // la cámara vuelve sola hacia lo que hay que ver si no la estás moviendo
@@ -3517,7 +3520,7 @@ function updateDive(dt) {
   ev('s1b', 8.6, () => { if (!SAID.includes(VO.deck3.es)) voNow('deck3', IC); }); // si abriste la escotilla antes de oírlo
   ev('fl', 18, () => { AU.flurry(); vib(20); }); ev('s2', 19.4, () => voNow('dive2'));
   ev('p3', 25.6, () => AU.pingEarly(.1)); ev('s3', 27, () => voNow('dive3'));
-  ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 35.6, () => voNow('dive5'));
+  ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 37.3, () => voNow('dive5'));
   ev('lamp', 27.6, () => AU.step(.3));
   ev('p4', 42.5, () => AU.ping(.08, .8)); ev('k1', 45, () => { AU.creak(new THREE.Vector3(0, 0, -6), .4); AU.groan(new THREE.Vector3(-7, -2, 0), .22); });
   ev('s5', 45.6, () => voNow('dive6')); ev('s5b', 49.9, () => voNow('dive7', IC));

@@ -4,7 +4,7 @@
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.170.0/examples/jsm/"}}</script>
 </head><body><div id="i"></div>
 <script type="module">
-// visor de desarrollo: ?m=hale|marinero&d=dist&y=altura&r=giro&l=luz(0..1)
+// visor de desarrollo: ?m=hale|marinero&d=dist&y=altura&r=giro&l=luz(0..1) · los huesos se prueban desde la consola con B('head')
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const q = new URLSearchParams(location.search), m = q.get('m') || 'marinero';
@@ -22,7 +22,6 @@ new GLTFLoader().load(`../humanos/${m}.glb`, g => {
   document.getElementById('i').textContent = `${m} · ${n} mallas`;
   o.traverse(x => { if (x.isMesh) { x.frustumCulled = false; if (x.material.map) { x.material.alphaTest = .5; x.material.transparent = false; } } });
   window.H = o; window.B = n => o.getObjectByName(n);
-  if (q.get('js')) eval(q.get('js'));
   r.setAnimationLoop(() => r.render(s, c));
 }, undefined, e => document.getElementById('i').textContent = 'ERROR ' + e);
 </script></body></html>
