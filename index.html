@@ -48,7 +48,8 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 #sub{position:fixed;left:5%;right:5%;bottom:calc(env(safe-area-inset-bottom) + 200px);text-align:center;font-family:'Special Elite',Georgia,serif;font-size:17px;line-height:1.42;color:#f2efe6;text-shadow:0 1px 2px #000,0 0 8px #000;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s}
 #sub .box{display:inline-block;max-width:560px;padding:8px 14px 9px;background:linear-gradient(rgba(4,9,10,.62),rgba(4,9,10,.5));border-radius:4px;box-shadow:0 0 18px rgba(0,0,0,.35)}
 #sub .who{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.3em;opacity:.9;margin-bottom:4px;color:#e2bf86}
-#sub .who .ru{display:inline-block;margin-left:7px;padding:0 4px;border:1px solid currentColor;border-radius:2px;font-size:9px;letter-spacing:.15em;font-style:normal;opacity:.85}
+#sub .ru{display:inline-block;vertical-align:2px;margin-right:5px;padding:0 3px;border:1px solid var(--teal);border-radius:2px;color:var(--teal);font:9px 'Share Tech Mono',monospace;letter-spacing:.12em;font-style:normal;opacity:.9}
+#sub .ruf{font-style:italic}
 #sub .br{color:var(--teal);opacity:.75;font-family:'Share Tech Mono',monospace;padding:0 3px}
 #sub.show{opacity:1}
 #sub.alert{color:#ff6b5e;font-family:'Share Tech Mono',monospace;letter-spacing:.12em;font-size:18px}
@@ -64,6 +65,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 #lamp svg{width:30px;height:30px}
 #lamp.off{opacity:.45}
 #lamp.off path.beam{display:none}
+#lamp.need{animation:breathe 1.6s ease-in-out infinite;border-color:var(--teal);opacity:.85}
 #joy{position:fixed;left:84px;bottom:calc(env(safe-area-inset-bottom) + 70px);width:124px;height:124px;margin:0 0 -62px -62px;border-radius:50%;border:1.5px solid rgba(255,255,255,.22);background:radial-gradient(circle,rgba(255,255,255,.06),rgba(255,255,255,.01));z-index:4;pointer-events:none;opacity:.35;transition:opacity .2s}
 #joy.on{opacity:.9}
 #knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35)}
@@ -116,6 +118,8 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 .paper:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(120,80,30,.25),transparent 40%),radial-gradient(circle at 10% 90%,rgba(80,50,20,.3),transparent 35%);pointer-events:none}
 .paper h3{font-size:13px;letter-spacing:.12em;opacity:.7;margin-bottom:12px;font-weight:400}
 .paper p{font-size:16px;line-height:1.55;white-space:pre-line}
+.paper .orig{font-size:13px;line-height:1.45;opacity:.72;font-style:italic;margin-bottom:12px}
+.paper h4{font:10px 'Share Tech Mono',monospace;letter-spacing:.25em;opacity:.55;margin:0 0 8px;border-top:1px solid rgba(40,30,20,.3);padding-top:9px}
 .paper small{display:block;margin-top:16px;font-size:11px;opacity:.55;text-align:right}
 #pause{background:rgba(0,0,0,.8);cursor:pointer}
 #pause h2{font-family:'Cinzel',serif;letter-spacing:.2em;font-size:30px}
@@ -130,6 +134,8 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 #sub.dead .who{color:#9fc9c0}
 #sub.res .who{color:#ffc22a}
 #sub.radio.bad{color:#ffd9d2;text-shadow:0 0 8px #300,0 1px 3px #000,1px 0 rgba(255,40,40,.5),-1px 0 rgba(0,255,230,.4)}
+#sub.think{font-style:italic;color:#d8d2c2;font-size:16px}
+#sub.think .who{color:#a99a7c}
 #sub.dead{font-style:italic;color:#cfe0da;letter-spacing:.06em;text-shadow:0 0 10px #000,0 0 3px #000}
 #sub.shout{font-size:19px}
 #sub.radio.bad .who{color:#ff6b5e;animation:blink .35s steps(2) infinite}
@@ -198,7 +204,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 <div id="dgauge" class="hidden"><i>ГЛУБИНА · PROFUNDIDAD</i><b id="dg">0 m</b></div>
 <button id="skip" class="hidden">SALTAR ▸</button>
 
-<div id="note" class="screen hidden"><div class="paper"><h3 id="nt"></h3><p id="nb"></p><small>toca para cerrar</small></div></div>
+<div id="note" class="screen hidden"><div class="paper"><h3 id="nt"></h3><p id="no" class="orig"></p><h4 id="nh">LO QUE ENTIENDO</h4><p id="nb"></p><small>toca para cerrar</small></div></div>
 <div id="pause" class="screen hidden"><h2>PAUSA</h2><p>TOCA PARA SEGUIR</p></div>
 
 <div id="dead" class="screen hidden">
@@ -517,7 +523,24 @@ function roundRect(p, x, y, w, h, r) {
   p.lineTo(x, y + r); p.quadraticCurveTo(x, y, x + r, y);
 }
 const doors = [];
-const doorLabels = [['SALA DE MÁQUINAS', 'МАШИННОЕ ОТДЕЛЕНИЕ'], ['SOPORTE VITAL', 'РЕГЕНЕРАЦИЯ ВОЗДУХА'], ['SONAR · LASTRE', 'ГИДРОАКУСТИКА'], ['CÁPSULA DE ESCAPE', 'СПАСАТЕЛЬНАЯ КАМЕРА']];
+const doorLabels = [['МАШИННОЕ', 'ОТДЕЛЕНИЕ · ВСПОМОГАТЕЛЬНЫЙ ДИЗЕЛЬ'], ['РЕГЕНЕРАЦИЯ', 'ВОЗДУХА · КИСЛОРОД'], ['ГИДРОАКУСТИКА', 'ГЛАВНЫЙ БАЛЛАСТ'], ['СПАСАТЕЛЬНАЯ', 'КАМЕРА']];
+// lo que Hale piensa al leer cada puerta, y el papelito en inglés que dejó el que vino antes
+const doorThink = ['[Машинное отделение…] Sala de máquinas.', '[Регенерация воздуха…] El aire. Soporte vital.', '[Гидроакустика…] El sonar. Y el lastre.', '[Спасательная камера…] La cápsula de escape.'];
+const doorSticky = ['ENGINE RM.\naux. diesel', 'AIR / O2', 'SONAR\nlisten here', ''];
+const SIGNS = [];
+function sign(mesh, k, th, voId) { SIGNS.push({ m: mesh, k, th, vo: voId }); }
+function stickyTex(text) {
+  return canvasTex(256, 180, (g, w, h) => {
+    g.fillStyle = '#d9cf9a'; g.fillRect(0, 0, w, h); noise(g, w, h, 30);
+    g.fillStyle = 'rgba(120,90,40,.25)'; g.fillRect(0, 0, w, 16);
+    g.fillStyle = '#1b2a52'; g.font = 'bold 40px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const L = text.split('\n'); L.forEach((l, i) => { g.save(); g.translate(w / 2, h / 2 + (i - (L.length - 1) / 2) * 50); g.rotate(rnd(-.04, .04)); g.font = (i ? '30px' : 'bold 40px') + ' "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive'; g.fillText(l, 0, 0); g.restore(); });
+  });
+}
+function sticky(text, x, y, z, ry = 0, sz = .26) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(sz, sz * .7), new THREE.MeshStandardMaterial({ map: stickyTex(text), roughness: .9, emissive: 0x1a1810 }));
+  m.position.set(x, y, z); m.rotation.set(0, ry, rnd(-.12, .12)); scene.add(m); return m;
+}
 function buildDoors() {
   const sh = new THREE.Shape(); SEC.forEach((p, i) => i ? sh.lineTo(p[0], p[1]) : sh.moveTo(p[0], p[1]));
   const hole = new THREE.Path(); roundRect(hole, -.6, .12, 1.2, 1.95, .42); sh.holes.push(hole);
@@ -545,6 +568,8 @@ function buildDoors() {
     const lt = labelTex(...doorLabels[i]);
     const lab = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .375), new THREE.MeshStandardMaterial({ map: lt, transparent: true, roughness: .8, depthWrite: false }));
     lab.position.set(0, 2.32, z + .16); scene.add(lab);
+    if (doorSticky[i]) sticky(doorSticky[i], .93, 2.12, z + .18);
+    sign(lab, 'door' + i, doorThink[i], i === 0 ? 'eng1' : null);
     doors.push({ z, g: door, open: i === 0 ? 1 : 0, cur: i === 0 ? 1 : 0, ind, snd: false });
   });
 }
@@ -647,7 +672,8 @@ function updateFlash(dt) {
   spot.position.copy(_v2);
   spot.target.position.copy(_v2).addScaledVector(spotDir, 5);
   let I = 0;
-  if (flashOn()) {
+  if (G.spark > 0) { G.spark -= dt; I = Math.sin(T * 83) > .1 ? rnd(2, 9) : 0; }
+  else if (flashOn()) {
     I = 16;
     if (G.bat < 15) I *= (Math.sin(T * 31) > -.3 ? 1 : .15) * (.5 + G.bat / 30);
     else if (Math.random() < .004) I *= .3;
@@ -941,6 +967,10 @@ function buildProps() {
   props.valve = valve;
   act({ id: 'o2', x: 1.15, y: 1.25, z: -32.4, label: 'Girar la válvula de O₂', mash: .085, decay: .11, en: () => G.energy && !G.oxygen, onDone: onOxygen, onHold: valveHold });
   act({ id: 'o2x', x: 1.15, y: 1.25, z: -32.4, label: 'Válvula sin presión', en: () => !G.energy, once: false, onDone: () => say(BLURBS.o2x) });
+  // los que vinieron antes: una nota en inglés pegada bajo el panel de oxígeno
+  const wn = sticky('NOT THERMAL.\n— M.W. 86', -1.5, 1.3, -31.2, Math.PI / 2, .3);
+  act({ id: 'whit', x: -1.5, y: 1.3, z: -31.2, r: 1.6, label: 'Una nota en inglés', once: false, onDone: () => showNote('whit', () => once('eng2', () => voNow('eng2'))) });
+  sign(wn, 'whitsee', 'Otra nota en inglés. Bajo el panel.');
   const bat2 = makeBattery(.95, .1, -24.2);
   act({ id: 'bat2', x: .95, y: .15, z: -24.2, label: 'Tomar batería', mesh: bat2, onDone: () => pickBattery() });
 
@@ -972,8 +1002,8 @@ function buildProps() {
   const hw = mk(new THREE.TorusGeometry(.32, .035, 8, 24), M.red, 0, 0, .18, hatch);
   for (let s = 0; s < 3; s++) { const sp = mk(BOX(.64, .03, .03), M.red, 0, 0, .18, hatch); sp.rotation.z = s * Math.PI / 3; }
   props.hatchWheel = hw;
-  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .375), new THREE.MeshStandardMaterial({ map: labelTex('ESCAPE · ВЫХОД', 'A CUBIERTA'), transparent: true, depthWrite: false }));
-  pl.position.set(0, 2.25, Z1 + .03); scene.add(pl);
+  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .375), new THREE.MeshStandardMaterial({ map: labelTex('ВЫХОД', 'НА ПАЛУБУ'), transparent: true, depthWrite: false }));
+  pl.position.set(0, 2.25, Z1 + .03); scene.add(pl); sign(pl, 'exit', '[Выход на палубу…] Salida a cubierta.');
   act({ id: 'pod', x: 0, y: 1.15, z: Z1 + .3, r: 1.9, label: 'Subir a cubierta', hold: 1.4, en: () => G.surfaced && doors[3].cur > .8, onDone: startRescue, onHold: p => { props.hatchWheel.rotation.z = p * 5; } });
 
   // compuertas cerradas: avisos
@@ -1049,7 +1079,7 @@ function buildC7Story() {
   const wh = new THREE.Group(); kw.add(wh); props.kWheel = wh;
   mk(new THREE.TorusGeometry(.2, .024, 8, 24), M.red, 0, 0, 0, wh, false).rotation.y = Math.PI / 2;
   for (let s = 0; s < 3; s++) mk(BOX(.02, .4, .02), M.red, 0, 0, 0, wh, false).rotation.x = s * Math.PI / 3;
-  const kl = new THREE.Mesh(new THREE.PlaneGeometry(.5, .125), new THREE.MeshStandardMaterial({ map: labelTex('ВВД · ПРОДУВАНИЕ', 'AIRE DE EMERGENCIA'), transparent: true, depthWrite: false, roughness: .8 })); kl.position.set(X1 + .015, .98, C7Z); kl.rotation.y = Math.PI / 2; scene.add(kl);
+  const kl = new THREE.Mesh(new THREE.PlaneGeometry(.5, .125), new THREE.MeshStandardMaterial({ map: labelTex('ВВД · ПРОДУВАНИЕ', 'АВАРИЙНЫЙ ВОЗДУХ'), transparent: true, depthWrite: false, roughness: .8 })); kl.position.set(X1 + .015, .98, C7Z); kl.rotation.y = Math.PI / 2; scene.add(kl); sign(kl, 'air7', '[Аварийный воздух…] Aire de emergencia. Es esto.');
   act({ id: 'air7', x: X1 + .2, y: .62, z: C7Z, r: 1.8, label: 'Abrir el aire de emergencia', hold: 5, decay: .05, keep: true, en: () => G.c7open && G.reveal && !G.air, onDone: startFlood, onHold: airHold });
   // esclusa de buzos en el piso
   const lk = new THREE.Group(); lk.position.set(-3.95, .012, C7Z + .05); scene.add(lk);
@@ -1114,7 +1144,8 @@ function buildC7() {
   const door = new THREE.Group(); door.position.set(-1.46, 0, C7Z - .6); scene.add(door);
   mk(BOX(.07, 1.9, 1.2), M.dark, 0, .95, .6, door);
   const lab = new THREE.Mesh(new THREE.PlaneGeometry(1.05, .26), new THREE.MeshStandardMaterial({ map: labelTex('ОТСЕК 7', 'ОПАСНО · НЕ ВСКРЫВАТЬ'), transparent: true, roughness: .8, depthWrite: false }));
-  lab.position.set(.04, 1.52, .6); lab.rotation.y = Math.PI / 2; door.add(lab);
+  lab.position.set(.04, 1.52, .6); lab.rotation.y = Math.PI / 2; door.add(lab); sign(lab, 'c7lab', '[Отсек семь. Опасно, не вскрывать.] Peligro. No abrir.');
+  { const st = sticky("DON'T.", .05, 1.28, .32, Math.PI / 2, .2); scene.remove(st); door.add(st); }
   const hz = mk(BOX(.01, .12, 1.0), M.hazard, .04, .3, .6, door, false);
   const dwh = new THREE.Group(); dwh.position.set(.1, 1.08, .6); door.add(dwh); props.c7wheel = dwh;
   mk(new THREE.TorusGeometry(.21, .025, 8, 24), M.red, 0, 0, 0, dwh).rotation.y = Math.PI / 2;
@@ -1649,7 +1680,7 @@ const AU = {
    ============================================================ */
 let state = 'menu', T = 0;
 const G0 = () => ({
-  woke: false, energy: false, prime: false, fails: 0, oxygen: false, oxyT: 0, ballast: false, o2: 100, bat: 100, light: true, picked: [],
+  woke: false, energy: false, prime: false, fails: 0, oxygen: false, oxyT: 0, ballast: false, o2: 100, bat: 100, light: false, lampTry: 2, spark: 0, picked: [],
   seenEye: false, enteredD: false, contact: -1, lightMode: 'emer', flick: 0, kill: 0, shake: 0, fear: 0, chase: false,
   lampSaid: false, c7seen: false, c7open: false, c7in: false, call: 0, walk: 0, listened: 0, t03: 0, air: false, flood: 0, wl: 0, surfaced: false, tilt: 0, h03: 0, sonar: false, reveal: false, kingRoute: false, king: false,
   tclock: 0, clockStop: false, lock: false, held: false, noise: 0, lumpGone: false, said: {}, mirror: 0, hand: 0, port: 0, mimic: 0,
@@ -1665,17 +1696,17 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   // s: quién habla (hale: tú, en inglés · belov: el comandante, ruso y un inglés roto · dead: detrás de la puerta · res: el pesquero)
   // t: lo que se oye · es: el subtítulo · st: indicación de actuación para generar la voz
   deck1: { s: 'hale', t: 'Barents Sea in October. Four degrees and falling.', es: 'Mar de Barents en octubre. Cuatro grados y bajando.' },
-  deck2: { s: 'belov', t: 'Доктор Хейл. Doctor. It was hard to bring you here. Your job is easy. You listen, and you write that these sounds come from the submarine. Hull noise. And we all go home.', es: 'Doctor Hale. Costó mucho traerlo. Su trabajo es fácil: escuche y escriba que estos sonidos son del submarino. Ruido del casco. Y todos nos vamos a casa.', st: 'over a ship loudspeaker, flat and commanding' },
+  deck2: { s: 'belov', t: 'Доктор Хейл. Doctor. It was hard to bring you here. Your job is easy. You listen, and you write that these sounds come from the submarine. Hull noise. And we all go home.', es: '[Doctor Hale.] Costó mucho traerlo. Su trabajo es fácil: escuche y escriba que estos sonidos son del submarino. Ruido del casco. Y todos nos vamos a casa.', st: 'over a ship loudspeaker, flat and commanding' },
   deck3: { s: 'belov', t: 'It knocks at three. Always at three.', es: 'Golpea a las tres. Siempre a las tres.', st: 'lower, almost to himself' },
   deck4: { s: 'hale', t: 'Stuck. Of course it\'s stuck.', es: 'Trabada. Claro que está trabada.', st: 'straining, annoyed' },
   deck5: { s: 'hale', t: 'Ten weeks, Annie. I\'ll be home for your birthday. I promised.', es: 'Diez semanas, Annie. Llego a tu cumpleaños. Lo prometí.', st: 'tender, quiet' },
-  dive1: { s: 'belov', t: 'Четыреста метров, доктор. Now you listen. Слушайте.', es: 'Cuatrocientos metros, doctor. Ahora escuche.' },
+  dive1: { s: 'belov', t: 'Четыреста метров, доктор. Now you listen. Слушайте.', es: '[Cuatrocientos metros, doctor.] Ahora escuche. [Escuche.]' },
   dive2: { s: 'hale', t: 'They\'re leaving. All of them. Going up.', es: 'Se van. Todos. Hacia arriba.', st: 'awed' },
   dive3: { s: 'hale', t: 'Something big on the sonar. Very close.', es: 'Algo grande en el sonar. Muy cerca.', st: 'uneasy, low' },
-  dive4: { s: 'belov', t: 'Нет. Nothing there, doctor. Only the cold.', es: 'No hay nada, doctor. Solo el frío.', st: 'over a ship intercom, sharp' },
+  dive4: { s: 'belov', t: 'Нет. Nothing there, doctor. Only the cold.', es: '[No.] No hay nada, doctor. Solo el frío.', st: 'over a ship intercom, sharp' },
   dive5: { s: 'hale', t: 'Even the whales are running.', es: 'Hasta las ballenas huyen.' },
   dive6: { s: 'hale', t: 'There\'s a wreck down there. Nobody told me about a wreck.', es: 'Hay un naufragio allá abajo. Nadie me habló de un naufragio.' },
-  dive7: { s: 'belov', t: 'Не ваше дело. Not your business. Write.', es: 'No es asunto suyo. Escriba.', st: 'over a ship intercom, cold' },
+  dive7: { s: 'belov', t: 'Не ваше дело. Not your business. Write.', es: '[No es asunto suyo.] Escriba.', st: 'over a ship intercom, cold' },
   dive8: { s: 'hale', t: 'Three knocks. From inside the boat.', es: 'Tres golpes. Desde adentro del submarino.', st: 'barely a whisper, frightened' },
   faint1: { s: 'hale', t: 'Annie… Annie.', es: 'Annie… Annie.', st: 'softly saying the name of his daughter, Annie, fading, losing consciousness' },
   wake1: { s: 'hale', t: 'I\'m on the floor. Soaked.', es: 'Estoy en el suelo. Empapado.', st: 'groggy, just waking up, coughing slightly' },
@@ -1689,6 +1720,14 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   mirror2: { s: 'hale', t: 'I\'m tired. That\'s all. Just tired.', es: 'Es cansancio. Nada más. Cansancio.', st: 'trying to convince himself' },
   photo: { s: 'hale', t: 'Annie. Nine in December. I\'ve missed four birthdays. Not this one.', es: 'Annie. Cumple nueve en diciembre. Me perdí cuatro cumpleaños. Este no.', st: 'tender, determined' },
   lamp: { s: 'hale', t: 'That lamp shouldn\'t be flickering.', es: 'Esa lámpara no debería parpadear.' },
+  lampA: { s: 'hale', t: 'Come on. Come on.', es: 'Vamos. Vamos.', st: 'shaking a flashlight in the dark, nervous' },
+  lampB: { s: 'hale', t: 'Don\'t do this to me.', es: 'No me hagas esto.', st: 'frustrated, hitting the flashlight' },
+  lampC: { s: 'hale', t: 'There.', es: 'Ahí está.', st: 'relieved exhale' },
+  lampD: { s: 'hale', t: 'No. No, no, not now.', es: 'No. No, no, ahora no.', st: 'panicked whisper in the dark' },
+  lampE: { s: 'hale', t: 'Damn it! Not again!', es: '¡Maldita sea! ¡Otra vez no!', st: 'angry, hitting the flashlight' },
+  lampF: { s: 'hale', t: 'Every time. Every damn time.', es: 'Siempre. Siempre lo mismo.', st: 'furious, through clenched teeth' },
+  eng1: { s: 'hale', t: 'English. Someone translated this before me.', es: 'Inglés. Alguien tradujo esto antes que yo.', st: 'surprised, uneasy' },
+  eng2: { s: 'hale', t: 'Eighty-six. Eighty-eight. I\'m not the first. The others didn\'t sign… so they kept bringing people.', es: '1986. 1988. No soy el primero. Los otros no firmaron… y siguieron trayendo gente.', st: 'slowly realizing, quiet' },
   c7pass: { s: 'hale', t: 'The seven. Welded shut. Like a grave.', es: 'El siete. Soldado. Como una tumba.' },
   c7weld: { s: 'hale', t: 'Compartment seven. It\'s not on any plan they showed me.', es: 'Compartimento 7. No aparece en ningún plano que me hayan mostrado.' },
   prime: { s: 'hale', t: 'Fuel\'s up. Now the starter. Let go right when it catches.', es: 'Combustible arriba. Ahora el arranque: soltar justo cuando agarra.' },
@@ -1696,39 +1735,39 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   fail2: { s: 'hale', t: 'Something answered. Three knocks. From the seven.', es: 'Algo contestó. Tres golpes. Desde el siete.', st: 'frozen, whispering' },
   fail3: { s: 'hale', t: 'Easy. Right when it catches.', es: 'Calma. Justo cuando agarra.' },
   energy: { s: 'hale', t: 'Power. Thank God.', es: 'Energía. Gracias a Dios.', st: 'relieved exhale' },
-  call1: { s: 'belov', t: 'Хейл? Хейл, вы живы? Hale. You are alive?', es: '¿Hale? ¿Está vivo?', st: 'over a crackling radio, surprised' },
+  call1: { s: 'belov', t: 'Хейл? Хейл, вы живы? Hale. You are alive?', es: '[¿Hale? ¿Hale, está vivo?] ¿Está vivo?', st: 'over a crackling radio, surprised' },
   call2: { s: 'hale', t: 'Belov? Where is everyone?', es: '¿Bélov? ¿Dónde están todos?', st: 'urgent, into a handset' },
   call3: { s: 'belov', t: 'In the capsule, on the surface. We thought you drowned in the dome. Doctor, the Zarya is taking water. She will not last until the ship comes. You must bring her up.', es: 'En la cápsula, en la superficie. Creímos que se ahogó en la cúpula. Doctor, el Zarya hace agua. No aguanta hasta que llegue el barco. Tiene que hacerlo subir.', st: 'over a crackling radio, guilty' },
   call4: { s: 'belov', t: 'Oxygen first. Life support, aft. And do not stop at the seven.', es: 'Primero el oxígeno. Soporte vital, a popa. Y no se detenga en el siete.', st: 'over a crackling radio' },
   walk1: { s: 'hale', t: 'It\'s moving. Along the hull.', es: 'Se mueve. Por el casco.', st: 'terrified whisper in the dark' },
   walk2: { s: 'hale', t: 'It stopped at the seven.', es: 'Se detuvo en el siete.', st: 'whisper' },
-  dead1: { s: 'dead', t: 'Откройте… пожалуйста… откройте.', es: 'Abran… por favor… abran.', st: 'in Russian' },
+  dead1: { s: 'dead', t: 'Откройте… пожалуйста… откройте.', es: '[Abran… por favor… abran.]', st: 'in Russian' },
   listen1: { s: 'hale', t: 'There\'s someone in there.', es: 'Hay alguien ahí adentro.', st: 'shaken whisper' },
-  listen2: { s: 'belov', t: 'Там никого нет! Nobody is there. Nobody since eighty-three.', es: '¡Ahí no hay nadie! Nadie desde el 83.', st: 'over a crackling radio, angry and afraid' },
+  listen2: { s: 'belov', t: 'Там никого нет! Nobody is there. Nobody since eighty-three.', es: '[¡Ahí no hay nadie!] Nadie desde el 83.', st: 'over a crackling radio, angry and afraid' },
   port1: { s: 'hale', t: 'At this depth the glass is a mirror.', es: 'A esta profundidad el vidrio es un espejo.' },
   port2: { s: 'hale', t: 'There was someone behind me.', es: 'Había alguien detrás de mí.', st: 'breathless' },
   o2jam: { s: 'hale', t: 'Seized… come on…', es: 'Agarrotada… vamos…', st: 'straining hard' },
   o2ok: { s: 'hale', t: 'Scrubbers are running. The air tastes like metal again.', es: 'La regeneración funciona. El aire vuelve a saber a metal.' },
-  o2b: { s: 'belov', t: 'Хорошо. Now the ballast… no. Wait. Stay away from the seven. It is almost three.', es: 'Bien. Ahora el lastre… no. Espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio, hesitant, quick' },
+  o2b: { s: 'belov', t: 'Хорошо. Now the ballast… no. Wait. Stay away from the seven. It is almost three.', es: '[Bien.] Ahora el lastre… no. Espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio, hesitant, quick' },
   h1: { s: 'hale', t: 'Three o\'clock.', es: 'Las tres.', st: 'dread' },
   h2: { s: 'hale', t: 'The wheel… it\'s turning. From the inside!', es: 'La rueda… está girando. ¡Desde adentro!', st: 'panicking' },
-  h3: { s: 'belov', t: 'Держите дверь! Hold the door! If seven opens, you drown!', es: '¡Sujete la puerta! ¡Si el siete se abre, se ahoga!', st: 'shouting over a crackling radio' },
+  h3: { s: 'belov', t: 'Держите дверь! Hold the door! If seven opens, you drown!', es: '[¡Sujete la puerta!] ¡Si el siete se abre, se ahoga!', st: 'shouting over a crackling radio' },
   dead2: { s: 'dead', t: 'Tom…', es: 'Tom…', st: 'one long breath' },
   h4: { s: 'hale', t: 'They know my name.', es: 'Saben mi nombre.', st: 'trembling' },
   h5: { s: 'hale', t: 'It stopped.', es: 'Paró.', st: 'out of breath' },
   h6: { s: 'hale', t: 'Three knocks. Like a question.', es: 'Tres golpes. Como una pregunta.' },
   h7: { s: 'hale', t: 'I need to hear it from outside. The sonar.', es: 'Necesito oírlo desde afuera. El sonar.', st: 'resolved, scientist' },
-  dead3: { s: 'dead', t: 'Мы здесь. Мы всё ещё здесь.', es: 'Estamos aquí. Seguimos aquí.', st: 'in Russian, through underwater static' },
+  dead3: { s: 'dead', t: 'Мы здесь. Мы всё ещё здесь.', es: '[Estamos aquí. Seguimos aquí.]', st: 'in Russian, through underwater static' },
   sonar1: { s: 'hale', t: 'It\'s not the hull. It was never the hull.', es: 'No es el casco. Nunca fue el casco.', st: 'quiet certainty' },
   conf1: { s: 'belov', t: 'Doctor. Listen to me. Eighty-three. Seven flooded at three. Three men inside. Volkov. Orlov. Sedykh.', es: 'Doctor. Escúcheme. 1983. El siete se inundó a las tres. Tres hombres adentro. Vólkov. Orlov. Sedykh.', st: 'over a crackling radio, slow, a confession' },
   conf2: { s: 'belov', t: 'I closed the door. They knocked for forty minutes. I wrote: hull noise.', es: 'Yo cerré la puerta. Golpearon cuarenta minutos. Yo escribí: ruido del casco.', st: 'over a crackling radio, broken' },
-  conf3: { s: 'belov', t: 'To surface you need air. The emergency air is in seven. That is why I told you to stay away. You must open it. Простите меня.', es: 'Para subir necesita aire. El aire de emergencia está en el siete. Por eso le dije que no se acercara. Tiene que abrirlo. Perdóneme.', st: 'over a crackling radio' },
+  conf3: { s: 'belov', t: 'To surface you need air. The emergency air is in seven. That is why I told you to stay away. You must open it. Простите меня.', es: 'Para subir necesita aire. El aire de emergencia está en el siete. Por eso le dije que no se acercara. Tiene que abrirlo. [Perdóneme.]', st: 'over a crackling radio' },
   conf4: { s: 'hale', t: 'You brought me here to sign your lie.', es: 'Me trajeron para firmar su mentira.', st: 'bitter, quiet' },
   open1: { s: 'hale', t: 'Okay. Okay. I\'m coming in.', es: 'Está bien. Voy a entrar.', st: 'gathering courage' },
   in1: { s: 'hale', t: 'Forty marks on the wall. One for every minute.', es: 'Cuarenta marcas en la pared. Una por minuto.', st: 'heartbroken whisper' },
   in2: { s: 'hale', t: 'Three caps. Nobody ever came for them.', es: 'Tres gorras. Nadie vino nunca por ellos.' },
-  dead4: { s: 'dead', t: 'Спасибо.', es: 'Gracias.', st: 'in Russian, peaceful' },
-  run1: { s: 'belov', t: 'Бегите! Run, Doctor! Blow the ballast, now!', es: '¡Corra, doctor! ¡Purgue el lastre, ya!', st: 'shouting over a crackling radio' },
+  dead4: { s: 'dead', t: 'Спасибо.', es: '[Gracias.]', st: 'in Russian, peaceful' },
+  run1: { s: 'belov', t: 'Бегите! Run, Doctor! Blow the ballast, now!', es: '[¡Corra!] ¡Doctor! ¡Purgue el lastre, ya!', st: 'shouting over a crackling radio' },
   blow1: { s: 'hale', t: 'Come on, come on, come on…', es: 'Vamos, vamos, vamos…', st: 'desperate, through gritted teeth' },
   surf1: { s: 'hale', t: 'Air. Real air.', es: 'Aire. Aire de verdad.', st: 'gasping, crying with relief' },
   surf2: { s: 'hale', t: 'She\'s going down by the stern.', es: 'Se hunde por la popa.', st: 'shouting over wind' },
@@ -1746,11 +1785,12 @@ const BLURBS = {
   lock: 'Una esclusa de buzos, soldada desde afuera.',
 };
 const NOTES = {
-  invite: { t: 'FLOTA DEL NORTE · CARTA DE INVITACIÓN', b: 'Dr. Thomas Hale\nInstituto Oceanográfico de Woods Hole\n\nEn el marco del intercambio científico, la Flota lo invita a bordo del K-417 para registrar los eventos acústicos del compartimento 7, en el punto 71° N 38° E.\n\nSe espera que su informe confirme el origen térmico de los ruidos (contracción del casco). Su firma cerrará el expediente.\n\n(A mano, en inglés:) Annie, 9 en diciembre. No faltar.' },
-  log: { t: 'BITÁCORA DEL COMANDANTE · 14.10.89', b: '(Traducido del ruso.)\n\nPunto 71° N 38° E. Cuarta vez desde 1983. Siempre un 14 de octubre.\n\nEl americano observará el descenso desde la cúpula. Que escuche lo que quiera. Que firme lo que trajo escrito.\n\nA las 03:00, nadie en el pasillo de máquinas. Nadie.' },
-  med: { long: true, t: 'OFICIAL MÉDICO · 1983 · INFORME NO ENVIADO', b: '(Traducido del ruso.)\n\n14 de octubre de 1983, 03:00. El compartimento 7 hace agua en este mismo punto.\n\nVólkov, Orlov y Sedykh quedan adentro. El oficial de guardia, capitán Bélov, ordena sellar la puerta para salvar el barco.\n\nSe oyeron golpes durante cuarenta minutos. Tres por serie.\n\nLos cuerpos no se recuperaron. Por orden de la Flota, la puerta fue soldada y el caso cerrado como «ruido del casco».' },
-  sonar: { t: 'REGISTRO DE SONAR', b: '(Traducido del ruso.)\n\n14.10.83 · 03:00–03:40 · golpes desde el 7. Tres por serie.\n14.10.86 · 03:00 · golpes. 40 min.\n14.10.88 · 03:00 · golpes. 40 min.\n14.10.89 · 02:31 · cede el sello de la cúpula. El americano no responde.\n\n(Otra letra:) No es el casco.' },
-  sedykh: { t: 'SEDYKH · 14.10.83 · 03:20', b: '(Lápiz. Traducido del ruso.)\n\nEl agua nos llega al pecho. Vólkov ya no habla.\n\nGolpeamos tres veces, uno por cada uno. Al otro lado alguien respira contra la puerta. Sé quién es.\n\nSi alguien lee esto: no fue el casco.' },
+  invite: { en: 1, t: 'FLOTA DEL NORTE · CARTA DE INVITACIÓN', o: 'Dr. Thomas Hale, Woods Hole Oceanographic Institution.\nYou are invited aboard K-417 to record the acoustic events of compartment 7…\nYour signature will close the file.', b: 'En el marco del intercambio científico, la Flota lo invita a bordo del K-417 para registrar los eventos acústicos del compartimento 7, en el punto 71° N 38° E.\n\nSe espera que su informe confirme el origen térmico de los ruidos (contracción del casco). Su firma cerrará el expediente.\n\n(A mano:) Annie, 9 en diciembre. No faltar.' },
+  log: { t: 'BITÁCORA DEL COMANDANTE · 14.10.89', o: 'Точка 71° с. ш. 38° в. д. Четвёртый раз с 1983-го.\nАмериканец будет наблюдать спуск из купола…\nВ 03:00 — никого в коридоре машинного. Никого.', b: 'Punto 71° N 38° E. Cuarta vez desde 1983. Siempre un 14 de octubre.\n\nEl americano observará el descenso desde la cúpula. Que escuche lo que quiera. Que firme lo que trajo escrito.\n\nA las 03:00, nadie en el pasillo de máquinas. Nadie.' },
+  med: { long: true, t: 'OFICIAL MÉDICO · 1983 · INFORME NO ENVIADO', o: '14 октября 1983 г., 03:00. Седьмой отсек затоплен.\nВолков, Орлов и Седых остаются внутри. Капитан Белов приказывает задраить дверь…', b: '14 de octubre de 1983, 03:00. El compartimento 7 hace agua en este mismo punto.\n\nVólkov, Orlov y Sedykh quedan adentro. El oficial de guardia, capitán Bélov, ordena sellar la puerta para salvar el barco.\n\nSe oyeron golpes durante cuarenta minutos. Tres por serie.\n\nLos cuerpos no se recuperaron. Por orden de la Flota, la puerta fue soldada y el caso cerrado como «ruido del casco».' },
+  sonar: { t: 'REGISTRO DE SONAR', o: '14.10.83 · 03:00–03:40 · стук из 7-го. По три.\n14.10.86 · англичанин не подписал.\n14.10.88 · норвежец не подписал.\n(Другим почерком:) Это не корпус.', b: '14.10.83 · 03:00–03:40 · golpes desde el 7. Tres por serie.\n14.10.86 · 03:00 · golpes. 40 min. El inglés no firma.\n14.10.88 · 03:00 · golpes. 40 min. El noruego no firma.\n14.10.89 · 02:31 · cede el sello de la cúpula. El americano no responde.\n\n(Otra letra:) No es el casco.' },
+  sedykh: { t: 'SEDYKH · 14.10.83 · 03:20', o: 'Вода уже по грудь. Волков больше не говорит.\nСтучим три раза, по одному за каждого…', b: '(Lápiz.)\n\nEl agua nos llega al pecho. Vólkov ya no habla.\n\nGolpeamos tres veces, uno por cada uno. Al otro lado alguien respira contra la puerta. Sé quién es.\n\nSi alguien lee esto: no fue el casco.' },
+  whit: { en: 1, long: true, t: 'PEGADA BAJO EL PANEL · EN INGLÉS', o: 'M. Whitcombe, Admiralty Research, Portland · 14.10.86\nThey want "thermal". It is not thermal. Something answers. I will not sign.\n\nR. Lindqvist, Bergen · 14.10.88\nNor will I. They will bring another one.', b: 'M. Whitcombe, 1986: Quieren «térmico». No es térmico. Algo contesta. No voy a firmar.\n\nR. Lindqvist, 1988: Yo tampoco. Van a traer a otro.' },
 };
 
 /* ============================================================
@@ -1760,24 +1800,35 @@ let subTO = 0, subEnd = 0;
 const SAID = [], subQ = [];
 function showSub(it) {
   subEnd = T + it.d; SAID.push(it.t); if (SAID.length > 120) SAID.shift();
-  const s = $('sub'), t = it.ru ? `<span class="br">[</span>${it.t}<span class="br">]</span>` : it.t;
-  s.innerHTML = `<span class="box">${it.who ? `<span class="who">${it.who}${it.ru ? '<i class="ru">RUSO</i>' : ''}</span>` : ''}${t}</span>`; s.className = 'show ' + (it.cls || ''); clearTimeout(subTO);
+  // lo que se oye en ruso va [entre corchetes] en el texto, y se marca solo ese trozo
+  const s = $('sub'), t = it.t.replace(/\[([^\]]+)\]/g, '<span class="ruf"><span class="br">[</span><i class="ru">RU</i>$1<span class="br">]</span></span>');
+  s.innerHTML = `<span class="box">${it.who ? `<span class="who">${it.who}</span>` : ''}${t}</span>`; s.className = 'show ' + (it.cls || ''); clearTimeout(subTO);
   subTO = setTimeout(() => s.className = it.cls || '', it.d * 1000);
   if (it.voice) AU.voice(it.voice, it.vo); else if (it.radio) AU.radio(Math.min(it.d - .3, .9 + it.t.length * .05), it.radio);
   it.fn && it.fn();
 }
 // voces grabadas: el subtítulo dura lo que dura la toma
 const WHO_VO = { belov: 'BÉLOV · RADIO', dead: 'DESDE EL 7', hale: 'HALE', res: 'PESQUERO «HAVBRIS»' };
-const RU = /[\u0400-\u04FF]/; // si en la toma se oye ruso, el subtítulo va entre corchetes
 function voItem(id, o = {}) {
   const v = VO[id], b = AU.vob[id], d = (b ? b.duration : .9 + v.es.length * .055) + (o.pad ?? .4);
   const cls = (v.s === 'belov' ? 'radio' : v.s === 'dead' ? 'dead' : v.s === 'res' ? 'res' : '') + (o.cls ? ' ' + o.cls : '');
-  return { t: v.es, d, who: o.who ?? WHO_VO[v.s], ru: RU.test(v.t), cls, voice: id, vo: o, fn: o.fn, exp: T + (o.exp || 30) };
+  return { t: v.es, d, who: o.who ?? WHO_VO[v.s], cls, voice: id, vo: o, fn: o.fn, exp: T + (o.exp || 30) };
 }
 function vo(id, o) { subQ.push(voItem(id, o)); }
 function voNow(id, o) { showSub(voItem(id, o)); }
 // say: inmediato. line/radio: en cola, sin pisarse.
 function say(t, d = 3.6, cls = '') { showSub({ t, d, cls }); }
+function think(t, d = 3.4) { showSub({ t, d, cls: 'think', who: 'HALE · PIENSA' }); }
+// la primera vez que miras un letrero de cerca, Hale lo traduce para sí
+function lookSign() {
+  camera.getWorldDirection(_v);
+  for (const g of SIGNS) {
+    if (G.said[g.k] || !g.m.visible) continue;
+    g.m.getWorldPosition(_v2); _v2.sub(camera.position); const d = _v2.length();
+    if (d < 4.2 && _v.dot(_v2.multiplyScalar(1 / d)) > .93) { G.said[g.k] = 1; think(g.th); if (g.vo) vo(g.vo); return true; }
+  }
+  return false;
+}
 function line(t, d = 3.4, fn) { subQ.push({ t, d, fn, exp: T + 30 }); }
 function tickSubs() { while (subQ.length && subQ[0].exp < T) subQ.shift(); if (subQ.length && T > subEnd + .35) showSub(subQ.shift()); }
 function once(k, fn) { if (G.said[k]) return false; G.said[k] = 1; fn(); return true; }
@@ -1787,6 +1838,7 @@ function obj(t, quiet) { const e = $('objtxt'); if (e.textContent === t) return;
 let noteCB = null;
 function showNote(k, cb) {
   const N = NOTES[k]; $('nt').textContent = N.t; $('nb').textContent = N.b;
+  $('no').textContent = N.o || ''; $('no').style.display = $('nh').style.display = N.o ? '' : 'none'; $('nh').textContent = N.en ? 'LO QUE DICE' : 'LO QUE ENTIENDO';
   document.querySelector('.paper').classList.toggle('long', !!N.long);
   $('note').classList.remove('hidden'); state = 'note'; AU.hold(null); AU.crank(null); noteCB = cb || null;
   AU.thud(null, .15);
@@ -1823,7 +1875,7 @@ function updateHUD(dt) {
     c.textContent = 'CONTACTO ' + Math.round(G.contact) + ' m';
     c.classList.toggle('near', G.contact < 150);
   } else c.classList.add('hidden');
-  $('lamp').classList.toggle('off', !G.light);
+  $('lamp').classList.toggle('off', !G.light); $('lamp').classList.toggle('need', !G.light && G.lampTry > 0 && G.woke);
   const red = G.lightMode === 'red' ? .35 + .25 * Math.sin(T * 1.1) : 0;
   $('fxlow').style.opacity = Math.min(1, clamp((25 - o) / 25, 0, 1) * (.6 + .4 * Math.sin(T * 3)) + G.fear * .5 + red + (G.held ? .35 : 0));
 }
@@ -1875,7 +1927,25 @@ actBtn.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagat
 const actUp = e => { held.act = false; actBtn.classList.remove('press'); };
 actBtn.addEventListener('pointerup', actUp); actBtn.addEventListener('pointercancel', actUp);
 $('lamp').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); toggleLight(); });
-function toggleLight() { if (state !== 'play') return; G.light = !G.light; AU.step(.25); vib(15); if (G.kill > 0 && G.light) AU.thud(null, .1); }
+function toggleLight() {
+  if (state !== 'play') return;
+  // no prende a la primera: chispea, se apaga y Hale insiste
+  if (!G.light && G.lampTry > 0) {
+    G.lampTry--; G.spark = .3; AU.step(.3); vib([12, 40, 12]);
+    if (!G.said.lampA) { G.said.lampA = 1; quip('lampA'); } else if (!G.said.lampB) { G.said.lampB = 1; quip('lampB'); }
+    return;
+  }
+  G.light = !G.light; AU.step(.25); vib(15); if (G.kill > 0 && G.light) AU.thud(null, .1);
+  if (G.light && !G.said.lampC) { G.said.lampC = 1; quip('lampC'); }
+}
+// una reacción corta: si alguien está hablando, va justo después (y si tarda mucho, se pierde)
+function quip(id) { if (T > subEnd && !subQ.length) voNow(id); else subQ.unshift(voItem(id, { exp: 6 })); }
+// la linterna muere en el peor momento; vuelve a costar prenderla
+function lampDie(id) {
+  if (!G.light || state !== 'play') return;
+  G.light = false; G.lampTry = 1; G.spark = .45; AU.thud(null, .12); vib([30, 60, 30]); quip(id);
+  once('lampHint', () => hint('Se apagó la linterna · tócala de nuevo', 4));
+}
 addEventListener('keydown', e => {
   keys[e.code] = true;
   if (state !== 'play' && state !== 'deck' && state !== 'wake') return;
@@ -2088,7 +2158,7 @@ function finishWake() {
   state = 'play'; G.woke = true; P.y = 1.62; hudShow(true); $('act').classList.add('off');
   obj('Sin energía no hay radio ni aire · arranca el auxiliar en máquinas');
   vo('wake2'); vo('wake3'); vo('wake4');
-  later(1.2, () => hint(matchMedia('(pointer:coarse)').matches ? 'Izquierda: moverte (al borde corres) · Derecha: mirar' : 'WASD: moverte · Shift: correr · F: linterna', 5));
+  later(1.2, () => hint(matchMedia('(pointer:coarse)').matches ? 'Izquierda: moverte (al borde corres) · Derecha: mirar<br>Prende la linterna: el botón de la derecha' : 'WASD: moverte · Shift: correr<br>F: prende la linterna', 6));
   checkpoint();
 }
 
@@ -2119,6 +2189,7 @@ function updateKnockWalk(dt) {
     const u = KW.i / 6, z = lerp(-45, C7Z - .5, u);
     AU.knock(new THREE.Vector3(KW.i % 2 ? 1.8 : -1.8, 1.3, z), 3, .5 + u * .4); if (KW.i > 3) vib(25); KW.i++;
   }
+  if (KW.t > 6.5 && !G.said.lampD) { G.said.lampD = 1; lampDie('lampD'); }
   if (KW.i >= 7 && KW.t > 13.5) {
     G.walk = 2; G.lightMode = 'power'; G.flick = .5; AU.hum(true); AU.vent(true); AU.power(true);
     AU.knock(C7POS, 3, 1); later(.8, () => voNow('walk2')); G.knockAt = 7;
@@ -2238,6 +2309,7 @@ function end03() {
   G.lightMode = 'power'; G.flick = .6; AU.hum(true); AU.vent(true); AU.power(true); G.kill = 0;
   setDoor(2, true);
   vo('h6'); vo('h7'); obj('¿Es el casco? · escúchalo desde la sala de sonar'); checkpoint();
+  later(14, () => { if (G.h03 === 2 && !G.sonar) lampDie('lampE'); });
 }
 
 /* --- sonar: oír el casco desde afuera --- */
@@ -2282,6 +2354,7 @@ function open7Hold(p) {
 function open7() {
   G.c7open = true; openQ = 0; AU.chain(C7POS.clone()); AU.creak(C7POS, .7); AU.thud(C7POS, .8); G.shake = .5; vib([60, 40, 120]);
   AU.water(.12); obj('Abre el aire de emergencia · al fondo del 7'); checkpoint();
+  later(2.5, () => lampDie('lampF'));
 }
 function airHold(p) {
   props.kWheel.rotation.x = p * 12;
@@ -2549,7 +2622,8 @@ function updateTriggers(dt) {
   if (T > subEnd + .4 && !subQ.length) {
     if (!G.lampSaid && playTime > 16 && P.z < -5.4 && !G.energy) { G.lampSaid = true; voNow('lamp'); }
     else if (!G.c7seen && P.z < -12.8 && P.z > -17 && P.x > -1.17 && !G.walk) { G.c7seen = true; voNow('c7pass'); }
-    else if (playTime > 9 && P.z < -3.5 && !G.energy) once('empty', () => { voNow('empty1'); vo('empty2'); });
+    else if (playTime > 9 && P.z < -3.5 && !G.energy && !G.said.empty) once('empty', () => { voNow('empty1'); vo('empty2'); });
+    else lookSign();
   }
   // espejo del camarote: alguien al fondo del pasillo, solo en el vidrio
   updateMirrorScene(dt);
@@ -2605,7 +2679,7 @@ function updateSonar(dt) {
   g.beginPath(); g.arc(c + Math.cos(ba) * br, c + Math.sin(ba) * br, 5 + glow * 3, 0, 7); g.fill();
   g.fillStyle = 'rgba(0,18,10,1)'; g.fillRect(0, 226, w, 30);
   g.fillStyle = inside ? '#ff5040' : '#7dffb0'; g.font = '15px monospace';
-  g.fillText(inside ? 'CONTACTO: 0 m  !!!' : `CONTACTO ${Math.round(dist)} m`, 10, 246);
+  g.fillText(inside ? 'КОНТАКТ: 0 м  !!!' : `КОНТАКТ ${Math.round(dist)} м`, 10, 246);
   S.t.needsUpdate = true;
 }
 
@@ -3592,7 +3666,7 @@ window.ABISMO = {
   flood: () => { window.ABISMO.reveal(); G.c7open = true; c7.cur = 1; startFlood(); },
   blow: () => { window.ABISMO.flood(); startBlow(); }, rescue: () => startRescue(),
   O, c7, said: SAID, skip: () => endOpening(), wake: () => finishWake(), dive: t => { startDive(); O.t = t || 0; }, ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
-  renderer, dv, SELF, GH, humans, ghostBehind, camera, scene, V3: (x, y, z) => new THREE.Vector3(x, y, z), CR: pts => new THREE.CatmullRomCurve3(pts), acts, held, props, H3, RS, get cand() { return cand; }, doors, AU, VO,
+  SIGNS, get subQ() { return subQ; }, get subEnd() { return subEnd; }, renderer, dv, SELF, GH, humans, ghostBehind, camera, scene, V3: (x, y, z) => new THREE.Vector3(x, y, z), CR: pts => new THREE.CatmullRomCurve3(pts), acts, held, props, H3, RS, get cand() { return cand; }, doors, AU, VO,
 };
 </script>
 </body>
