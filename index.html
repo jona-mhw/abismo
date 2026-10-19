@@ -45,7 +45,11 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 #obj span{background:rgba(0,0,0,.35);padding:4px 10px;border-radius:3px;border-left:2px solid var(--teal);display:inline-block;max-width:86vw;line-height:1.45}
 #obj.flash span{animation:objIn 1.4s ease}
 @keyframes objIn{0%{background:rgba(63,208,201,.6)}100%{background:rgba(0,0,0,.35)}}
-#sub{position:fixed;left:7%;right:7%;bottom:calc(env(safe-area-inset-bottom) + 200px);text-align:center;font-family:'Special Elite',Georgia,serif;font-size:17px;line-height:1.4;color:#f2efe6;text-shadow:0 1px 3px #000,0 0 14px #000,0 0 2px #000;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s}
+#sub{position:fixed;left:5%;right:5%;bottom:calc(env(safe-area-inset-bottom) + 200px);text-align:center;font-family:'Special Elite',Georgia,serif;font-size:17px;line-height:1.42;color:#f2efe6;text-shadow:0 1px 2px #000,0 0 8px #000;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s}
+#sub .box{display:inline-block;max-width:560px;padding:8px 14px 9px;background:linear-gradient(rgba(4,9,10,.62),rgba(4,9,10,.5));border-radius:4px;box-shadow:0 0 18px rgba(0,0,0,.35)}
+#sub .who{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.3em;opacity:.9;margin-bottom:4px;color:#e2bf86}
+#sub .who .ru{display:inline-block;margin-left:7px;padding:0 4px;border:1px solid currentColor;border-radius:2px;font-size:9px;letter-spacing:.15em;font-style:normal;opacity:.85}
+#sub .br{color:var(--teal);opacity:.75;font-family:'Share Tech Mono',monospace;padding:0 3px}
 #sub.show{opacity:1}
 #sub.alert{color:#ff6b5e;font-family:'Share Tech Mono',monospace;letter-spacing:.12em;font-size:18px}
 #cross{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(255,255,255,.3);z-index:3;pointer-events:none;transition:all .2s}
@@ -121,8 +125,10 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 #dgauge b{display:block;font-weight:400;font-size:36px;letter-spacing:.06em;margin-top:2px}
 #skip{position:fixed;right:calc(12px + env(safe-area-inset-right));top:calc(env(safe-area-inset-top) + 12px);z-index:6;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.3);font-size:11px;letter-spacing:.2em;padding:10px 12px;border-radius:2px;color:#fff}
 #load{font-size:11px;letter-spacing:.25em;opacity:.6;margin-top:14px;min-height:14px}
-#sub .who{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--teal);opacity:.85;margin-bottom:5px}
 #sub.radio{font-family:'Share Tech Mono',monospace;color:#c8f5ee;font-size:16px;letter-spacing:.03em}
+#sub.radio .who{color:var(--teal)}
+#sub.dead .who{color:#9fc9c0}
+#sub.res .who{color:#ffc22a}
 #sub.radio.bad{color:#ffd9d2;text-shadow:0 0 8px #300,0 1px 3px #000,1px 0 rgba(255,40,40,.5),-1px 0 rgba(0,255,230,.4)}
 #sub.dead{font-style:italic;color:#cfe0da;letter-spacing:.06em;text-shadow:0 0 10px #000,0 0 3px #000}
 #sub.shout{font-size:19px}
@@ -138,6 +144,8 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 #end .other{margin-top:12px;font-size:11px;letter-spacing:.2em;opacity:.55}
 #end.b{background:radial-gradient(ellipse at 50% 70%,rgba(10,30,60,.6),rgba(0,0,0,.97) 75%)}
 #fxwake{position:fixed;inset:0;z-index:2;pointer-events:none;background:#000;opacity:0}
+#fxwater{position:fixed;left:-10%;right:-10%;top:-6%;bottom:-6%;z-index:2;pointer-events:none;transform:translateY(105%);background:linear-gradient(rgba(160,235,230,.45),rgba(40,120,130,.32) 3%,rgba(10,50,62,.4) 35%,rgba(2,16,24,.55));border-radius:45% 55% 0 0/14px 18px 0 0}
+#fxvig{--r:62%;position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(ellipse 150% 75% at 50% 50%,transparent var(--r),rgba(0,0,0,.94) calc(var(--r) + 28%))}
 .paper.long p{font-size:14.5px;line-height:1.5}
 </style>
 <script type="importmap">
@@ -163,7 +171,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 <div id="obj" class="hidden"><span id="objtxt"></span></div>
 <div id="sub"></div>
 <div id="hint"></div>
-<div id="fxwake"></div>
+<div id="fxwake"></div><div id="fxwater"></div><div id="fxvig"></div>
 <div id="cross" class="hidden"></div>
 <div id="joy" class="hidden"><div id="knob"></div></div>
 <button id="lamp" class="hidden" aria-label="Linterna"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M4 13h9l3-3h4v12h-4l-3-3H4z"/><path class="beam" d="M23 11l6-3M23 16h7M23 21l6 3" stroke="#3fd0c9"/></svg></button>
@@ -1657,7 +1665,7 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   // s: quién habla (hale: tú, en inglés · belov: el comandante, ruso y un inglés roto · dead: detrás de la puerta · res: el pesquero)
   // t: lo que se oye · es: el subtítulo · st: indicación de actuación para generar la voz
   deck1: { s: 'hale', t: 'Barents Sea in October. Four degrees and falling.', es: 'Mar de Barents en octubre. Cuatro grados y bajando.' },
-  deck2: { s: 'belov', t: 'Доктор Хейл. Doctor. Tonight you listen. Tomorrow you write: hull noise. Thermal. And we all go home.', es: 'Doctor Hale. Esta noche escucha. Mañana escribe: ruido del casco. Térmico. Y todos nos vamos a casa.', st: 'over a ship loudspeaker, flat and commanding' },
+  deck2: { s: 'belov', t: 'Доктор Хейл. Doctor. It was hard to bring you here. Your job is easy. You listen, and you write that these sounds come from the submarine. Hull noise. And we all go home.', es: 'Doctor Hale. Costó mucho traerlo. Su trabajo es fácil: escuche y escriba que estos sonidos son del submarino. Ruido del casco. Y todos nos vamos a casa.', st: 'over a ship loudspeaker, flat and commanding' },
   deck3: { s: 'belov', t: 'It knocks at three. Always at three.', es: 'Golpea a las tres. Siempre a las tres.', st: 'lower, almost to himself' },
   deck4: { s: 'hale', t: 'Stuck. Of course it\'s stuck.', es: 'Trabada. Claro que está trabada.', st: 'straining, annoyed' },
   deck5: { s: 'hale', t: 'Ten weeks, Annie. I\'ll be home for your birthday. I promised.', es: 'Diez semanas, Annie. Llego a tu cumpleaños. Lo prometí.', st: 'tender, quiet' },
@@ -1668,8 +1676,8 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   dive5: { s: 'hale', t: 'Even the whales are running.', es: 'Hasta las ballenas huyen.' },
   dive6: { s: 'hale', t: 'There\'s a wreck down there. Nobody told me about a wreck.', es: 'Hay un naufragio allá abajo. Nadie me habló de un naufragio.' },
   dive7: { s: 'belov', t: 'Не ваше дело. Not your business. Write.', es: 'No es asunto suyo. Escriba.', st: 'over a ship intercom, cold' },
-  dive8: { s: 'hale', t: 'Someone\'s standing on our deck.', es: 'Hay alguien parado en nuestra cubierta.', st: 'barely a whisper, frightened' },
-  dive9: { s: 'hale', t: 'No suit.', es: 'Sin traje.', st: 'whispered, horrified' },
+  dive8: { s: 'hale', t: 'Three knocks. From inside the boat.', es: 'Tres golpes. Desde adentro del submarino.', st: 'barely a whisper, frightened' },
+  faint1: { s: 'hale', t: 'Annie… Annie.', es: 'Annie… Annie.', st: 'softly saying the name of his daughter, Annie, fading, losing consciousness' },
   wake1: { s: 'hale', t: 'I\'m on the floor. Soaked.', es: 'Estoy en el suelo. Empapado.', st: 'groggy, just waking up, coughing slightly' },
   wake2: { s: 'hale', t: 'The dome. The seal broke, and the water threw me down here.', es: 'La cúpula. Se rompió el sello y el agua me tiró aquí abajo.', st: 'confused, remembering' },
   wake3: { s: 'hale', t: 'Two fifty-two. Eight minutes to three.', es: 'Dos cincuenta y dos. Ocho minutos para las tres.', st: 'a chill of fear' },
@@ -1752,17 +1760,19 @@ let subTO = 0, subEnd = 0;
 const SAID = [], subQ = [];
 function showSub(it) {
   subEnd = T + it.d; SAID.push(it.t); if (SAID.length > 120) SAID.shift();
-  const s = $('sub'); s.innerHTML = (it.who ? `<span class="who">${it.who}</span>` : '') + it.t; s.className = 'show ' + (it.cls || ''); clearTimeout(subTO);
+  const s = $('sub'), t = it.ru ? `<span class="br">[</span>${it.t}<span class="br">]</span>` : it.t;
+  s.innerHTML = `<span class="box">${it.who ? `<span class="who">${it.who}${it.ru ? '<i class="ru">RUSO</i>' : ''}</span>` : ''}${t}</span>`; s.className = 'show ' + (it.cls || ''); clearTimeout(subTO);
   subTO = setTimeout(() => s.className = it.cls || '', it.d * 1000);
   if (it.voice) AU.voice(it.voice, it.vo); else if (it.radio) AU.radio(Math.min(it.d - .3, .9 + it.t.length * .05), it.radio);
   it.fn && it.fn();
 }
 // voces grabadas: el subtítulo dura lo que dura la toma
-const WHO_VO = { belov: 'BÉLOV · RADIO', dead: '', hale: '', res: 'PESQUERO «HAVBRIS»' };
+const WHO_VO = { belov: 'BÉLOV · RADIO', dead: 'DESDE EL 7', hale: 'HALE', res: 'PESQUERO «HAVBRIS»' };
+const RU = /[\u0400-\u04FF]/; // si en la toma se oye ruso, el subtítulo va entre corchetes
 function voItem(id, o = {}) {
   const v = VO[id], b = AU.vob[id], d = (b ? b.duration : .9 + v.es.length * .055) + (o.pad ?? .4);
-  const cls = (v.s === 'belov' ? 'radio' : v.s === 'dead' ? 'dead' : '') + (o.cls ? ' ' + o.cls : '');
-  return { t: v.es, d, who: o.who ?? WHO_VO[v.s], cls, voice: id, vo: o, fn: o.fn, exp: T + (o.exp || 30) };
+  const cls = (v.s === 'belov' ? 'radio' : v.s === 'dead' ? 'dead' : v.s === 'res' ? 'res' : '') + (o.cls ? ' ' + o.cls : '');
+  return { t: v.es, d, who: o.who ?? WHO_VO[v.s], ru: RU.test(v.t), cls, voice: id, vo: o, fn: o.fn, exp: T + (o.exp || 30) };
 }
 function vo(id, o) { subQ.push(voItem(id, o)); }
 function voNow(id, o) { showSub(voItem(id, o)); }
@@ -3199,9 +3209,6 @@ const dv = {};
   fgeo.computeVertexNormals();
   const sed = new THREE.Mesh(fgeo, new THREE.MeshStandardMaterial({ color: 0x555a53, roughness: 1 })); sed.rotation.x = -Math.PI / 2; dv.floor.add(sed);
   for (let i = 0; i < 22; i++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(.3, 1.4), 0), mRock); const a = rnd(6.28), r = rnd(8, 26); b.position.set(Math.cos(a) * r, rnd(-.1, .4), Math.sin(a) * r - 6); b.rotation.set(rnd(3), rnd(3), rnd(3)); dv.floor.add(b); }
-  // (d) la figura: de pie en NUESTRA cubierta
-  const SF = makeHuman('marinero', { skin: 0x9aa6a4, coat: 0x5c6672, wet: true, still: true }); dv.fig = SF.g; dv.head = SF.head; dv.fig.position.set(.35, -4.32, -7.4); dv.fig.rotation.y = 2.7; diveG.add(dv.fig); dv.fig.visible = false;
-  dv.hq = new THREE.Quaternion();
 }
 // piel de la ballena: percebes, surcos ventrales, cicatrices, aletas moteadas y la luz del agua que la envuelve
 // (kind: 0 cuerpo, 1 aletas pectorales, 2 cola, 3 piel lisa)
@@ -3337,7 +3344,7 @@ function diveDepth(t) { for (let i = 1; i < DIVE_K.length; i++) if (t <= DIVE_K[
 
 function startOpening() {
   state = 'deck'; hudShow(false);
-  Object.assign(O, { yaw: 0, pitch: -.3, t: 0, D: 0, hatch: 0, opened: false, openT: 0, cut: -1, ev: {}, drag: -9, clock: 0, said: 0, ck: 0 });
+  Object.assign(O, { d2: 0, yaw: 0, pitch: -.3, t: 0, D: 0, hatch: 0, opened: false, openT: 0, cut: -1, ev: {}, drag: -9, clock: 0, said: 0, ck: 0 });
   deckG.visible = true; diveG.visible = false;
   OS.fog.color.setHex(0xa69a92); OS.fog.density = .026; oFog.uFog.value.copy(OS.fog.color); oFog.uFogD.value = .021;
   skyU.uTop.value.setHex(0x4f6276); skyU.uMid.value.setHex(0xf0b98c); skyU.uBot.value.setHex(0x5a6570); skyU.uGlowC.value.setHex(0xffb46e); skyU.uGlow.value = 1; skyU.uPow.value = 5; skyU.uSun.value.copy(SUN);
@@ -3358,8 +3365,8 @@ function startOpening() {
   AU.opStart();
 }
 const SEEN = () => { try { return localStorage.getItem('abismo_v2') === '1'; } catch (e) { return false; } };
-function lookCam(dt, x, y, z) {
-  let yaw = O.yaw, pitch = O.pitch + Math.sin(O.clock * .7) * .004, roll = 0;
+function lookCam(dt, x, y, z, roll = 0) {
+  let yaw = O.yaw, pitch = O.pitch + Math.sin(O.clock * .7) * .004;
   if (G.shake > 0) { const s = G.shake * G.shake * .06; yaw += rnd(-s, s); pitch += rnd(-s, s); roll += rnd(-s, s); G.shake = Math.max(0, G.shake - dt * 1.4); }
   camera.position.set(x, y, z); camera.rotation.set(pitch, yaw, roll); camera.updateMatrixWorld();
   oSky.position.copy(camera.position);
@@ -3373,8 +3380,8 @@ function updateDeck(dt) {
   let cy = 3.14 + Math.sin(O.clock * .55) * .025, cz = 0;
   if (!O.opened) {
     if (!O.said && O.t > .9) { O.said = 1; voNow('deck1'); }
-    if (O.said === 1 && O.t > 3) { O.said = 1.5; vo('deck2', { who: 'BÉLOV · ALTAVOZ DEL PUENTE' }); vo('deck3', { who: 'BÉLOV · ALTAVOZ DEL PUENTE' }); vo('deck5'); }
-    const ready = O.t > 1.6;
+    if (O.said === 1 && O.t > 3) { O.said = 1.5; vo('deck2', { who: 'BÉLOV · ALTAVOZ DEL PUENTE', fn: () => { O.d2 = T + (AU.vob.deck2 ? AU.vob.deck2.duration : 9) - 1.5; } }); vo('deck3', { who: 'BÉLOV · ALTAVOZ DEL PUENTE' }); vo('deck5'); }
+    const ready = O.t > 1.6 && O.d2 && T > O.d2 - 5; // ya dijo de qué se trata el trabajo
     btn.classList.toggle('hidden', !ready); btn.classList.toggle('off', !ready); $('cross').classList.toggle('on', ready);
     if (ready && $('actlbl').innerHTML.indexOf('escotilla') < 0) $('actlbl').innerHTML = 'Abrir la escotilla<small>MANTÉN</small>';
     const p = O.hatch, stuck = (p > .16 && p < .36) || (p > .62 && p < .72);
@@ -3403,7 +3410,7 @@ function updateDeck(dt) {
 function startDive() {
   state = 'dive'; O.t = 0; O.D = 1; O.yaw = 0; O.pitch = .34; O.ev = {}; O.cut = -1; O.drag = -9;
   OS.environment = null;
-  deckG.visible = false; diveG.visible = true; dv.fish.visible = dv.whale.g.visible = dv.wreck.visible = dv.floor.visible = dv.fig.visible = false; dv.hull.visible = true;
+  deckG.visible = false; diveG.visible = true; dv.fish.visible = dv.whale.g.visible = dv.wreck.visible = dv.floor.visible = false; dv.hull.visible = true;
   skyU.uSun.value.set(-.24, .94, -.24).normalize(); skyU.uGlowC.value.setHex(0xc8fff0); skyU.uPow.value = 1.6;
   oDir.color.setHex(0xcffff2); oDir.position.set(-6, 30, -6); oDir.target.position.set(0, 0, 0);
   $('act').classList.add('hidden', 'off'); $('cross').classList.add('hidden'); AU.hold(null); subQ.length = 0;
@@ -3426,7 +3433,7 @@ function updateDive(dt) {
   const sun = 1 - ramp(0, 210, D);
   oHemi.color.copy(skyU.uTop.value); oHemi.groundColor.copy(skyU.uBot.value); oHemi.intensity = lerp(.5, 1.5, sun);
   oDir.intensity = 2.4 * sun * sun;
-  const lampOn = ramp(92, 135, D); oLamp.intensity = lampOn * (D > 320 ? 85 : 120) * (t > DIVE_END - .05 ? 0 : 1) * (Math.sin(O.clock * 47) > .995 ? .6 : 1) * (t > 54.3 && t < 55.05 ? (Math.sin(O.clock * 53) > .2 ? .04 : 1) : 1);
+  const lampOn = ramp(92, 135, D); oLamp.intensity = lampOn * (D > 320 ? 85 : 120) * (O.cut >= 0 ? (1 - ramp(1.5, 6.5, O.cut)) * (Math.sin(O.clock * 29) > -.2 ? 1 : .25) : 1) * (Math.sin(O.clock * 47) > .995 ? .6 : 1) * (t > 54.3 && t < 55.05 ? (Math.sin(O.clock * 53) > .2 ? .04 : 1) : 1);
   dv.hullU.uLamp.value = lampOn * (t > 54.3 && t < 55.05 ? .1 : 1);
   { // el foco gira hacia la pared de babor mientras pasa el otro casco
     const sw = smooth(ramp(41, 44.5, t)) * (1 - smooth(ramp(51.5, 53.5, t)));
@@ -3440,7 +3447,7 @@ function updateDive(dt) {
   dv.hullU.uCaus.value = 1 - ramp(4, 70, D); dv.hullU.uSun.value = sun; dv.hullU.uAlpha.value = 1;
   dv.glass.material.opacity = .035 * sun + .012;
   // partículas
-  const deep = ramp(55, 190, D), bub = 1 - ramp(0, 5, t);
+  const deep = ramp(55, 190, D), bub = Math.max(1 - ramp(0, 5, t), O.cut >= 0 ? (1 - ramp(2.5, 7.5, O.cut)) * .9 : 0); // burbujas al partir y al hundirse
   dv.pU.uB.value = lerp(.85, .5, deep) + bub * .5; dv.pU.uSize.value = lerp(1, 1.5, deep) + bub * 2.2; dv.pU.uNear.value = lerp(.06, .34, deep);
   dv.pU.uCol.value.setRGB(lerp(.75, .72, deep), lerp(1, .8, deep), lerp(.95, .86, deep));
   const vy = lerp(.9, 2.4, deep) + bub * 5, pa = dv.pg.attributes.position, pp = pa.array, B = dv.pb;
@@ -3489,21 +3496,10 @@ function updateDive(dt) {
     dv.wreck.position.set(-9.6, y, 0);
     if (Math.abs(y) < 10) aim = [1.6, Math.atan2(y, 11) * .6];
   }
-  // (c) el fondo sube; (d) alguien en nuestra cubierta
+  // (c) el fondo sube
   const fl = ramp(50, 60.3, t); dv.floor.visible = fl > 0;
   if (dv.floor.visible) dv.floor.position.y = lerp(-62, -12.6, 1 - Math.pow(1 - fl, 2.2));
-  dv.fig.visible = t > 55.05;
   if (t > 54.2) aim = [-.05, -.3];
-  if (dv.fig.visible) {
-    if (t > 56.4) {
-      // se da vuelta entero, despacio; la cabeza se adelanta, pero sin pasar de lo que gira un cuello
-      dv.fig.parent.worldToLocal(_v.copy(camera.position)); _v.sub(dv.fig.position);
-      let dy = Math.atan2(_v.x, _v.z) - dv.fig.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-      dv.fig.rotation.y += dy * (1 - Math.exp(-dt * .45));
-      const hy = clamp(dy, -1.1, 1.1), hp = clamp(-Math.atan2(_v.y - 1.6, Math.hypot(_v.x, _v.z)), -.6, .3);
-      _q.setFromEuler(_he.set(hp, hy, 0)); dv.head.quaternion.slerp(_q, 1 - Math.exp(-dt * 1.4));
-    } else dv.head.quaternion.identity();
-  }
   // la cámara vuelve sola hacia lo que hay que ver si no la estás moviendo
   if (aim && look.id === null && O.clock - O.drag > 1.3) {
     let dy = aim[0] - O.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
@@ -3511,7 +3507,8 @@ function updateDive(dt) {
   }
   O.pitch = clamp(O.pitch, -1.2, 1.35);
   // sonido
-  AU.opSet(0, ramp(0, 2, t) * (1 - ramp(45, 170, D)), lerp(2600, 500, ramp(20, 160, D)), ramp(60, 300, D) * (t > 57.2 ? .35 : 1), ramp(210, 390, D) * (t > 57.2 ? .4 : 1));
+  const fk = O.cut >= 0 ? 1 - ramp(.3, 6, O.cut) : 1;
+  AU.opSet(0, ramp(0, 2, t) * (1 - ramp(45, 170, D)) * fk, lerp(2600, 500, ramp(20, 160, D)), ramp(60, 300, D) * (t > 57.2 ? .35 : 1) * fk, ramp(210, 390, D) * (t > 57.2 ? .4 : 1) * fk);
   const ev = (k, at, fn) => { if (!O.ev[k] && t >= at) { O.ev[k] = 1; fn(); } };
   ev('p1', 6, () => AU.ping(.09, 1.7));
   const IC = { who: 'BÉLOV · INTERCOMUNICADOR' };
@@ -3525,20 +3522,28 @@ function updateDive(dt) {
   ev('p4', 42.5, () => AU.ping(.08, .8)); ev('k1', 45, () => { AU.creak(new THREE.Vector3(0, 0, -6), .4); AU.groan(new THREE.Vector3(-7, -2, 0), .22); });
   ev('s5', 45.6, () => voNow('dive6')); ev('s5b', 49.9, () => voNow('dive7', IC));
   ev('p5', 51, () => AU.pingEarly(.08));
-  ev('lf', 54.3, () => AU.creak(null, .3)); ev('s6', 55.6, () => voNow('dive8')); ev('s7', 57.9, () => voNow('dive9'));
-  ev('kn', 58.9, () => { AU.knock(null, 3, .9); vib([40, 90, 40, 90, 40]); G.shake = .3; });
+  ev('lf', 54.3, () => AU.creak(null, .3)); ev('kn', 55.3, () => { AU.knock(null, 3, .9); vib([40, 90, 40, 90, 40]); G.shake = .3; }); ev('s6', 56.7, () => voNow('dive8'));
   ev('h1', 57.3, () => { AU.heart(.5); G.fear = 1; }); ev('h2', 58.3, () => AU.heart(.6)); ev('h3', 59.2, () => AU.heart(.7)); ev('h4', 59.8, () => AU.heart(.8));
   ev('bang', DIVE_END, () => {
-    AU.bang(null, 1.7); AU.thud(null, 1); vib([260]); G.shake = 1.2; O.cut = 0;
+    AU.bang(null, 1.7); AU.thud(null, 1); AU.hiss(null); AU.water(1); vib([260]); G.shake = 1.2; O.cut = 0; $('dgauge').classList.add('hidden');
     const f = $('fxf'); f.style.transition = 'none'; f.style.background = '#cfe'; f.style.opacity = .55;
     requestAnimationFrame(() => { f.style.transition = 'opacity .12s'; f.style.opacity = 0; });
   });
+  let roll = 0, sink = 0;
   if (O.cut >= 0) {
-    O.cut += dt;
-    if (O.cut > .1 && !O.ev.black) { O.ev.black = 1; const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1; AU.opSet(0, 0, 500, 0, 0); }
-    if (O.cut > 1.3) { endOpening(); return; }
+    // se rompe el sello de la cúpula: el agua lo tapa, se marea y se apaga mientras se hunde
+    const c = O.cut += dt, fv = ramp(.6, 7, c), fe = (k, at, fn) => { if (!O.ev[k] && c >= at) { O.ev[k] = 1; fn(); } };
+    $('fxwater').style.transform = `translateY(${(1 - smooth(ramp(.15, 2.4, c))) * 105}%)`;
+    renderer.domElement.style.filter = `blur(${(ramp(1.4, 6.5, c) * 6 + Math.sin(c * 2.3) * fv * 1.5).toFixed(2)}px) brightness(${(1 - ramp(3.5, 7.6, c) * .85).toFixed(3)}) saturate(${(1 - fv * .6).toFixed(3)})`;
+    const fx = $('fxvig'); fx.style.opacity = fv; fx.style.setProperty('--r', (lerp(62, 6, smooth(ramp(1, 7.4, c))) + Math.sin(c * 2.3) * 6 * fv).toFixed(1) + '%');
+    O.yaw += Math.sin(c * .8) * dt * .12 * fv; O.pitch += dt * .05 * fv;
+    roll = Math.sin(c * .55) * .38 * fv; sink = smooth(ramp(.4, 7, c)) * .5;
+    fe('f0', .35, () => AU.muffle(900, .5)); fe('f1', 1.5, () => AU.heart(.75)); fe('f2', 2.6, () => AU.heart(.6)); fe('f3', 3.9, () => AU.heart(.45));
+    fe('fv', 4.6, () => voNow('faint1', { v: 1.6 })); fe('f4', 5.5, () => { AU.heart(.3); AU.muffle(260, 1.2); AU.water(.4); }); fe('f5', 7.3, () => AU.heart(.18));
+    fe('black', 7.4, () => { const fb = $('fxb'); fb.style.transition = 'opacity 1.1s'; fb.style.opacity = 1; });
+    if (c > 9) { endOpening(); return; }
   }
-  lookCam(dt, Math.sin(O.clock * .31) * .03, Math.sin(O.clock * .23) * .03, 0);
+  lookCam(dt, Math.sin(O.clock * .31) * .03, Math.sin(O.clock * .23) * .03 - sink, 0, roll);
 }
 function endOpening() {
   if (state !== 'deck' && state !== 'dive') return;
@@ -3546,7 +3551,8 @@ function endOpening() {
   for (const id of ['dgauge', 'skip']) $(id).classList.add('hidden');
   $('act').querySelector('circle.ring').style.strokeDashoffset = 358; $('actlbl').innerHTML = ''; $('sub').className = '';
   deckG.visible = diveG.visible = false; G.shake = 0; held.act = false;
-  AU.hold(null); AU.opStop();
+  renderer.domElement.style.filter = ''; $('fxvig').style.opacity = 0; $('fxwater').style.transform = 'translateY(105%)';
+  AU.hold(null); AU.opStop(); AU.water(0);
   const fb = $('fxb'); fb.style.transition = 'none'; fb.style.opacity = 1;
   startGame(null);
 }
@@ -3566,7 +3572,7 @@ buildHull(); buildDoors(); buildLamps(); buildProps(); buildC7(); buildStory(); 
 resize();
 // precompilar shaders de lo que aparece después
 props.flood.visible = true; renderer.compile(scene, camera); props.flood.visible = false;
-diveG.visible = true; for (const k of ['fish', 'wreck', 'floor', 'fig']) dv[k].visible = true; dv.whale.g.visible = true;
+diveG.visible = true; for (const k of ['fish', 'wreck', 'floor']) dv[k].visible = true; dv.whale.g.visible = true;
 renderer.compile(OS, camera);
 diveG.visible = false;
 requestAnimationFrame(loop);
