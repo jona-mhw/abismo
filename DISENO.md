@@ -33,8 +33,8 @@ Hale llega para firmar una mentira cómoda y termina abriendo la puerta que todo
 | # | Momento | Qué siente el jugador | Mecánica |
 |---|---|---|---|
 | — | **Expediente** (4 tarjetas) | Entender antes de temer | 1983: el 7 se inunda, el oficial de guardia cierra la puerta. El informe: «ruido del casco». Tú: Hale, vienes a firmarlo |
-| 0 | **Cubierta**, 16:40 | Frío, belleza, el encargo | Mirar, abrir la escotilla (se traba). Bélov: «Golpea a las tres. Siempre a las tres.» |
-| 1 | **Descenso** en la cúpula | Asombro → presagio | Peces, ballena, naufragio, alguien en la cubierta. Tres golpes en el vidrio |
+| 0 | **Cubierta**, 16:40 | Frío, belleza, el encargo | Bélov dice el trabajo en claro: «Su trabajo es fácil: escuche y escriba que estos sonidos son del submarino». La escotilla se habilita cuando ya lo dijo; se traba al abrirla |
+| 1 | **Descenso** en la cúpula | Asombro → presagio → desmayo | Peces, ballena, naufragio. Al fondo, el foco parpadea y suenan tres golpes desde adentro del submarino (nadie se ve). Se rompe el sello: el agua lo tapa, se marea, la vista se cierra y dice «Annie…» antes de perder el conocimiento |
 | 2 | **Despertar**, 02:52 | Soledad, cuenta regresiva | Mantener para levantarse. «Se rompió el sello y el agua me tiró aquí abajo.» «Ocho minutos para las tres.» |
 | 3 | **Camarote** | Quién soy, qué me espera | Espejo, foto de Annie, carta de invitación (opcionales) |
 | 4 | **Máquinas** | Oficio, primer golpe | Cebar + arrancar soltando en lo verde; el siete contesta |
@@ -69,6 +69,8 @@ Hale llega para firmar una mentira cómoda y termina abriendo la puerta que todo
 - **El jugador sabe qué pasó desde el principio**; lo que no sabe es quién cerró la puerta ni si los golpes son de los muertos. La confesión revela el quién, no el qué.
 - Cada objetivo en pantalla dice **qué hacer y por qué** («El aire se acaba · restaura el oxígeno en soporte vital»).
 - Las notas son color, no información obligatoria: todo lo necesario se oye o se lee en las tarjetas.
+- Subtítulos: arriba, quién habla (HALE, BÉLOV · RADIO, DESDE EL 7, PESQUERO). Si en la toma se oye ruso, el texto va **entre corchetes** con la marca RUSO.
+- Lo sobrenatural se insinúa con sonido antes de mostrarse: en el descenso no se ve a nadie.
 - Prueba: después de jugar, cualquiera cuenta la historia en tres frases.
 
 ## Personajes en 3D
@@ -79,5 +81,4 @@ Modelos humanos de MakeHuman (CC0) con esqueleto `game_engine`, generados por `t
 |---|---|---|
 | Hale (tú) | `hale` empapado, linterna en la mano | Solo en reflejos: espejo, ojo de buey |
 | El otro | `marinero` pálido, con brillo frío | Detrás de ti, solo en el reflejo |
-| El de la cubierta | `marinero` oscuro, quieto | Durante el descenso, sobre nuestra cubierta; gira la cabeza hacia ti |
 | Pescadores del «Havbris» | `hale` y `marinero` con impermeable amarillo | En el rescate: uno lanza el cabo, el otro te hace señas |
