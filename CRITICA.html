@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ABISMO · crítica</title>
+<style>
+:root{--teal:#008089;--deep:#026168;--lima:#C3E298;--aqua:#BFEFE6;--bg:#F1F5F8;--tx:#2C2C2C;--mut:#5d6870;--line:#d6e0e6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 16px 64px}
+header{background:var(--deep);color:#fff;border-radius:14px;padding:28px 28px 24px}
+header .k{font-size:12px;letter-spacing:.18em;color:var(--lima);text-transform:uppercase}
+header h1{margin:6px 0 10px;font-size:30px;line-height:1.15}
+header p{margin:0;color:var(--aqua);max-width:760px}
+h2{color:var(--deep);font-size:20px;margin:36px 0 10px;border-bottom:2px solid var(--teal);padding-bottom:6px}
+h3{color:var(--teal);font-size:16px;margin:22px 0 6px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.v{border-left:5px solid var(--teal)}
+.v b{color:var(--deep)}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;font-size:14px}
+th{background:var(--teal);color:#fff;text-align:left;padding:9px 10px;font-weight:600}
+td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#f8fbfc}
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+code{background:var(--aqua);color:var(--deep);padding:1px 5px;border-radius:4px;font-size:13px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.a{background:#fde2dc;color:#8a2a16}.m{background:#fff1c9;color:#7a5600}.b{background:var(--aqua);color:var(--deep)}
+.ok{background:var(--lima);color:#2f4a12}
+.route{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+.q{font-style:italic;color:var(--deep)}
+small{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="k">ABISMO · crítica de narrativa y jugabilidad · 19-10-2026</div>
+  <h1>La historia funciona. El final se cuenta en vez de jugarse, y el jugador no tiene red cuando se pierde.</h1>
+  <p>Leí el guion completo (bloque <code>VO</code>, notas, tarjetas), el flujo de cada escena y el plano del submarino. Hay tres bugs de guion que se arreglan en minutos y dos cambios de diseño que suben el impacto del final.</p>
+</header>
+
+<h2>Veredicto: lo primero que haría</h2>
+<div class="grid">
+  <div class="card v"><b>1 · Que la firma sea lo último que hace el jugador.</b><br>El juego entero dice «te trajeron a firmar». Hoy esa firma es un texto sobre negro. El último gesto tiene que ser el jugador escribiendo <i>no térmico</i> con el dedo.</div>
+  <div class="card v"><b>2 · Que los muertos guíen, durante el juego y en el rescate.</b><br>Los tres golpes sirven de brújula cuando estás perdido, y en la tormenta son los que traen el barco. El jugador lo vive en vez de leerlo en <code>end1</code>.</div>
+  <div class="card v"><b>3 · Que la nota del médico no revele el giro.</b><br>La nota <code>med</code> dice «capitán Bélov ordena sellar la puerta» y se puede leer en máquinas desde el minuto uno. Eso mata la confesión.</div>
+</div>
+
+<h2>Narrativa</h2>
+<div class="card">
+  <h3>Lo que está bien (no tocar)</h3>
+  La premisa en una línea es fuerte y se entiende. «Sin monstruo» está bien elegido. Los tres golpes como firma sonora, la confesión de Bélov con «Yo escribí: ruido del casco», las cuarenta marcas y las tres gorras, y la frase <span class="q">«Esta vez, con la puerta del siete abierta»</span>, todo eso es de primera. La regla de claridad del DISENO.md (sabes el qué, te falta el quién) es correcta.
+</div>
+
+<div class="card">
+  <h3>Dónde se cae</h3>
+  <p><b>El giro llega destripado.</b> La confesión revela el «quién», pero la nota del médico (<code>index.html:1790</code>, act <code>note2</code> en <code>:951</code>, sin condición <code>en</code>) ya lo dice. Quien lee todo, que es justo el jugador comprometido, se entera antes.</p>
+  <p><b>Una frase contradice la premisa.</b> <code>c7weld</code> (<code>:1732</code>): «No aparece en ningún plano que me hayan mostrado». Pero lo trajeron justamente por el 7: lo dicen la carta (<code>:1788</code>), la tarjeta 3 y <code>deck2</code>. Es un resto de la versión vieja.</p>
+  <p><b>El link compartido cuenta otra historia.</b> El <code>meta description</code> y el <code>og:description</code> (<code>:11</code>, <code>:13</code>) hablan de «nueve años a bordo» y «te toca la guardia». Es lo primero que lee quien recibe el link.</p>
+  <p><b>Annie no tiene cierre.</b> Se nombra cuatro veces (<code>deck5</code>, <code>photo</code>, la nota a mano en la carta, <code>faint1</code>) y el final no la menciona. Es la promesa emocional más clara del juego y queda colgando.</p>
+  <p><b>Bélov confiesa y desaparece.</b> Es el personaje con más arco moral y su cierre es una línea genérica: «La tripulación fue recogida». Le falta un gesto final.</p>
+  <p><b>Abrir el 7 no se siente valiente porque no hay otra opción.</b> El aire está adentro, así que la mecánica lo obliga. El valor tiene que estar en el cómo: que Hale se demore, que algo le cueste. Abrir no puede sentirse igual que abrir una válvula más.</p>
+  <p><b>El rescate es pura suerte.</b> Un pesquero noruego pasa justo por ahí. En el juego ya existe Lindqvist (Bergen, 1988), que no firmó. Una línea que los conecte cambia todo: los que no firmaron son los que vienen a buscarte. <small>Opcional, como idea.</small></p>
+</div>
+
+<h2>Por qué el jugador se pierde</h2>
+<div class="card">
+  <p>El mapa no es un laberinto: es un pasillo recto de 54 m con 4 compuertas. El problema es otro.</p>
+  <p><b>1. El 7 está al centro y obliga a ir y volver tres veces.</b> El recorrido real en <code>z</code> es:</p>
+  <div class="route">camarote 0 → máquinas −19 → el 7 −14,5 → soporte vital −32 → el 7 −14,5 → sonar −37 → el 7 −14,5 → lastre −44 → escape −53
+         ↑ ida          ↑ vuelta        ↑ ida           ↑ vuelta      ↑ ida        ↑ vuelta     ↑ ida</div>
+  <p>Cada vuelta es a oscuras o con la linterna fallando. Que vaya y vuelva está bien para el terror, pero el objetivo nunca dice hacia dónde: dice «en soporte vital», no «a popa, pasando la segunda compuerta». Solo Bélov dice «a popa», una vez.</p>
+  <p><b>2. Toda la guía es texto más sonido 3D.</b> En celular sin audífonos, el sonido espacial no existe. Si el jugador se pierde, no hay nada más: ni empujón por inactividad, ni forma de repetir lo último que se dijo. <code>SAID</code> guarda las líneas (<code>:1800</code>), pero no hay dónde verlas.</p>
+  <p><b>3. Mientras esperas, el reloj sigue.</b> El oxígeno baja siempre (<code>:2612</code>, 285 s antes de restaurarlo). Entre el despertar, la radio (call1 a call3, unos 21 s), el apagón (13,5 s) y la escena de la oreja (unos 19 s), se van cerca de 60 s, un 21 % del aire, en escenas donde el jugador no puede hacer nada. El objetivo además dice «Espera · la radio vuelve a la vida». Quien exploró el camarote muere «sin aire» y siente que fue injusto.</p>
+</div>
+
+<div class="card">
+  <h3>La solución: los golpes como brújula (escalonado, sin flechas)</h3>
+  <table>
+    <tr><th>Tiempo sin avanzar</th><th>Qué pasa</th><th>Por qué así</th></tr>
+    <tr><td>~25 s</td><td>Hale piensa la dirección: «Máquinas. Pasando la primera compuerta, a la izquierda.»</td><td>Sale de la voz que ya existe; no rompe la inmersión.</td></tr>
+    <tr><td>~50 s</td><td>Tres golpes suaves desde el objetivo, y la luz de su compuerta parpadea.</td><td>Los muertos te guían. Es la siembra de lo que paga en el rescate.</td></tr>
+    <tr><td>~80 s</td><td>El objetivo muestra un dato más: «a popa · 12 m».</td><td>Red de seguridad para quien juega sin sonido.</td></tr>
+  </table>
+  <p>Además: tocar el objetivo repite la última línea dicha (usa <code>SAID</code>), y el objetivo dice siempre <b>proa/popa + compuerta</b>. Durante las escenas sin control, el oxígeno no baja, y «Espera» se cambia por algo que dé tensión sin obligar a quedarse quieto.</p>
+</div>
+
+<h2>El desenlace: cómo hacer que pegue</h2>
+<div class="card">
+  <p><b>Lo que hay hoy:</b> abres el 7, «Спасибо», inundación, soplado, rescate con 3 toques, y cinco tarjetas de texto. Después aparece una pantalla con tiempo, % de oxígeno y muertes. El pico emocional (las gorras y el «gracias») queda enterrado bajo tres mecánicas de acción. Lo que debería cerrar todo, la firma y Annie, se cuenta en texto. Y las estadísticas al final te sacan de golpe: pasas de los tres nombres al «tardaste 11:42».</p>
+  <h3>Propuesta, en cinco momentos</h3>
+  <table>
+    <tr><th>#</th><th>Momento</th><th>Cambio</th></tr>
+    <tr><td>1</td><td>«Спасибо»</td><td>Silencio primero, como en el 03:00: 3 s sin ventilación ni drones, y por primera vez en todo el juego, <b>no hay golpes</b>. Después revienta la inundación.</td></tr>
+    <tr><td>2</td><td>Tormenta</td><td>El barco no se ve en la niebla. Bajo la cubierta se oyen tres golpes, tres veces, y se alejan hacia el barco. El reflector gira hacia ti. Lo que hoy narra <code>end1</code>, el jugador lo oye.</td></tr>
+    <tr><td>3</td><td>Señas</td><td>Cada toque de linterna suena como un golpe (hoy es <code>AU.thud(.1)</code>, <code>:2554</code>), así que tus tres señas son tres golpes. Le contestas al mar con su propio idioma. Recomiendo además <b>sacar la muerte «el mar te llevó»</b>: morir a 20 s del final arruina la catarsis. Si no haces señas, el barco llega igual, guiado por los golpes. Tú los salvaste, ellos te salvan.</td></tr>
+    <tr><td>4</td><td>La firma</td><td>Fundido a un escritorio en diciembre: el formulario de la Flota, la casilla «Origen de los golpes» y el jugador traza la firma con el dedo. La foto de Annie al lado, con velas. Bélov firma abajo como testigo: <i>«Testigo: cap. A. Bélov»</i>. Es su redención, sin una línea de diálogo.</td></tr>
+    <tr><td>5</td><td>Nombres</td><td>«Vólkov · Orlov · Sedykh · 14.10.1983», y nada más. Las estadísticas van detrás de un toque, o se eliminan.</td></tr>
+  </table>
+  <p><b>Opción más audaz (recomendada si te tinca):</b> que en el formulario se pueda elegir <i>térmico</i>. Si firmas la mentira, epílogo seco: «14.10.1990 · 03:00» y tres golpes en negro. Es la complicidad del jugador: el juego no te juzga, te muestra lo que hiciste. La mayoría elegirá «no térmico», pero que exista la otra opción le da peso a la firma.</p>
+</div>
+
+<h2>Todo junto, para elegir</h2>
+<div class="tw">
+<table>
+  <tr><th>#</th><th>Hallazgo</th><th>Evidencia</th><th>Propuesta</th><th>Impacto</th><th>Esfuerzo</th><th>Validación</th></tr>
+  <tr><td>1</td><td>La nota del médico revela que fue Bélov</td><td><code>:1790</code>, <code>:951</code></td><td>Dejar solo «el oficial de guardia» (o el nombre tachado)</td><td><span class="tag a">ALTO</span></td><td>5 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>2</td><td>«No aparece en ningún plano» contradice la premisa</td><td><code>:1732</code></td><td>Cambiar por «Soldado. Desde afuera.» y regenerar la voz</td><td><span class="tag m">MEDIO</span></td><td>10 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>3</td><td>El meta/og es de la historia vieja</td><td><code>:11</code>, <code>:13</code></td><td>Reescribir con la premisa de Hale</td><td><span class="tag m">MEDIO</span></td><td>5 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>4</td><td>El jugador perdido no tiene red</td><td>3 <code>hint()</code> fijos</td><td>Empujón escalonado: voz, golpes, distancia</td><td><span class="tag a">ALTO</span></td><td>2 h</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>5</td><td>El objetivo no dice hacia dónde</td><td><code>obj()</code> <code>:2159</code>…</td><td>Agregar proa/popa + compuerta al texto</td><td><span class="tag a">ALTO</span></td><td>20 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>6</td><td>No se puede repetir lo último dicho</td><td><code>SAID</code> <code>:1800</code></td><td>Tocar el objetivo repite la última línea</td><td><span class="tag m">MEDIO</span></td><td>30 min</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>7</td><td>El oxígeno baja en escenas sin control (~60 s)</td><td><code>:2612</code></td><td>Pausar el O₂ con <code>G.lock</code> y en la radio; cambiar «Espera»</td><td><span class="tag m">MEDIO</span></td><td>20 min</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>8</td><td>La firma es texto, no se juega</td><td><code>:2570</code></td><td>Escena final: firmar con el dedo</td><td><span class="tag a">ALTO</span></td><td>3 h</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>9</td><td>Los golpes que te salvan se narran</td><td><code>end1</code></td><td>Que se oigan en la tormenta guiando al barco</td><td><span class="tag a">ALTO</span></td><td>1,5 h</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>10</td><td>Las señas no suenan a golpes</td><td><code>:2554</code></td><td>Cada seña es un golpe</td><td><span class="tag m">MEDIO</span></td><td>10 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>11</td><td>Morir en el rescate desinfla el final</td><td><code>:2559</code></td><td>Sacar la muerte «sea»: el barco llega igual</td><td><span class="tag m">MEDIO</span></td><td>15 min</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>12</td><td>Annie sin cierre</td><td><code>deck5</code>, <code>photo</code></td><td>Su foto con velas en la escena de la firma, más una línea</td><td><span class="tag a">ALTO</span></td><td>dentro del 8</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>13</td><td>Bélov sin cierre</td><td><code>:2569</code></td><td>Firma como testigo</td><td><span class="tag m">MEDIO</span></td><td>dentro del 8</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>14</td><td>Las estadísticas rompen el duelo</td><td><code>:2580</code></td><td>Mostrarlas detrás de un toque, o sacarlas</td><td><span class="tag m">MEDIO</span></td><td>10 min</td><td><span class="tag ok">visto en código</span></td></tr>
+  <tr><td>15</td><td>No hay silencio antes del final</td><td><code>airHold</code> <code>:2362</code></td><td>3 s sin ambiente y sin golpes después de «Спасибо»</td><td><span class="tag m">MEDIO</span></td><td>15 min</td><td><span class="tag b">probar jugando</span></td></tr>
+  <tr><td>16</td><td>Rescate de pura suerte</td><td>Lindqvist <code>:1793</code></td><td>Una línea: el Havbris salió de Bergen buscando el Zarya</td><td><span class="tag b">BAJO</span></td><td>10 min</td><td><small>opcional</small></td></tr>
+  <tr><td>17</td><td>Firmar la mentira no es posible</td><td>—</td><td>Opción «térmico» con epílogo de 1990</td><td><span class="tag m">MEDIO</span></td><td>1 h</td><td><small>decisión tuya</small></td></tr>
+</table>
+</div>
+
+<h2>Paquetes</h2>
+<div class="tw">
+<table>
+  <tr><th>Paquete</th><th>Incluye</th><th>Tiempo</th><th>Qué gana</th></tr>
+  <tr><td><b>A · Arreglos</b></td><td>1, 2, 3, 5, 10, 14</td><td>~1 h</td><td>Ya no hay giro destripado ni contradicciones, y el objetivo dice hacia dónde ir</td></tr>
+  <tr><td><b>B · Nunca perdido</b></td><td>A + 4, 6, 7</td><td>~4 h</td><td>Se puede jugar en el celular sin audífonos y no hay muertes injustas</td></tr>
+  <tr><td><b>C · Final que pega</b> <span class="tag ok">recomendado</span></td><td>B + 8, 9, 11, 12, 13, 15</td><td>~1 día</td><td>La firma, los golpes que te salvan, Annie y Bélov cerrados</td></tr>
+  <tr><td><b>C+</b></td><td>C + 16, 17</td><td>+1 h</td><td>Complicidad del jugador y un mundo con causa y efecto</td></tr>
+</table>
+</div>
+
+</div>
+</body>
+</html>
