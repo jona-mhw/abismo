@@ -32,19 +32,20 @@ Hale llega para firmar una mentira cómoda y termina abriendo la puerta que todo
 
 | # | Momento | Qué siente el jugador | Mecánica |
 |---|---|---|---|
+| — | **Expediente** (4 tarjetas) | Entender antes de temer | 1983: el 7 se inunda, el oficial de guardia cierra la puerta. El informe: «ruido del casco». Tú: Hale, vienes a firmarlo |
 | 0 | **Cubierta**, 16:40 | Frío, belleza, el encargo | Mirar, abrir la escotilla (se traba). Bélov: «Golpea a las tres. Siempre a las tres.» |
 | 1 | **Descenso** en la cúpula | Asombro → presagio | Peces, ballena, naufragio, alguien en la cubierta. Tres golpes en el vidrio |
-| 2 | **Despertar**, 02:52 | Soledad, cuenta regresiva | Mantener para levantarse. «Ocho minutos para las tres.» |
+| 2 | **Despertar**, 02:52 | Soledad, cuenta regresiva | Mantener para levantarse. «Se rompió el sello y el agua me tiró aquí abajo.» «Ocho minutos para las tres.» |
 | 3 | **Camarote** | Quién soy, qué me espera | Espejo, foto de Annie, carta de invitación (opcionales) |
 | 4 | **Máquinas** | Oficio, primer golpe | Cebar + arrancar soltando en lo verde; el siete contesta |
-| 5 | **La radio** | Alivio: Bélov está vivo | Llamada desde la cápsula |
+| 5 | **La radio** | Alivio: Bélov está vivo | Llamada desde la cápsula. La apuesta: el Zarya hace agua y no aguanta hasta el barco; hay que hacerlo subir |
 | 6 | **Apagón** | Los golpes caminan | Recorren el casco y se detienen en el siete |
 | 7 | **La puerta** | Hay alguien adentro | Pegar la oreja: «Abran… por favor» |
 | 8 | **Ojo de buey** | El vidrio es un espejo | Un marinero detrás de ti, solo en el reflejo |
 | 9 | **Oxígeno** | Urgencia | Válvula agarrotada: tocar rápido |
 | 10 | **03:00** | Terror en rojo | La rueda del siete gira sola: corre y sujétala. «Tom…» |
 | 11 | **Sonar** | Certeza | Golpes afuera del casco, voces en el hidrófono. «No es el casco» |
-| 12 | **Confesión** | Traición, culpa | Bélov cerró la puerta en el 83. El aire para emerger está en el siete |
+| 12 | **Confesión** | Traición, culpa | El oficial de guardia era Bélov. El aire para subir está en el siete: por eso no quería que te acercaras |
 | 13 | **Abrir el siete** | Valor | La misma rueda, ahora para abrir. Cuarenta marcas, tres gorras. «Спасибо» |
 | 14 | **Inundación** | Pánico | Corre a la palanca mientras el agua sube y te frena |
 | 15 | **Emersión** | Vértigo | Soplado de emergencia: 412 → 0 m |
@@ -62,3 +63,21 @@ Hale llega para firmar una mentira cómoda y termina abriendo la puerta que todo
 - **Tres golpes** son la firma de todo: el arranque fallido, el apagón, la puerta, el hidrófono, el final.
 - **Rojo = silencio primero.** A las 03:00 se apaga la ventilación antes de que empiecen los golpes.
 - **Las voces de los muertos** suenan apagadas y con mucha sala, como a través de acero.
+
+## Cómo se cuenta (regla de claridad)
+
+- **El jugador sabe qué pasó desde el principio**; lo que no sabe es quién cerró la puerta ni si los golpes son de los muertos. La confesión revela el quién, no el qué.
+- Cada objetivo en pantalla dice **qué hacer y por qué** («El aire se acaba · restaura el oxígeno en soporte vital»).
+- Las notas son color, no información obligatoria: todo lo necesario se oye o se lee en las tarjetas.
+- Prueba: después de jugar, cualquiera cuenta la historia en tres frases.
+
+## Personajes en 3D
+
+Modelos humanos de MakeHuman (CC0) con esqueleto `game_engine`, generados por `tools/humanos.py` y exportados a GLB (texturas WebP, ~1,5–2 MB c/u). En el juego se clonan con `SkeletonUtils`, cada uno con sus materiales; los brazos pasan de la pose en A a caídos, respiran y mueven la cabeza y el brazo de la linterna con huesos.
+
+| Quién | Modelo | Dónde aparece |
+|---|---|---|
+| Hale (tú) | `hale` empapado, linterna en la mano | Solo en reflejos: espejo, ojo de buey |
+| El otro | `marinero` pálido, con brillo frío | Detrás de ti, solo en el reflejo |
+| El de la cubierta | `marinero` oscuro, quieto | Durante el descenso, sobre nuestra cubierta; gira la cabeza hacia ti |
+| Pescadores del «Havbris» | `hale` y `marinero` con impermeable amarillo | En el rescate: uno lanza el cabo, el otro te hace señas |

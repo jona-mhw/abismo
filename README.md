@@ -11,6 +11,10 @@ Eres el Dr. Thomas Hale, acústico estadounidense invitado por la Flota del Nort
 
 Mobile first, three.js, efectos sintetizados con Web Audio. 10 a 12 minutos.
 
+**Antes de subir a cubierta**, cuatro tarjetas cuentan lo que pasó en 1983, quién eres y qué vienes a firmar.
+
+**Los humanos** (Hale, los marineros y los pescadores del «Havbris») son modelos 3D con esqueleto hechos con MakeHuman (assets CC0), en `humanos/*.glb`. Se generan con `blender -b --python tools/humanos.py` (extensión MPFB2 + asset packs system, shirts01 y pants01); `tools/visor.html` los muestra sueltos.
+
 Juega en https://jona-mhw.github.io/abismo/ (con audífonos). El diseño completo está en [DISENO.md](DISENO.md).
 
 Las voces (`voz/*.mp3`) se generan con `GEMINI_API_KEY=... node tools/voces.mjs` a partir del bloque `VO` de `index.html`. La key nunca se sube al repo.

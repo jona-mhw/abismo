@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visor de humanos</title>
+<style>html,body{margin:0;height:100%;background:#111}canvas{display:block}#i{position:fixed;left:8px;top:8px;color:#9cc;font:12px monospace}</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.170.0/examples/jsm/"}}</script>
+</head><body><div id="i"></div>
+<script type="module">
+// visor de desarrollo: ?m=hale|marinero&d=dist&y=altura&r=giro&l=luz(0..1) · los huesos se prueban desde la consola con B('head')
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const q = new URLSearchParams(location.search), m = q.get('m') || 'marinero';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); r.setPixelRatio(devicePixelRatio);
+r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const s = new THREE.Scene(), c = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, .05, 50);
+const d = +(q.get('d') || 2.6), y = +(q.get('y') || 1.1), L = +(q.get('l') || 1);
+c.position.set(0, y + .1, d); c.lookAt(0, y, 0);
+s.add(new THREE.HemisphereLight(0xbfd8ff, 0x202020, .6 * L));
+const k = new THREE.DirectionalLight(0xffffff, 2.2 * L); k.position.set(1.5, 2.5, 2); s.add(k);
+const rim = new THREE.DirectionalLight(0x6fd0ff, 1.5 * L); rim.position.set(-2, 1.5, -2); s.add(rim);
+new GLTFLoader().load(`../humanos/${m}.glb`, g => {
+  const o = g.scene; o.rotation.y = +(q.get('r') || 0); s.add(o);
+  let n = 0; o.traverse(x => { if (x.isMesh) n++; });
+  document.getElementById('i').textContent = `${m} · ${n} mallas`;
+  o.traverse(x => { if (x.isMesh) { x.frustumCulled = false; if (x.material.map) { x.material.alphaTest = .5; x.material.transparent = false; } } });
+  window.H = o; window.B = n => o.getObjectByName(n);
+  r.setAnimationLoop(() => r.render(s, c));
+}, undefined, e => document.getElementById('i').textContent = 'ERROR ' + e);
+</script></body></html>

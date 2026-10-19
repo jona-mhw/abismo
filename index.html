@@ -93,7 +93,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 @keyframes breathe{50%{box-shadow:0 0 40px rgba(63,208,201,.45),inset 0 0 24px rgba(63,208,201,.2)}}
 .howto{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 22px);left:0;right:0;font-size:11px;letter-spacing:.06em;opacity:.55;line-height:1.7}
 #intro{background:#000;cursor:pointer}
-#intro p{font-family:'Special Elite',serif;font-size:19px;line-height:1.6;max-width:340px;opacity:0;transition:opacity .8s}
+#intro p{font-family:'Special Elite',serif;font-size:17px;line-height:1.6;max-width:340px;padding:0 20px;opacity:0;transition:opacity .8s}
 #intro p.show{opacity:1}
 #intro p em{display:block;font-style:normal;font-family:'Share Tech Mono',monospace;color:var(--teal);font-size:12px;letter-spacing:.3em;margin-bottom:10px}
 #intro small{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 24px);opacity:.35;font-size:11px;letter-spacing:.2em}
@@ -220,6 +220,8 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 const $ = id => document.getElementById(id);
 const rnd = (a = 1, b) => b === undefined ? Math.random() * a : a + Math.random() * (b - a);
@@ -686,12 +688,106 @@ const dirtTex = canvasTex(256, 256, (g, w, h) => {
   const e = g.createRadialGradient(w / 2, h / 2, w * .3, w / 2, h / 2, w * .72); e.addColorStop(0, 'rgba(255,255,255,0)'); e.addColorStop(1, 'rgba(255,255,255,.85)'); g.fillStyle = e; g.fillRect(0, 0, w, h);
   g.strokeStyle = 'rgba(255,255,255,.4)'; for (let i = 0; i < 14; i++) { g.lineWidth = rnd(.5, 1.5); g.beginPath(); const x = rnd(w), y = rnd(h); g.moveTo(x, y); g.lineTo(x + rnd(-50, 50), y + rnd(-50, 50)); g.stroke(); }
 }, false);
-// tu cuerpo (solo en los reflejos) y el otro
-const SELF = makeSailor(0x9ba39d, 0x1a1f22, .05); onlyInReflection(SELF.g); scene.add(SELF.g);
-const GH = makeSailor(0x868d88, 0x0a0d0f, .14); onlyInReflection(GH.g); scene.add(GH.g); GH.g.visible = false;
+/* ============================================================
+   HUMANOS · MakeHuman (CC0), generados con tools/humanos.py
+   ============================================================ */
+// cada humano expone lo mismo que la figura vieja: g (grupo), head y arms[0..1] (controles en el espacio del cuerpo:
+// se rotan como si fueran la cabeza y los hombros) y mats[1] (la piel, con emisión para el brillo del otro)
+const HUM = {};
+function loadHumans() {
+  const ld = new GLTFLoader();
+  return Promise.all(['hale', 'marinero'].map(k => ld.loadAsync(`humanos/${k}.glb`).then(g => { HUM[k] = g.scene; }).catch(e => console.warn('humano sin cargar', k, e))));
+}
+const humans = [];
+const _hq = new THREE.Quaternion(), _hq2 = new THREE.Quaternion(), _hq3 = new THREE.Quaternion(), _hv = new THREE.Vector3(), _hv2 = new THREE.Vector3(), _he = new THREE.Euler();
+function modelQ(o, root, out) { o.getWorldQuaternion(out); root.getWorldQuaternion(_hq3); return out.premultiply(_hq3.invert()); }
+// gira un hueso (en el espacio del modelo) para que apunte hacia su hijo en la dirección dada
+function aimBone(root, b, c, dir) {
+  root.updateMatrixWorld(true);
+  c.getWorldPosition(_hv).sub(b.getWorldPosition(_hv2)).normalize();
+  _hq.setFromUnitVectors(_hv, dir.clone().normalize());
+  modelQ(b, root, _hq2).premultiply(_hq);
+  const par = modelQ(b.parent, root, new THREE.Quaternion()).invert();
+  b.quaternion.copy(par.multiply(_hq2));
+}
+function makeHuman(kind, o = {}) {
+  let H_torch = null;
+  const src = HUM[kind]; if (!src) return makeDoll(o.skin, o.coat, o.glow);
+  const g = new THREE.Group(), m = SkeletonUtils.clone(src); g.add(m);
+  const mats = [null, null];
+  m.traverse(x => {
+    if (!x.isMesh) return;
+    x.frustumCulled = false;
+    const mt = x.material = x.material.clone(), n = mt.name;
+    // pelo, cejas y pestañas: recorte por alfa (sin ordenar transparencias)
+    if (mt.transparent || mt.alphaTest) { mt.transparent = false; mt.alphaTest = .45; mt.depthWrite = true; }
+    if (n.endsWith('_piel')) { mats[1] = mt; mt.emissive = new THREE.Color(o.glowC ?? 0x8a9590); mt.emissiveMap = mt.map; mt.emissiveIntensity = o.glow || 0; if (o.skin) mt.color.set(o.skin); }
+    else if (n.includes('_clothes_')) { if (!mats[0]) mats[0] = mt; if (o.coat) mt.color.set(o.coat); }
+    if (o.wet && !n.includes('_eyes_')) mt.roughness = n.endsWith('_piel') ? .38 : n.includes('_hair_') ? .3 : .55;
+  });
+  const B = k => m.getObjectByName(k);
+  // de la pose en A a brazos caídos, con el codo apenas doblado
+  for (const [s, k] of [[1, 'l'], [-1, 'r']]) {
+    aimBone(m, B('upperarm_' + k), B('lowerarm_' + k), new THREE.Vector3(s * .16, -1, .02));
+    aimBone(m, B('lowerarm_' + k), B('hand_' + k), new THREE.Vector3(s * .06, -1, .2));
+  }
+  // la mano que lleva la linterna: dedos cerrados y la linterna en el puño
+  if (o.torch) {
+    for (const f of ['index', 'middle', 'ring', 'pinky']) for (let j = 1; j <= 3; j++) { const b = B(`${f}_0${j}_r`); if (b) b.rotateX(j === 1 ? 1.1 : .95); }
+    const t = new THREE.Group(), mt = new THREE.MeshStandardMaterial({ color: 0x23272a, roughness: .45, metalness: .6 });
+    const body = new THREE.Mesh(CYL(.017, .017, .16, 12), mt); body.position.y = .02; t.add(body);
+    const head = new THREE.Mesh(CYL(.026, .018, .045, 14), mt); head.position.y = .12; t.add(head);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(.023, 14), new THREE.MeshBasicMaterial({ color: 0xfff6e0 })); lens.rotation.x = -Math.PI / 2; lens.position.y = .143; t.add(lens);
+    t.position.set(-.02, .07, .03); t.rotation.z = Math.PI / 2; B('hand_r').add(t); H_torch = t;
+  }
+  m.updateMatrixWorld(true);
+  const bone = k => { const b = B(k); return { b, rest: modelQ(b, m, new THREE.Quaternion()), restPar: modelQ(b.parent, m, new THREE.Quaternion()) }; };
+  const H = { g, m, mats, kind, o, t: rnd(10), torch: H_torch, sp: bone('spine_03'), hd: bone('head'), ua: [bone('upperarm_l'), bone('upperarm_r')] };
+  // controles ubicados donde están la cabeza y los hombros: lookAt y getWorldPosition siguen funcionando
+  H.head = new THREE.Group(); H.hd.b.getWorldPosition(H.head.position); g.add(H.head);
+  H.arms = H.ua.map(a => { const q = new THREE.Group(); a.b.getWorldPosition(q.position); g.add(q); return q; });
+  humans.push(H); return H;
+}
+// local = (delta del padre · reposo del padre)⁻¹ · (delta propio · reposo propio), todo en el espacio del modelo
+function poseBone(j, dPar, dSelf) { _hq.copy(dPar).multiply(j.restPar).invert(); _hq2.copy(dSelf).multiply(j.rest); j.b.quaternion.copy(_hq.multiply(_hq2)); }
+const _qs = new THREE.Quaternion(), _qa = new THREE.Quaternion(), _qI = new THREE.Quaternion();
+function updateHumans(dt) {
+  for (const H of humans) {
+    if (!H.g.visible) continue;
+    H.t += dt;
+    // respiración y el peso que se reparte; el otro casi no respira
+    const k = H.o.still ? .25 : 1, br = Math.sin(H.t * 1.7) * .022 * k, sw = Math.sin(H.t * .45) * .02 * k + Math.sin(H.t * 3.1) * .004 * k;
+    _qs.setFromEuler(_he.set(br, sw * .6, sw));
+    poseBone(H.sp, _qI, _qs);
+    poseBone(H.hd, _qs, H.head.quaternion);
+    for (let i = 0; i < 2; i++) { _qa.copy(_qs).multiply(H.arms[i].quaternion); poseBone(H.ua[i], _qs, _qa); }
+  }
+}
+// respaldo si el modelo no carga: la figura simple de antes
+function makeDoll(skinC = 0xa3aaa4, coatC = 0x14181b, glow = 0) {
+  const mCoat = new THREE.MeshStandardMaterial({ color: coatC, roughness: .9 }), mSkin = new THREE.MeshStandardMaterial({ color: skinC, roughness: .85, emissive: skinC, emissiveIntensity: glow });
+  const fig = new THREE.Group();
+  const fm = (geo, m, x, y, z, par = fig) => { const q = new THREE.Mesh(geo, m); q.position.set(x, y, z); par.add(q); return q; };
+  fm(CYL(.2, .33, 1.02, 12), mCoat, 0, .92, 0); fm(CYL(.23, .2, .12, 12), mCoat, 0, 1.49, 0);
+  const arms = [];
+  for (const s of [1, -1]) {
+    fm(CYL(.075, .085, .44, 8), mCoat, s * .1, .22, 0);
+    const sh = new THREE.Group(); sh.position.set(s * .27, 1.42, 0); fig.add(sh); arms.push(sh);
+    fm(new THREE.CapsuleGeometry(.062, .62, 3, 8), mCoat, 0, -.32, 0, sh).rotation.z = s * .05; fm(new THREE.SphereGeometry(.05, 8, 6), mSkin, s * .02, -.72, 0, sh);
+  }
+  const head = new THREE.Group(); head.position.set(0, 1.62, 0); fig.add(head);
+  fm(CYL(.05, .06, .1, 8), mSkin, 0, -.04, 0, head);
+  fm(new THREE.SphereGeometry(.112, 14, 10), mSkin, 0, .09, 0, head).scale.set(.88, 1.12, 1);
+  return { g: fig, head, arms, mats: [mCoat, mSkin] };
+}
+// tu cuerpo (solo en los reflejos) y el otro: empapados los dos; el otro, pálido como quien lleva años bajo el agua
+await loadHumans();
+const SELF = makeHuman('hale', { torch: true, wet: true, skin: 0xd8d4cc, glow: .07, glowC: 0xc8b8a8 }); onlyInReflection(SELF.g); scene.add(SELF.g);
+const GH = makeHuman('marinero', { wet: true, skin: 0x9aa6a4, coat: 0x8c96a4, glowC: 0x7f8f8a, still: true }); onlyInReflection(GH.g); scene.add(GH.g); GH.g.visible = false;
 function updateSelf() {
   SELF.g.visible = state === 'play' || state === 'wake' || state === 'note';
-  SELF.g.position.set(P.x, P.y - 1.72, P.z); SELF.g.rotation.y = P.yaw + Math.PI;
+  // un poco detrás de la cámara: así la linterna y el rebote del vidrio le dan en la cara
+  SELF.g.position.set(P.x + Math.sin(P.yaw) * .17, P.y - 1.75, P.z + Math.cos(P.yaw) * .17); SELF.g.rotation.y = P.yaw + Math.PI;
   SELF.head.rotation.x = clamp(-P.pitch, -.5, .5) * .8;
   // en el espejo, tu reflejo se da vuelta antes que tú
   const mt = G.mirror === 1 ? MG.t : -1;
@@ -900,7 +996,7 @@ function buildStory() {
   mk(BOX(.5, .08, .32), M.steel, -.75, .95, .32, scene, false); mk(CYL(.012, .012, .14, 6), M.steel, -.75, 1.04, .44, scene, false);
   mk(CYL(.035, .03, .08, 10), M.steel, -.55, 1.03, .4, scene, false);
   solid(-1.05, -.45, .1, .5);
-  props.mirror = makeMirror(new THREE.PlaneGeometry(.52, .68), { k: 1.7, dirt: dirtTex, range: 5.5, res: 320 });
+  props.mirror = makeMirror(new THREE.PlaneGeometry(.52, .68), { k: 1.7, dirt: dirtTex, range: 5.5, res: 768 });
   props.mirror.r.position.set(-.68, 1.52, .466); props.mirror.r.rotation.y = Math.PI;
   act({ id: 'mirror', x: -.68, y: 1.52, z: .45, r: 2.4, label: 'Mirarse', onDone: mirrorScene });
   // la foto de Annie, metida en el marco de la litera
@@ -917,7 +1013,7 @@ function buildStory() {
   act({ id: 'invite', x: 1.66, y: 1.45, z: -2.6, r: 1.8, label: 'Mi carta de invitación', once: false, onDone: () => showNote('invite') });
 
   /* --- soporte vital: el ojo de buey también es un espejo --- */
-  props.port = makeMirror(new THREE.CircleGeometry(.36, 32), { k: 1.2, alpha: .82, range: 5.5, dirt: dirtTex });
+  props.port = makeMirror(new THREE.CircleGeometry(.36, 32), { k: 1.2, alpha: .82, range: 5.5, dirt: dirtTex, res: 640 });
   props.port.r.position.set(-1.742, 1.25, PORT_Z); props.port.r.rotation.y = Math.PI / 2;
 
   /* --- sonar: la pantalla es vidrio; auriculares; la nota en la palanca --- */
@@ -1092,27 +1188,6 @@ function makeBattery(x, y, z) {
   return g;
 }
 
-/* ============================================================
-   MARINEROS (solo en los reflejos)
-   ============================================================ */
-function makeSailor(skinC = 0xa3aaa4, coatC = 0x14181b, glow = 0) {
-  const mCoat = new THREE.MeshStandardMaterial({ color: coatC, roughness: .9 }), mSkin = new THREE.MeshStandardMaterial({ color: skinC, roughness: .85, emissive: skinC, emissiveIntensity: glow });
-  const fig = new THREE.Group();
-  const fm = (geo, m, x, y, z, par = fig) => { const q = new THREE.Mesh(geo, m); q.position.set(x, y, z); par.add(q); return q; };
-  fm(CYL(.2, .33, 1.02, 12), mCoat, 0, .92, 0); fm(CYL(.23, .2, .12, 12), mCoat, 0, 1.49, 0);
-  const arms = [];
-  for (const s of [1, -1]) {
-    fm(CYL(.075, .085, .44, 8), mCoat, s * .1, .22, 0);
-    const sh = new THREE.Group(); sh.position.set(s * .27, 1.42, 0); fig.add(sh); arms.push(sh);
-    fm(new THREE.CapsuleGeometry(.062, .62, 3, 8), mCoat, 0, -.32, 0, sh).rotation.z = s * .05; fm(new THREE.SphereGeometry(.05, 8, 6), mSkin, s * .02, -.72, 0, sh);
-  }
-  const head = new THREE.Group(); head.position.set(0, 1.62, 0); fig.add(head);
-  fm(CYL(.05, .06, .1, 8), mSkin, 0, -.04, 0, head);
-  fm(new THREE.SphereGeometry(.112, 14, 10), mSkin, 0, .09, 0, head).scale.set(.88, 1.12, 1);
-  for (const s of [1, -1]) fm(new THREE.SphereGeometry(.021, 8, 6), mCoat, s * .04, .105, .095, head);
-  fm(CYL(.135, .125, .05, 14), mCoat, 0, .19, 0, head); fm(CYL(.15, .15, .012, 14), mCoat, 0, .165, .05, head).scale.set(1, 1, 1.15);
-  return { g: fig, head, arms, mats: [mCoat, mSkin] };
-}
 /* ============================================================
    AUDIO (Web Audio, todo sintetizado)
    ============================================================ */
@@ -1588,15 +1663,15 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   deck5: { s: 'hale', t: 'Ten weeks, Annie. I\'ll be home for your birthday. I promised.', es: 'Diez semanas, Annie. Llego a tu cumpleaños. Lo prometí.', st: 'tender, quiet' },
   dive1: { s: 'belov', t: 'Четыреста метров, доктор. Now you listen. Слушайте.', es: 'Cuatrocientos metros, doctor. Ahora escuche.' },
   dive2: { s: 'hale', t: 'They\'re leaving. All of them. Going up.', es: 'Se van. Todos. Hacia arriba.', st: 'awed' },
-  dive3: { s: 'hale', t: 'The echo came back before the ping.', es: 'El eco volvió antes que el ping.', st: 'puzzled, uneasy' },
-  dive4: { s: 'belov', t: 'Сонар, повторить. Sonar, repeat.', es: 'Sonar, repita.', st: 'over a ship intercom, sharp' },
+  dive3: { s: 'hale', t: 'Something big on the sonar. Very close.', es: 'Algo grande en el sonar. Muy cerca.', st: 'uneasy, low' },
+  dive4: { s: 'belov', t: 'Нет. Nothing there, doctor. Only the cold.', es: 'No hay nada, doctor. Solo el frío.', st: 'over a ship intercom, sharp' },
   dive5: { s: 'hale', t: 'Even the whales are running.', es: 'Hasta las ballenas huyen.' },
   dive6: { s: 'hale', t: 'There\'s a wreck down there. Nobody told me about a wreck.', es: 'Hay un naufragio allá abajo. Nadie me habló de un naufragio.' },
   dive7: { s: 'belov', t: 'Не ваше дело. Not your business. Write.', es: 'No es asunto suyo. Escriba.', st: 'over a ship intercom, cold' },
   dive8: { s: 'hale', t: 'Someone\'s standing on our deck.', es: 'Hay alguien parado en nuestra cubierta.', st: 'barely a whisper, frightened' },
   dive9: { s: 'hale', t: 'No suit.', es: 'Sin traje.', st: 'whispered, horrified' },
   wake1: { s: 'hale', t: 'I\'m on the floor. Soaked.', es: 'Estoy en el suelo. Empapado.', st: 'groggy, just waking up, coughing slightly' },
-  wake2: { s: 'hale', t: 'Seawater. I don\'t remember climbing down.', es: 'Agua de mar. No recuerdo haber bajado.', st: 'confused' },
+  wake2: { s: 'hale', t: 'The dome. The seal broke, and the water threw me down here.', es: 'La cúpula. Se rompió el sello y el agua me tiró aquí abajo.', st: 'confused, remembering' },
   wake3: { s: 'hale', t: 'Two fifty-two. Eight minutes to three.', es: 'Dos cincuenta y dos. Ocho minutos para las tres.', st: 'a chill of fear' },
   wake4: { s: 'hale', t: 'No power. The auxiliary generator is in the engine room. They showed me on the tour.', es: 'Sin energía. El generador auxiliar está en máquinas. Me lo mostraron en la visita.' },
   empty1: { s: 'hale', t: 'Hello? Anybody?', es: '¿Hola? ¿Alguien?', st: 'calling out softly into an empty corridor' },
@@ -1615,7 +1690,7 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   energy: { s: 'hale', t: 'Power. Thank God.', es: 'Energía. Gracias a Dios.', st: 'relieved exhale' },
   call1: { s: 'belov', t: 'Хейл? Хейл, вы живы? Hale. You are alive?', es: '¿Hale? ¿Está vivo?', st: 'over a crackling radio, surprised' },
   call2: { s: 'hale', t: 'Belov? Where is everyone?', es: '¿Bélov? ¿Dónde están todos?', st: 'urgent, into a handset' },
-  call3: { s: 'belov', t: 'In the capsule. On the surface. We thought you drowned in the dome. A ship comes at six.', es: 'En la cápsula. En la superficie. Creímos que se ahogó en la cúpula. Un barco llega a las seis.', st: 'over a crackling radio, guilty' },
+  call3: { s: 'belov', t: 'In the capsule, on the surface. We thought you drowned in the dome. Doctor, the Zarya is taking water. She will not last until the ship comes. You must bring her up.', es: 'En la cápsula, en la superficie. Creímos que se ahogó en la cúpula. Doctor, el Zarya hace agua. No aguanta hasta que llegue el barco. Tiene que hacerlo subir.', st: 'over a crackling radio, guilty' },
   call4: { s: 'belov', t: 'Oxygen first. Life support, aft. And do not stop at the seven.', es: 'Primero el oxígeno. Soporte vital, a popa. Y no se detenga en el siete.', st: 'over a crackling radio' },
   walk1: { s: 'hale', t: 'It\'s moving. Along the hull.', es: 'Se mueve. Por el casco.', st: 'terrified whisper in the dark' },
   walk2: { s: 'hale', t: 'It stopped at the seven.', es: 'Se detuvo en el siete.', st: 'whisper' },
@@ -1626,7 +1701,7 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   port2: { s: 'hale', t: 'There was someone behind me.', es: 'Había alguien detrás de mí.', st: 'breathless' },
   o2jam: { s: 'hale', t: 'Seized… come on…', es: 'Agarrotada… vamos…', st: 'straining hard' },
   o2ok: { s: 'hale', t: 'Scrubbers are running. The air tastes like metal again.', es: 'La regeneración funciona. El aire vuelve a saber a metal.' },
-  o2b: { s: 'belov', t: 'Хорошо. Good. Now wait. Stay away from the seven. It is almost three.', es: 'Bien. Ahora espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio' },
+  o2b: { s: 'belov', t: 'Хорошо. Now the ballast… no. Wait. Stay away from the seven. It is almost three.', es: 'Bien. Ahora el lastre… no. Espere. Aléjese del siete. Ya casi son las tres.', st: 'over a crackling radio, hesitant, quick' },
   h1: { s: 'hale', t: 'Three o\'clock.', es: 'Las tres.', st: 'dread' },
   h2: { s: 'hale', t: 'The wheel… it\'s turning. From the inside!', es: 'La rueda… está girando. ¡Desde adentro!', st: 'panicking' },
   h3: { s: 'belov', t: 'Держите дверь! Hold the door! If seven opens, you drown!', es: '¡Sujete la puerta! ¡Si el siete se abre, se ahoga!', st: 'shouting over a crackling radio' },
@@ -1639,7 +1714,7 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   sonar1: { s: 'hale', t: 'It\'s not the hull. It was never the hull.', es: 'No es el casco. Nunca fue el casco.', st: 'quiet certainty' },
   conf1: { s: 'belov', t: 'Doctor. Listen to me. Eighty-three. Seven flooded at three. Three men inside. Volkov. Orlov. Sedykh.', es: 'Doctor. Escúcheme. 1983. El siete se inundó a las tres. Tres hombres adentro. Vólkov. Orlov. Sedykh.', st: 'over a crackling radio, slow, a confession' },
   conf2: { s: 'belov', t: 'I closed the door. They knocked for forty minutes. I wrote: hull noise.', es: 'Yo cerré la puerta. Golpearon cuarenta minutos. Yo escribí: ruido del casco.', st: 'over a crackling radio, broken' },
-  conf3: { s: 'belov', t: 'The air for the blow is in seven. You must open it. Простите меня.', es: 'El aire para emerger está en el siete. Tiene que abrirlo. Perdóneme.', st: 'over a crackling radio' },
+  conf3: { s: 'belov', t: 'To surface you need air. The emergency air is in seven. That is why I told you to stay away. You must open it. Простите меня.', es: 'Para subir necesita aire. El aire de emergencia está en el siete. Por eso le dije que no se acercara. Tiene que abrirlo. Perdóneme.', st: 'over a crackling radio' },
   conf4: { s: 'hale', t: 'You brought me here to sign your lie.', es: 'Me trajeron para firmar su mentira.', st: 'bitter, quiet' },
   open1: { s: 'hale', t: 'Okay. Okay. I\'m coming in.', es: 'Está bien. Voy a entrar.', st: 'gathering courage' },
   in1: { s: 'hale', t: 'Forty marks on the wall. One for every minute.', es: 'Cuarenta marcas en la pared. Una por minuto.', st: 'heartbroken whisper' },
@@ -2001,7 +2076,7 @@ function updateWake(dt) {
 }
 function finishWake() {
   state = 'play'; G.woke = true; P.y = 1.62; hudShow(true); $('act').classList.add('off');
-  obj('Arranca el auxiliar · sala de máquinas');
+  obj('Sin energía no hay radio ni aire · arranca el auxiliar en máquinas');
   vo('wake2'); vo('wake3'); vo('wake4');
   later(1.2, () => hint(matchMedia('(pointer:coarse)').matches ? 'Izquierda: moverte (al borde corres) · Derecha: mirar' : 'WASD: moverte · Shift: correr · F: linterna', 5));
   checkpoint();
@@ -2048,7 +2123,7 @@ function listenScene() {
   later(7.6, () => { AU.bang(C7POS, 1.4); G.shake = 1; vib([200, 50, 200]); G.flick = .4; G.fear = 1; LS.t = -1; });
   later(8.4, () => {
     G.lock = false; AU.vent(true); AU.hum(true); voNow('listen1');
-    vo('listen2'); vo('call4', { fn: () => { setDoor(1, true); obj('Restaura el oxígeno · soporte vital'); checkpoint(); } });
+    vo('listen2'); vo('call4', { fn: () => { setDoor(1, true); obj('El aire se acaba · restaura el oxígeno en soporte vital'); checkpoint(); } });
   });
 }
 const LS = { t: -1 };
@@ -2092,7 +2167,7 @@ function valveHold(p) {
 }
 function onOxygen() {
   G.oxygen = true; G.o2 = 100; G.oxyT = 0; AU.ok(); AU.thud(null, .5); AU.hiss(new THREE.Vector3(1.2, 2.2, -32));
-  voNow('o2ok'); vo('o2b'); obj('Espera el barco · son casi las tres'); checkpoint();
+  voNow('o2ok'); vo('o2b'); obj('Son casi las 03:00 · aléjate del 7'); checkpoint();
 }
 
 /* --- 03:00: la rueda del siete gira sola --- */
@@ -2152,7 +2227,7 @@ function end03() {
   G.h03 = 2; G.force = null; AU.red(0); AU.water(0);
   G.lightMode = 'power'; G.flick = .6; AU.hum(true); AU.vent(true); AU.power(true); G.kill = 0;
   setDoor(2, true);
-  vo('h6'); vo('h7'); obj('Ve a la sala de sonar'); checkpoint();
+  vo('h6'); vo('h7'); obj('¿Es el casco? · escúchalo desde la sala de sonar'); checkpoint();
 }
 
 /* --- sonar: oír el casco desde afuera --- */
@@ -2184,7 +2259,7 @@ function updateSonarScene(dt) {
 function confession() {
   if (G.reveal) return; G.reveal = true; subQ.length = 0;
   AU.thud(null, .25); vo('conf1'); vo('conf2'); vo('conf3'); vo('conf4');
-  obj('Abre el compartimento 7 · el aire de emergencia'); checkpoint();
+  obj('El aire para subir está en el 7 · ábrelo'); checkpoint();
 }
 
 /* --- abrir el siete --- */
@@ -2334,7 +2409,12 @@ function makeBoat() {
   // salvavidas y cabo (aparecen al final)
   const ring = new THREE.Mesh(new THREE.TorusGeometry(.38, .12, 10, 24), M2(0xff5a1a, .6)); ring.rotation.x = Math.PI / 2; OS.add(ring);
   const rope = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, 1, 5), M2(0xd8cfa8, .9)); OS.add(rope);
-  return { g, beam, spot, lamp, ring, rope };
+  // la tripulación: impermeables amarillos, uno en la borda con el cabo y otro en la puerta del puente
+  const crew = [makeHuman('hale', { coat: 0xffc22a, skin: 0xc9b7a4, wet: true }), makeHuman('marinero', { coat: 0xffb81f, wet: true })];
+  crew[0].g.position.set(-1.95, 1.8, 2.2); crew[0].g.rotation.y = -Math.PI / 2;
+  crew[1].g.position.set(.9, 1.8, .95); crew[1].g.rotation.y = -2.2;
+  for (const c of crew) g.add(c.g);
+  return { g, beam, spot, lamp, ring, rope, crew };
 }
 function updateRescue(dt) {
   RS.t += dt; O.clock += dt; oFog.uTime.value = O.clock;
@@ -2359,6 +2439,7 @@ function updateRescue(dt) {
     B.g.rotation.y += dy * (1 - Math.exp(-dt * .6)); B.g.rotation.z = Math.sin(O.clock * .8) * .04; B.g.rotation.x = Math.sin(O.clock * 1.1 + 1) * .025;
     bp.y = Math.sin(O.clock * 1.1) * .35;
   }
+  if (RS.sig >= 3 && B.crew[1].arms[1].rotation.x > -2.4) { B.crew[1].arms[1].rotation.x -= dt * 3; B.crew[1].arms[1].rotation.z = Math.sin(O.clock * 6) * .25; } // te hace señas de vuelta
   // el reflector barre el mar y, cuando te ve, te busca
   if (RS.ship) {
     B.beam.visible = true; B.spot.intensity = 60;
@@ -2378,7 +2459,7 @@ function updateRescue(dt) {
     btn.classList.remove('hidden'); btn.classList.toggle('off', !(onBoat || canGrab)); $('cross').classList.toggle('on', onBoat || canGrab);
     const L = canGrab ? 'Agarrar el cabo<small>¡AHORA!</small>' : RS.sig >= 3 ? 'Te vieron<small>AGUANTA</small>' : 'Hacer señas<small>TOCA</small>';
     if (lbl.innerHTML !== L) lbl.innerHTML = L;
-    if (canGrab && !RS.ev.res) { RS.ev.res = 1; voNow('res1', { cls: 'shout' }); RS.rope = 1; vib([60, 40, 60]); B.ring.visible = B.rope.visible = true; }
+    if (canGrab && !RS.ev.res) { RS.ev.res = 1; voNow('res1', { cls: 'shout' }); RS.rope = 1; B.crew[0].arms[1].rotation.set(-2.1, 0, .3); B.crew[0].arms[0].rotation.x = -.9; vib([60, 40, 60]); B.ring.visible = B.rope.visible = true; }
     if (RS.rope) { // el salvavidas cae junto a la cubierta y el cabo lo une al barco
       B.ring.position.set(2.6, .05 + Math.sin(O.clock * 1.3) * .12, -3.2);
       const a = new THREE.Vector3(bp.x - 2.4, 3.2, bp.z), b = B.ring.position; _v.copy(b).sub(a); const L = _v.length();
@@ -2467,7 +2548,7 @@ function updateTriggers(dt) {
   // la puerta sigue golpeando hasta que la escuchas
   if (G.walk === 2 && !G.listened) { G.knockAt -= dt; if (G.knockAt < 0) { G.knockAt = rnd(5.5, 8); AU.knock(C7POS, 3, .75); } }
   // 03:00 llega después del oxígeno
-  if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 14) start03(); }
+  if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 24 || (G.oxyT > 14 && !subQ.length && T > subEnd + 1)) start03(); } // las tres llegan cuando Bélov termina
   // adentro del siete
   if (G.c7open && !G.c7in && P.x < -2.3) { G.c7in = true; vo('in1'); vo('in2'); }
   if (G.c7open && !G.air && P.x < -2 && LS.t < 0) { G.k7 = (G.k7 ?? 3) - dt; if (G.k7 < 0) { G.k7 = rnd(4, 7); AU.knock(new THREE.Vector3(-5, 1.4, C7Z + rnd(-1, 1)), 3, .3); } }
@@ -2562,6 +2643,7 @@ function tick(dt, real) {
     if (state === 'play') updateHUD(dt);
     if (props.fly) props.fly.rotation.y += dt * (G.energy && G.lightMode === 'power' ? 9 : 0);
   }
+  updateHumans(dt);
   AU.listener(camera);
 }
 
@@ -2572,13 +2654,13 @@ function currentObjective() {
   if (G.surfaced) return 'Sube a cubierta · escotilla de escape';
   if (G.air) return '¡Corre a la palanca de lastre!';
   if (G.c7open) return 'Abre el aire de emergencia · al fondo del 7';
-  if (G.reveal) return 'Abre el compartimento 7 · el aire de emergencia';
-  if (G.h03 === 2) return 'Ve a la sala de sonar · ponte los auriculares';
-  if (G.oxygen) return 'Espera el barco · son casi las tres';
-  if (G.listened) return 'Restaura el oxígeno · soporte vital';
+  if (G.reveal) return 'El aire para subir está en el 7 · ábrelo';
+  if (G.h03 === 2) return '¿Es el casco? · escúchalo desde la sala de sonar';
+  if (G.oxygen) return 'Son casi las 03:00 · aléjate del 7';
+  if (G.listened) return 'El aire se acaba · restaura el oxígeno en soporte vital';
   if (G.walk === 2) return 'Los golpes vienen del 7 · pega la oreja a la puerta';
   if (G.energy) return 'Espera · la radio vuelve a la vida';
-  return 'Arranca el auxiliar · sala de máquinas';
+  return 'Sin energía no hay radio ni aire · arranca el auxiliar en máquinas';
 }
 function startGame(s) {
   timers.length = 0; subQ.length = 0; GH.g.visible = false; if (AU.vcur) try { AU.vcur.stop(); } catch (e) {}
@@ -2589,7 +2671,7 @@ function startGame(s) {
     Object.assign(G, { fear: 0, shake: 0, flick: 0, kill: 0, force: null, held: false, lock: false, tilt: 0, sonarOn: false });
     if (G.h03 === 1) { G.h03 = 0; G.clockStop = false; G.oxyT = 8; }
     if (G.walk === 1) G.walk = 0;
-    if (G.energy && !G.call) later(2.5, () => { vo('call1'); vo('call2'); vo('call3', { fn: () => { G.call = 1; later(9.4, knockWalk); } }); });
+    if (G.energy && !G.call) later(2.5, () => { vo('call1'); vo('call2'); vo('call3', { fn: () => { G.call = 1; later((AU.vob.call3 ? AU.vob.call3.duration : 12) + 1.4, knockWalk); } }); });
     if (G.call === 1 && !G.walk) later(2, knockWalk);
     if (G.flood === 1) { G.flood = 0; G.air = false; }
     if (G.ballast && !G.surfaced) { G.ballast = false; G.flood = 0; G.air = false; }
@@ -2617,20 +2699,30 @@ function startGame(s) {
   checkpoint();
 }
 
-const INTRO = ['K-417 «ZARYA»', 'Mar de Barents<br>14 de octubre de 1989 · 16:40'];
-let introTO = 0;
-function showIntro() {
+// el expediente, antes de subir a cubierta: lo que pasó, quién eres y qué vienes a firmar
+const INTRO = [
+  ['14.10.1983 · 03:00', 'El compartimento 7 del submarino soviético K&#8209;417&nbsp;«Zarya» se inunda.<br>Tres marineros quedan adentro.<br>El oficial de guardia cierra la puerta para salvar el barco.'],
+  ['EL INFORME', 'Golpearon la puerta durante cuarenta minutos.<br>La Flota escribió: «ruido del casco».<br>Desde entonces, cada 14 de octubre, a las tres, los golpes vuelven.'],
+  ['1989 · TÚ', 'Eres el Dr. Thomas Hale, acústico estadounidense.<br>Te invitaron a bordo para escuchar los golpes<br>y firmar que son ruido del casco.'],
+  ['K&#8209;417 «ZARYA»', 'Mar de Barents<br>14 de octubre de 1989 · 16:40'],
+];
+let introTO = 0, introI = 0;
+function showIntro(i = 0) {
+  introI = i; clearTimeout(introTO);
   const p = $('i1'); p.classList.remove('show');
-  p.innerHTML = `<em>${INTRO[0]}</em>${INTRO[1]}`;
-  setTimeout(() => p.classList.add('show'), 40);
-  AU.ping(.22, 1.5);
-  introTO = setTimeout(endIntro, 3000);
+  setTimeout(() => { p.innerHTML = `<em>${INTRO[i][0]}</em>${INTRO[i][1]}`; p.classList.add('show'); }, i ? 450 : 40);
+  AU.ping(i === INTRO.length - 1 ? .22 : .1, 1.5);
+  introTO = setTimeout(nextIntro, i === INTRO.length - 1 ? 3000 : 7000);
+}
+function nextIntro() {
+  if (state !== 'intro') return;
+  if (introI < INTRO.length - 1) showIntro(introI + 1); else endIntro();
 }
 function endIntro() {
   if (state !== 'intro') return; clearTimeout(introTO);
   startOpening();
 }
-$('intro').addEventListener('pointerdown', e => { e.preventDefault(); endIntro(); });
+$('intro').addEventListener('pointerdown', e => { e.preventDefault(); nextIntro(); });
 $('start').addEventListener('click', () => {
   AU.init(); AU.loadVoices();
   try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
@@ -3108,7 +3200,7 @@ const dv = {};
   const sed = new THREE.Mesh(fgeo, new THREE.MeshStandardMaterial({ color: 0x555a53, roughness: 1 })); sed.rotation.x = -Math.PI / 2; dv.floor.add(sed);
   for (let i = 0; i < 22; i++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(.3, 1.4), 0), mRock); const a = rnd(6.28), r = rnd(8, 26); b.position.set(Math.cos(a) * r, rnd(-.1, .4), Math.sin(a) * r - 6); b.rotation.set(rnd(3), rnd(3), rnd(3)); dv.floor.add(b); }
   // (d) la figura: de pie en NUESTRA cubierta
-  const SF = makeSailor(); dv.fig = SF.g; dv.head = SF.head; dv.fig.position.set(.35, -4.32, -7.4); dv.fig.rotation.y = 2.7; diveG.add(dv.fig); dv.fig.visible = false;
+  const SF = makeHuman('marinero', { skin: 0x9aa6a4, coat: 0x5c6672, wet: true, still: true }); dv.fig = SF.g; dv.head = SF.head; dv.fig.position.set(.35, -4.32, -7.4); dv.fig.rotation.y = 2.7; diveG.add(dv.fig); dv.fig.visible = false;
   dv.hq = new THREE.Quaternion();
 }
 // piel de la ballena: percebes, surcos ventrales, cicatrices, aletas moteadas y la luz del agua que la envuelve
@@ -3404,9 +3496,12 @@ function updateDive(dt) {
   if (t > 54.2) aim = [-.05, -.3];
   if (dv.fig.visible) {
     if (t > 56.4) {
-      dv.head.getWorldPosition(_v); _m4.lookAt(camera.position, _v, camera.up); dv.hq.setFromRotationMatrix(_m4);
-      dv.fig.getWorldQuaternion(_q); dv.hq.premultiply(_q.invert());
-      dv.head.quaternion.slerp(dv.hq, 1 - Math.exp(-dt * 1.4));
+      // se da vuelta entero, despacio; la cabeza se adelanta, pero sin pasar de lo que gira un cuello
+      dv.fig.parent.worldToLocal(_v.copy(camera.position)); _v.sub(dv.fig.position);
+      let dy = Math.atan2(_v.x, _v.z) - dv.fig.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      dv.fig.rotation.y += dy * (1 - Math.exp(-dt * .45));
+      const hy = clamp(dy, -1.1, 1.1), hp = clamp(-Math.atan2(_v.y - 1.6, Math.hypot(_v.x, _v.z)), -.6, .3);
+      _q.setFromEuler(_he.set(hp, hy, 0)); dv.head.quaternion.slerp(_q, 1 - Math.exp(-dt * 1.4));
     } else dv.head.quaternion.identity();
   }
   // la cámara vuelve sola hacia lo que hay que ver si no la estás moviendo
@@ -3425,7 +3520,7 @@ function updateDive(dt) {
   ev('s1b', 8.6, () => { if (!SAID.includes(VO.deck3.es)) voNow('deck3', IC); }); // si abriste la escotilla antes de oírlo
   ev('fl', 18, () => { AU.flurry(); vib(20); }); ev('s2', 19.4, () => voNow('dive2'));
   ev('p3', 25.6, () => AU.pingEarly(.1)); ev('s3', 27, () => voNow('dive3'));
-  ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 35.6, () => voNow('dive5'));
+  ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 37.3, () => voNow('dive5'));
   ev('lamp', 27.6, () => AU.step(.3));
   ev('p4', 42.5, () => AU.ping(.08, .8)); ev('k1', 45, () => { AU.creak(new THREE.Vector3(0, 0, -6), .4); AU.groan(new THREE.Vector3(-7, -2, 0), .22); });
   ev('s5', 45.6, () => voNow('dive6')); ev('s5b', 49.9, () => voNow('dive7', IC));
@@ -3490,8 +3585,8 @@ window.ABISMO = {
   reveal: () => { window.ABISMO.post03(); G.sonar = true; confession(); },
   flood: () => { window.ABISMO.reveal(); G.c7open = true; c7.cur = 1; startFlood(); },
   blow: () => { window.ABISMO.flood(); startBlow(); }, rescue: () => startRescue(),
-  O, c7, said: SAID, skip: () => endOpening(), ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
-  renderer, dv, SELF, GH, V3: (x, y, z) => new THREE.Vector3(x, y, z), CR: pts => new THREE.CatmullRomCurve3(pts), acts, held, props, H3, RS, get cand() { return cand; }, doors, AU, VO,
+  O, c7, said: SAID, skip: () => endOpening(), wake: () => finishWake(), dive: t => { startDive(); O.t = t || 0; }, ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
+  renderer, dv, SELF, GH, humans, ghostBehind, camera, scene, V3: (x, y, z) => new THREE.Vector3(x, y, z), CR: pts => new THREE.CatmullRomCurve3(pts), acts, held, props, H3, RS, get cand() { return cand; }, doors, AU, VO,
 };
 </script>
 </body>

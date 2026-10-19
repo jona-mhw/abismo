@@ -3,9 +3,12 @@
 // Lee el bloque VO de index.html y escribe voz/<id>.mp3. La key nunca se guarda en el repo.
 import fs from 'fs';
 import { execFileSync } from 'child_process';
+import os from 'os';
+import { fileURLToPath } from 'url';
 const KEY = process.env.GEMINI_API_KEY;
 if (!KEY) { console.error('Falta GEMINI_API_KEY'); process.exit(1); }
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
+const PCM = os.tmpdir() + '/vo.pcm';
 const src = fs.readFileSync(root + 'index.html', 'utf8');
 const block = src.slice(src.indexOf('/*VO*/') + 6, src.indexOf('/*/VO*/'));
 const VO = Function('return ' + block.trim().replace(/^const VO = /, '').replace(/;$/, ''))();
@@ -29,9 +32,9 @@ for (const id of ids) {
       const j = await r.json();
       const d = j?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
       if (!d) throw new Error(JSON.stringify(j).slice(0, 200));
-      fs.writeFileSync('/tmp/vo.pcm', Buffer.from(d, 'base64'));
+      fs.writeFileSync(PCM, Buffer.from(d, 'base64'));
       // recorta silencios, normaliza y comprime (mono 48 kbps)
-      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 's16le', '-ar', '24000', '-ac', '1', '-i', '/tmp/vo.pcm',
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 's16le', '-ar', '24000', '-ac', '1', '-i', PCM,
         '-af', 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.15,areverse,loudnorm=I=-18:TP=-2',
         '-ar', '24000', '-b:a', '48k', out + id + '.mp3']);
       ok = true; console.log('ok', id);
