@@ -7,7 +7,7 @@ Eres el Dr. Thomas Hale, acústico estadounidense invitado por la Flota del Nort
 - **Sin monstruos:** el miedo está en la puerta del siete, en el agua y en la presión.
 - **Voces reales** en inglés y en ruso, subtituladas en español.
 - **A las 03:00**, la rueda del siete gira sola: corre y sujétala.
-- **Final:** emerger y que te rescaten a último minuto.
+- **Final:** emerger, que los golpes traigan al pesquero y firmar tu informe con el dedo: «no térmico».
 
 Mobile first, three.js, efectos sintetizados con Web Audio. 10 a 12 minutos.
 

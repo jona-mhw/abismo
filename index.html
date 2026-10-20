@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ABISMO</title>
-<meta name="description" content="K-417 Zarya, mar de Barents, 1989. Nueve años a bordo y hay un compartimento que no figura en los planos.">
+<meta name="description" content="K-417 Zarya, mar de Barents, 1989. Te trajeron para firmar que los golpes del compartimento 7 son ruido del casco. A las tres, alguien golpea.">
 <meta property="og:title" content="ABISMO">
-<meta property="og:description" content="K-417 Zarya, mar de Barents, 1989. A las 03:00 te toca la guardia. El compartimento 7 no figura en los planos. Usa audífonos.">
+<meta property="og:description" content="Mar de Barents, 1989. Te trajeron para firmar que los golpes del compartimento 7 son ruido del casco. A las tres, alguien golpea desde adentro. Usa audífonos.">
 <meta property="og:image" content="https://jona-mhw.github.io/abismo/og.png">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,6 +153,44 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 #fxwater{position:fixed;left:-10%;right:-10%;top:-6%;bottom:-6%;z-index:2;pointer-events:none;transform:translateY(105%);background:linear-gradient(rgba(160,235,230,.45),rgba(40,120,130,.32) 3%,rgba(10,50,62,.4) 35%,rgba(2,16,24,.55));border-radius:45% 55% 0 0/14px 18px 0 0}
 #fxvig{--r:62%;position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(ellipse 150% 75% at 50% 50%,transparent var(--r),rgba(0,0,0,.94) calc(var(--r) + 28%))}
 .paper.long p{font-size:14.5px;line-height:1.5}
+/* pantallas angostas: el HUD de la derecha no se sale */
+@media (max-width:460px){.bar{width:62px}.stat b{min-width:32px}.sys{padding:2px 4px;font-size:9px}#systems{gap:4px}#right{font-size:10px;letter-spacing:.08em}#clock{font-size:12px;letter-spacing:.1em}}
+/* el objetivo se toca: Hale piensa hacia dónde ir */
+#obj span{pointer-events:auto;cursor:pointer}
+#obj span:after{content:' ?';opacity:.45;font-size:11px}
+/* sonar: pantalla completa al ponerse los auriculares; chico en la cúpula */
+#sonv{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;opacity:0;transition:opacity .45s}
+#sonv.on{opacity:1}
+#sonv.mini{inset:auto;left:calc(14px + env(safe-area-inset-left));top:calc(env(safe-area-inset-top) + 92px);width:128px;height:128px;border-radius:50%;box-shadow:0 0 0 1px rgba(90,255,160,.35),0 0 24px rgba(0,0,0,.6)}
+/* el informe: lo último que haces es firmarlo */
+#sign{background:radial-gradient(ellipse at 50% 40%,rgba(60,48,30,.55),rgba(0,0,0,.97) 78%);opacity:0;transition:opacity 1.6s}
+#sign.show{opacity:1}
+#sign .paper{transform:rotate(-.6deg);max-width:350px;width:100%;padding:22px 22px 16px}
+#sign .paper p{font-size:14px;line-height:1.5}
+#sign .row{display:flex;align-items:baseline;gap:8px;margin-top:14px;font-size:14px}
+#sign .row span{opacity:.75;white-space:nowrap}
+#sign .typed{position:relative;padding:2px 6px;border-radius:3px;cursor:pointer}
+#sign .typed.need{animation:paperPulse 1.4s ease-in-out infinite}
+@keyframes paperPulse{50%{background:rgba(160,40,20,.18)}}
+#sign .no{position:absolute;left:-4px;top:-19px;font:italic 22px Georgia,serif;color:#1d3d8a;opacity:0;transform:rotate(-8deg);transition:opacity .5s}
+#sign .no.show{opacity:1}
+#sign .no:after{content:'‸';position:absolute;left:8px;top:15px;font-size:16px}
+#sign .lbl{font:10px 'Share Tech Mono',monospace;letter-spacing:.2em;opacity:.55;margin-top:16px}
+#sigc{display:block;width:100%;height:84px;border-bottom:1px solid rgba(40,30,20,.5);touch-action:none;cursor:crosshair}
+#sigc.need{animation:paperPulse 1.6s ease-in-out infinite}
+#belov{min-height:44px;padding-bottom:3px;font:italic 26px Georgia,serif;color:#3a2a20;clip-path:inset(0 100% 0 0);transition:clip-path 2.6s ease-in-out;border-bottom:1px solid rgba(40,30,20,.5)}
+#belov.show{clip-path:inset(0 0 0 0)}
+#belov small{display:block;text-align:left;font:11px 'Special Elite',serif;opacity:.7;margin-top:2px}
+#stamp{pointer-events:none;position:absolute;right:18px;top:64px;width:84px;height:84px;border:3px solid rgba(150,30,25,.75);border-radius:50%;color:rgba(150,30,25,.8);font:10px 'Share Tech Mono',monospace;letter-spacing:.12em;display:flex;align-items:center;justify-content:center;text-align:center;transform:rotate(14deg) scale(1.6);opacity:0;transition:all .35s cubic-bezier(.3,1.6,.6,1)}
+#stamp.show{opacity:1;transform:rotate(14deg) scale(1)}
+#annie{pointer-events:none;position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);margin-left:-150px;width:104px;padding:7px 7px 20px;background:#e9e4d6;box-shadow:0 6px 24px rgba(0,0,0,.7);transform:rotate(-7deg) translateY(30px);opacity:0;transition:all 1.6s ease;font:13px 'Special Elite',serif;color:#2a2418;text-align:center}
+#annie.show{opacity:1;transform:rotate(-7deg)}
+#annie i{display:block;height:74px;margin-bottom:6px;background:radial-gradient(circle at 50% 38%,#e6b98a 0 16%,transparent 17%),radial-gradient(ellipse at 50% 92%,#c64c3a 0 34%,transparent 35%),linear-gradient(#6d8fa6,#a9b9b5)}
+#sign .sh{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 30px);left:0;right:0;font-size:11px;letter-spacing:.2em;opacity:0;transition:opacity .6s;color:#e8fffb}
+#sign .sh.show{opacity:.7}
+#end .stats{display:none}
+#sub.top{top:calc(env(safe-area-inset-top) + 34px);bottom:auto}
+#end.st .stats{display:grid}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.170.0/examples/jsm/"}}
@@ -175,6 +213,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
   </div>
 </div>
 <div id="obj" class="hidden"><span id="objtxt"></span></div>
+<canvas id="sonv"></canvas>
 <div id="sub"></div>
 <div id="hint"></div>
 <div id="fxwake"></div><div id="fxwater"></div><div id="fxvig"></div>
@@ -215,6 +254,20 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
 </div>
 
 <div id="endtxt" class="hidden"><p id="et"></p></div>
+<div id="sign" class="screen hidden">
+  <div class="paper">
+    <h3>WOODS HOLE · 9 DE DICIEMBRE DE 1989</h3>
+    <p>INFORME DEL DR. T. HALE A LA FLOTA DEL NORTE<br>K-417 «Zarya» · compartimento 7 · 71° N 38° E</p>
+    <div class="row"><span>Origen de los golpes:</span><b class="typed" id="sgT"><i class="no" id="sgNo">no</i>térmico.</b></div>
+    <div class="lbl">FIRMA DEL ACÚSTICO</div>
+    <canvas id="sigc"></canvas>
+    <div class="lbl">TESTIGO</div>
+    <div id="belov">А. Белов<small>cap. A. Bélov · oficial de guardia, 14.10.1983</small></div>
+    <div id="stamp">ВХОДЯЩИЙ<br>RECIBIDO</div>
+  </div>
+  <div id="annie"><i></i>Annie · 9</div>
+  <div class="sh" id="sgH"></div>
+</div>
 <div id="end" class="screen hidden">
   <div class="kicker" id="ek">MAR DE BARENTS · SUPERFICIE · 05:47</div>
   <h2 id="eh">SUBISTE</h2>
@@ -226,6 +279,7 @@ h1.title{font-family:'Cinzel',serif;font-weight:800;font-size:clamp(54px,17vw,12
   </div>
   <div class="other" id="eo"></div>
   <button class="btn" id="again">JUGAR DE NUEVO</button>
+  <button class="btn ghost" id="stbtn">VER TIEMPOS</button>
 </div>
 
 <div id="fxf"></div><div id="fxb"></div>
@@ -1056,7 +1110,7 @@ function buildStory() {
 
   /* --- sonar: la pantalla es vidrio; auriculares; la nota en la palanca --- */
   const S = props.sonar;
-  props.crt = makeMirror(new THREE.PlaneGeometry(.5, .5), { k: .07, ov: S.t, range: 4.5 });
+  props.crt = makeMirror(new THREE.PlaneGeometry(.5, .5), { k: .07, ov: S.t, range: 4.5, res: 512 });
   props.crt.r.position.set(-1.18, 1.13, -37.6); props.crt.r.rotation.set(0, Math.PI / 2, 0); props.crt.r.rotateX(-.25); props.crt.r.translateZ(.004);
   const hp = new THREE.Group(); hp.position.set(-.82, .8, -37.15); scene.add(hp);
   mk(new THREE.TorusGeometry(.09, .012, 6, 16, Math.PI), M.dark, 0, .02, 0, hp, false).rotation.x = -Math.PI / 2 + .3;
@@ -1080,7 +1134,7 @@ function buildC7Story() {
   mk(new THREE.TorusGeometry(.2, .024, 8, 24), M.red, 0, 0, 0, wh, false).rotation.y = Math.PI / 2;
   for (let s = 0; s < 3; s++) mk(BOX(.02, .4, .02), M.red, 0, 0, 0, wh, false).rotation.x = s * Math.PI / 3;
   const kl = new THREE.Mesh(new THREE.PlaneGeometry(.5, .125), new THREE.MeshStandardMaterial({ map: labelTex('ВВД · ПРОДУВАНИЕ', 'АВАРИЙНЫЙ ВОЗДУХ'), transparent: true, depthWrite: false, roughness: .8 })); kl.position.set(X1 + .015, .98, C7Z); kl.rotation.y = Math.PI / 2; scene.add(kl); sign(kl, 'air7', '[Аварийный воздух…] Aire de emergencia. Es esto.');
-  act({ id: 'air7', x: X1 + .2, y: .62, z: C7Z, r: 1.8, label: 'Abrir el aire de emergencia', hold: 5, decay: .05, keep: true, en: () => G.c7open && G.reveal && !G.air, onDone: startFlood, onHold: airHold });
+  act({ id: 'air7', x: X1 + .2, y: .62, z: C7Z, r: 1.8, label: 'Abrir el aire de emergencia', hold: 5, decay: .05, keep: true, en: () => G.c7open && G.reveal && !G.air && !G.quiet, onDone: airDone, onHold: airHold });
   // esclusa de buzos en el piso
   const lk = new THREE.Group(); lk.position.set(-3.95, .012, C7Z + .05); scene.add(lk);
   mk(new THREE.RingGeometry(.3, .4, 28), M.steel, 0, 0, 0, lk, false).rotation.x = -Math.PI / 2;
@@ -1199,7 +1253,7 @@ function buildC7() {
   });
   const tl = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.19), new THREE.MeshStandardMaterial({ map: tally, transparent: true, roughness: .9, depthWrite: false, emissive: 0x0c0c0a }));
   tl.position.set(X1 + .012, 1.32, C7Z); tl.rotation.y = Math.PI / 2; scene.add(tl);
-  act({ id: 'c7w', x: -1.35, y: 1.25, z: C7Z, r: 1.5, label: 'Puerta soldada', once: false, en: () => !G.c7open && G.walk !== 2 && G.h03 !== 1 && !G.reveal, onDone: () => voNow('c7weld') });
+  act({ id: 'c7w', x: -1.35, y: 1.25, z: C7Z, r: 1.5, label: 'Puerta soldada', once: false, en: () => !G.c7open && G.walk !== 2 && G.h03 !== 1 && !G.reveal, onDone: () => think('Soldada desde afuera. Como si tuvieran miedo de que algo saliera.', 4) });
   act({ id: 'listen', x: -1.35, y: 1.3, z: C7Z, r: 1.7, label: 'Pegar la oreja a la puerta', hold: 1.4, en: () => G.walk === 2 && !G.listened, onDone: listenScene });
   act({ id: 'wheel7', x: -1.35, y: 1.08, z: C7Z, r: 1.9, label: 'Sujetar la rueda', hold: 1e6, keep: true, once: false, en: () => G.h03 === 1 && H3.ph === 'turn' });
   act({ id: 'open7', x: -1.35, y: 1.08, z: C7Z, r: 1.8, label: 'Abrir el siete', hold: 4.5, decay: .1, keep: true, en: () => G.reveal && !G.c7open, onDone: open7, onHold: open7Hold });
@@ -1729,7 +1783,6 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   eng1: { s: 'hale', t: 'English. Someone translated this before me.', es: 'Inglés. Alguien tradujo esto antes que yo.', st: 'surprised, uneasy' },
   eng2: { s: 'hale', t: 'Eighty-six. Eighty-eight. I\'m not the first. The others didn\'t sign… so they kept bringing people.', es: '1986. 1988. No soy el primero. Los otros no firmaron… y siguieron trayendo gente.', st: 'slowly realizing, quiet' },
   c7pass: { s: 'hale', t: 'The seven. Welded shut. Like a grave.', es: 'El siete. Soldado. Como una tumba.' },
-  c7weld: { s: 'hale', t: 'Compartment seven. It\'s not on any plan they showed me.', es: 'Compartimento 7. No aparece en ningún plano que me hayan mostrado.' },
   prime: { s: 'hale', t: 'Fuel\'s up. Now the starter. Let go right when it catches.', es: 'Combustible arriba. Ahora el arranque: soltar justo cuando agarra.' },
   fail1: { s: 'hale', t: 'It\'s choking.', es: 'Se ahoga.' },
   fail2: { s: 'hale', t: 'Something answered. Three knocks. From the seven.', es: 'Algo contestó. Tres golpes. Desde el siete.', st: 'frozen, whispering' },
@@ -1776,6 +1829,18 @@ const C7POS = new THREE.Vector3(-1.5, 1.2, C7Z);
   end1: { s: 'hale', t: 'They said they found me because of the knocking. Three knocks, under the water, all the way to their boat.', es: 'Dijeron que me encontraron por los golpes. Tres golpes bajo el agua, hasta su barco.', st: 'calm narration, weeks later, wistful' },
   end2: { s: 'hale', t: 'I wrote my report. Origin of the knocks: not thermal.', es: 'Escribí mi informe. Origen de los golpes: no térmico.', st: 'calm narration, firm' },
 };/*/VO*/
+// objetivos: qué hacer, por qué y hacia dónde (popa = hacia la escotilla de escape)
+const OBJ = {
+  gen: 'Sin energía no hay radio ni aire · arranca el auxiliar en máquinas, a popa',
+  radio: 'Bélov está vivo · escucha la radio',
+  listen: 'Los golpes vienen del 7 · pega la oreja a su puerta, a babor en máquinas',
+  o2: 'El aire se acaba · restaura el oxígeno en soporte vital, pasando la 2.ª compuerta',
+  away: 'Son casi las 03:00 · aléjate del 7',
+  sonar: '¿Es el casco? · escúchalo en la sala de sonar, pasando la 3.ª compuerta',
+  open: 'El aire para subir está en el 7 · vuelve a máquinas y ábrelo',
+  air: 'Abre el aire de emergencia · al fondo del 7',
+  exit: 'Sube a cubierta · escotilla de escape, al fondo a popa',
+};
 const BLURBS = {
   o2x: 'Sin energía no hay presión. Primero el auxiliar.',
   d1: 'Sin energía la compuerta no abre.',
@@ -1787,7 +1852,7 @@ const BLURBS = {
 const NOTES = {
   invite: { en: 1, t: 'FLOTA DEL NORTE · CARTA DE INVITACIÓN', o: 'Dr. Thomas Hale, Woods Hole Oceanographic Institution.\nYou are invited aboard K-417 to record the acoustic events of compartment 7…\nYour signature will close the file.', b: 'En el marco del intercambio científico, la Flota lo invita a bordo del K-417 para registrar los eventos acústicos del compartimento 7, en el punto 71° N 38° E.\n\nSe espera que su informe confirme el origen térmico de los ruidos (contracción del casco). Su firma cerrará el expediente.\n\n(A mano:) Annie, 9 en diciembre. No faltar.' },
   log: { t: 'BITÁCORA DEL COMANDANTE · 14.10.89', o: 'Точка 71° с. ш. 38° в. д. Четвёртый раз с 1983-го.\nАмериканец будет наблюдать спуск из купола…\nВ 03:00 — никого в коридоре машинного. Никого.', b: 'Punto 71° N 38° E. Cuarta vez desde 1983. Siempre un 14 de octubre.\n\nEl americano observará el descenso desde la cúpula. Que escuche lo que quiera. Que firme lo que trajo escrito.\n\nA las 03:00, nadie en el pasillo de máquinas. Nadie.' },
-  med: { long: true, t: 'OFICIAL MÉDICO · 1983 · INFORME NO ENVIADO', o: '14 октября 1983 г., 03:00. Седьмой отсек затоплен.\nВолков, Орлов и Седых остаются внутри. Капитан Белов приказывает задраить дверь…', b: '14 de octubre de 1983, 03:00. El compartimento 7 hace agua en este mismo punto.\n\nVólkov, Orlov y Sedykh quedan adentro. El oficial de guardia, capitán Bélov, ordena sellar la puerta para salvar el barco.\n\nSe oyeron golpes durante cuarenta minutos. Tres por serie.\n\nLos cuerpos no se recuperaron. Por orden de la Flota, la puerta fue soldada y el caso cerrado como «ruido del casco».' },
+  med: { long: true, t: 'OFICIAL MÉDICO · 1983 · INFORME NO ENVIADO', o: '14 октября 1983 г., 03:00. Седьмой отсек затоплен.\nВолков, Орлов и Седых остаются внутри. Вахтенный офицер, капитан ██████, приказывает задраить дверь…', b: '14 de octubre de 1983, 03:00. El compartimento 7 hace agua en este mismo punto.\n\nVólkov, Orlov y Sedykh quedan adentro. El oficial de guardia, capitán ██████ (tachado), ordena sellar la puerta para salvar el barco.\n\nSe oyeron golpes durante cuarenta minutos. Tres por serie.\n\nLos cuerpos no se recuperaron. Por orden de la Flota, la puerta fue soldada y el caso cerrado como «ruido del casco».' },
   sonar: { t: 'REGISTRO DE SONAR', o: '14.10.83 · 03:00–03:40 · стук из 7-го. По три.\n14.10.86 · англичанин не подписал.\n14.10.88 · норвежец не подписал.\n(Другим почерком:) Это не корпус.', b: '14.10.83 · 03:00–03:40 · golpes desde el 7. Tres por serie.\n14.10.86 · 03:00 · golpes. 40 min. El inglés no firma.\n14.10.88 · 03:00 · golpes. 40 min. El noruego no firma.\n14.10.89 · 02:31 · cede el sello de la cúpula. El americano no responde.\n\n(Otra letra:) No es el casco.' },
   sedykh: { t: 'SEDYKH · 14.10.83 · 03:20', o: 'Вода уже по грудь. Волков больше не говорит.\nСтучим три раза, по одному за каждого…', b: '(Lápiz.)\n\nEl agua nos llega al pecho. Vólkov ya no habla.\n\nGolpeamos tres veces, uno por cada uno. Al otro lado alguien respira contra la puerta. Sé quién es.\n\nSi alguien lee esto: no fue el casco.' },
   whit: { en: 1, long: true, t: 'PEGADA BAJO EL PANEL · EN INGLÉS', o: 'M. Whitcombe, Admiralty Research, Portland · 14.10.86\nThey want "thermal". It is not thermal. Something answers. I will not sign.\n\nR. Lindqvist, Bergen · 14.10.88\nNor will I. They will bring another one.', b: 'M. Whitcombe, 1986: Quieren «térmico». No es térmico. Algo contesta. No voy a firmar.\n\nR. Lindqvist, 1988: Yo tampoco. Van a traer a otro.' },
@@ -1802,8 +1867,8 @@ function showSub(it) {
   subEnd = T + it.d; SAID.push(it.t); if (SAID.length > 120) SAID.shift();
   // lo que se oye en ruso va [entre corchetes] en el texto, y se marca solo ese trozo
   const s = $('sub'), t = it.t.replace(/\[([^\]]+)\]/g, '<span class="ruf"><span class="br">[</span><i class="ru">RU</i>$1<span class="br">]</span></span>');
-  s.innerHTML = `<span class="box">${it.who ? `<span class="who">${it.who}</span>` : ''}${t}</span>`; s.className = 'show ' + (it.cls || ''); clearTimeout(subTO);
-  subTO = setTimeout(() => s.className = it.cls || '', it.d * 1000);
+  s.innerHTML = `<span class="box">${it.who ? `<span class="who">${it.who}</span>` : ''}${t}</span>`; const top = state === 'sign' ? ' top' : ''; s.className = 'show ' + (it.cls || '') + top; clearTimeout(subTO);
+  subTO = setTimeout(() => s.className = (it.cls || '') + top, it.d * 1000);
   if (it.voice) AU.voice(it.voice, it.vo); else if (it.radio) AU.radio(Math.min(it.d - .3, .9 + it.t.length * .05), it.radio);
   it.fn && it.fn();
 }
@@ -1834,7 +1899,40 @@ function tickSubs() { while (subQ.length && subQ[0].exp < T) subQ.shift(); if (s
 function once(k, fn) { if (G.said[k]) return false; G.said[k] = 1; fn(); return true; }
 let hintTO = 0;
 function hint(t, d = 5) { const h = $('hint'); h.innerHTML = t; h.classList.add('show'); clearTimeout(hintTO); hintTO = setTimeout(() => h.classList.remove('show'), d * 1000); }
-function obj(t, quiet) { const e = $('objtxt'); if (e.textContent === t) return; const fresh = !quiet || !e.textContent.startsWith(t.slice(0, 12)); e.textContent = t; if (!fresh) return; const o = $('obj'); o.classList.remove('flash'); void o.offsetWidth; o.classList.add('flash'); }
+function obj(t, quiet) { const e = $('objtxt'); if (e.textContent === t) return; const fresh = !quiet || !e.textContent.startsWith(t.slice(0, 12)); e.textContent = t; if (!fresh) return; NUD.t = 0; NUD.lv = 0; const o = $('obj'); o.classList.remove('flash'); void o.offsetWidth; o.classList.add('flash'); }
+/* --- no perderse: si no avanzas, Hale piensa hacia dónde; después los golpes te llaman desde ahí --- */
+const NUD = { t: 0, lv: 0 };
+function guideTarget() {
+  if (G.lock || G.h03 === 1 || G.flood || (G.ballast && !G.surfaced) || SC.on || LS.t >= 0) return null;
+  if (G.surfaced) return { x: 0, z: Z1 + .6, d: 'La escotilla de escape. Al fondo, a popa.', how: 'MANTÉN el botón sobre la escotilla' };
+  if (G.c7open && !G.air) return { x: -4.4, z: C7Z, d: 'Al fondo del siete. La rueda del aire, abajo.', how: 'MANTÉN el botón sobre la rueda' };
+  if (G.reveal && !G.c7open) return { x: -1.35, z: C7Z, d: 'El siete. En máquinas, la puerta de babor.', how: 'MANTÉN el botón sobre la rueda del 7' };
+  if (G.h03 === 2 && !G.sonar) return { x: -.82, z: -37.15, d: 'El sonar. Pasando la tercera compuerta, a la izquierda.', how: 'Toca los auriculares sobre la mesa' };
+  if (G.oxygen) return null;
+  if (G.listened && G.o2Go) return { x: 1.15, z: -32.4, d: 'Soporte vital. Pasando la segunda compuerta, la válvula a la derecha.', how: 'TOCA rápido el botón para girar la válvula' };
+  if (G.walk === 2 && !G.listened) return { x: -1.35, z: C7Z, d: 'La puerta soldada. En máquinas, a babor.', how: 'MANTÉN el botón sobre la puerta' };
+  if (!G.energy) return { x: -.9, z: -19.4, d: 'Máquinas. Pasando la primera compuerta, a la izquierda.', how: G.prime ? 'MANTÉN y SUELTA en lo verde' : 'Primero ceba el combustible: MANTÉN el botón' };
+  return null;
+}
+function guideLine(g) {
+  const dz = g.z - P.z, m = Math.round(Math.hypot(g.x - P.x, dz));
+  return m < 3 ? g.d : `${g.d} (${m} m ${dz < 0 ? 'a popa' : 'a proa'})`;
+}
+function updateGuide(dt) {
+  const g = guideTarget(); if (!g) { NUD.t = 0; return; }
+  NUD.t += dt; const near = Math.hypot(g.x - P.x, g.z - P.z) < 2.6;
+  if (near && NUD.t > 22 && NUD.lv < 9) { NUD.lv = 9; hint(g.how, 5); return; }
+  if (near) return;
+  if (NUD.lv === 0 && NUD.t > 25 && T > subEnd + .5 && !subQ.length) { NUD.lv = 1; think(guideLine(g), 4.2); }
+  else if (NUD.lv === 1 && NUD.t > 50) { NUD.lv = 2; AU.knock(new THREE.Vector3(g.x, 1.3, g.z), 3, .55); G.flick = Math.max(G.flick, .15); if (T > subEnd) later(1.6, () => think('Los golpes… vienen de allá.', 3)); }
+  else if (NUD.lv === 2 && NUD.t > 80) { NUD.lv = 3; NUD.t = 50; AU.knock(new THREE.Vector3(g.x, 1.3, g.z), 3, .6); think(guideLine(g), 4.2); }
+}
+// tocar el objetivo: Hale piensa hacia dónde ir (o repite lo último que se dijo)
+$('obj').addEventListener('pointerdown', e => {
+  if (state !== 'play') return; e.preventDefault(); e.stopPropagation();
+  const g = guideTarget();
+  if (g) think(guideLine(g), 4.2); else if (SAID.length) say(SAID[SAID.length - 1], 4);
+});
 let noteCB = null;
 function showNote(k, cb) {
   const N = NOTES[k]; $('nt').textContent = N.t; $('nb').textContent = N.b;
@@ -2156,9 +2254,10 @@ function updateWake(dt) {
 }
 function finishWake() {
   state = 'play'; G.woke = true; P.y = 1.62; hudShow(true); $('act').classList.add('off');
-  obj('Sin energía no hay radio ni aire · arranca el auxiliar en máquinas');
+  obj(OBJ.gen);
   vo('wake2'); vo('wake3'); vo('wake4');
   later(1.2, () => hint(matchMedia('(pointer:coarse)').matches ? 'Izquierda: moverte (al borde corres) · Derecha: mirar<br>Prende la linterna: el botón de la derecha' : 'WASD: moverte · Shift: correr<br>F: prende la linterna', 6));
+  later(16, () => { if (!G.energy) hint('¿No sabes adónde ir? Toca el objetivo de arriba', 5); });
   checkpoint();
 }
 
@@ -2171,7 +2270,7 @@ function genFail(kind) {
 }
 function onEnergy() {
   G.energy = true; AU.power(true); AU.ok(); G.flick = 1; props.genLever.rotation.z = -1.1;
-  later(1.3, () => { G.lightMode = 'power'; AU.hum(true); AU.vent(true); voNow('energy'); obj('Espera · la radio vuelve a la vida'); checkpoint(); });
+  later(1.3, () => { G.lightMode = 'power'; AU.hum(true); AU.vent(true); voNow('energy'); obj(OBJ.radio); checkpoint(); });
   // con energía vuelve la radio: Bélov está vivo, en la cápsula
   later(4.4, () => { AU.thud(null, .25); vo('call1'); vo('call2'); vo('call3', { fn: () => { G.call = 1; later((AU.vob.call3 ? AU.vob.call3.duration : 8) + 1.4, knockWalk); } }); });
 }
@@ -2193,7 +2292,7 @@ function updateKnockWalk(dt) {
   if (KW.i >= 7 && KW.t > 13.5) {
     G.walk = 2; G.lightMode = 'power'; G.flick = .5; AU.hum(true); AU.vent(true); AU.power(true);
     AU.knock(C7POS, 3, 1); later(.8, () => voNow('walk2')); G.knockAt = 7;
-    obj('Los golpes vienen del 7 · pega la oreja a la puerta'); checkpoint();
+    obj(OBJ.listen); checkpoint();
   }
 }
 // la oreja contra la puerta: alguien pide que abran
@@ -2204,7 +2303,7 @@ function listenScene() {
   later(7.6, () => { AU.bang(C7POS, 1.4); G.shake = 1; vib([200, 50, 200]); G.flick = .4; G.fear = 1; LS.t = -1; });
   later(8.4, () => {
     G.lock = false; AU.vent(true); AU.hum(true); voNow('listen1');
-    vo('listen2'); vo('call4', { fn: () => { setDoor(1, true); obj('El aire se acaba · restaura el oxígeno en soporte vital'); checkpoint(); } });
+    vo('listen2'); vo('call4', { fn: () => { G.o2Go = true; setDoor(1, true); obj(OBJ.o2); checkpoint(); } });
   });
 }
 const LS = { t: -1 };
@@ -2248,7 +2347,7 @@ function valveHold(p) {
 }
 function onOxygen() {
   G.oxygen = true; G.o2 = 100; G.oxyT = 0; AU.ok(); AU.thud(null, .5); AU.hiss(new THREE.Vector3(1.2, 2.2, -32));
-  voNow('o2ok'); vo('o2b'); obj('Son casi las 03:00 · aléjate del 7'); checkpoint();
+  voNow('o2ok'); vo('o2b'); obj(OBJ.away); checkpoint();
 }
 
 /* --- 03:00: la rueda del siete gira sola --- */
@@ -2308,40 +2407,55 @@ function end03() {
   G.h03 = 2; G.force = null; AU.red(0); AU.water(0);
   G.lightMode = 'power'; G.flick = .6; AU.hum(true); AU.vent(true); AU.power(true); G.kill = 0;
   setDoor(2, true);
-  vo('h6'); vo('h7'); obj('¿Es el casco? · escúchalo desde la sala de sonar'); checkpoint();
+  vo('h6'); vo('h7'); obj(OBJ.sonar); checkpoint();
   later(14, () => { if (G.h03 === 2 && !G.sonar) lampDie('lampE'); });
 }
 
 /* --- sonar: oír el casco desde afuera --- */
 const SC = { on: false, t: 0 };
+// con los auriculares puestos, la pantalla llena la vista: el Zarya al centro y los golpes afuera del casco
 function sonarScene() {
   G.lock = true; SC.on = true; SC.t = 0; AU.muffle(1800, .2); AU.vent(false); AU.thud(null, .2); G.sonarOn = true;
-  later(.7, () => AU.ping(.3, 1.4));
-  later(3, () => AU.knock(new THREE.Vector3(-4, 1.2, -36.5), 3, .4));
-  later(5.1, () => AU.knock(new THREE.Vector3(4, 1.8, -38.8), 3, .45));
+  hudShow(false); $('act').classList.add('off'); SV.lab0 = ''; SV.mark7 = false;
+  later(.35, () => svOpen('full'));
+  later(.7, () => { AU.ping(.3, 1.4); SV.ping = SV.t; });
+  later(3, () => { AU.knock(new THREE.Vector3(-4, 1.2, -36.5), 3, .4); svKnock(3, .9); SC.b = [svBlip(-1.75, .36, { lab: 'СНАРУЖИ', flash: 1 })]; });
+  later(3.6, () => think('[Снаружи.] Afuera. Golpean desde afuera del casco.', 3.4));
+  later(5.1, () => { AU.knock(new THREE.Vector3(4, 1.8, -38.8), 3, .45); svKnock(3, 1); SC.b.push(svBlip(1.45, .38, { flash: 1 })); });
   later(6.6, () => AU.breath(.13));
-  later(7.4, () => voNow('dead3', { lp: 2200, v: 1.5, pad: .3 }));
+  later(7.4, () => { voNow('dead3', { lp: 2200, v: 1.5, pad: .3 }); SV.voice = .9; SC.b.push(svBlip(Math.PI, .4, { flash: 1 })); SV.lab0 = 'КОНТАКТЫ · 3'; });
+  later(11.3, () => { SV.voice = 0; for (const b of SC.b) b.flash = 1; });
   later(12.4, () => {
     AU.muffle(20000, .02); AU.bang(null, .8); AU.sting(.5); G.shake = .6; vib([100, 50, 200]);
-    props.crt.u.uOvK.value = 0; props.crt.u.uK.value = 1.5; ghostGlow(.6); ghostBehind(props.crt, .55, .4); G.flick = .25; G.fear = 1;
+    for (const b of SC.b) Object.assign(b, { r: .03, col: '255,80,60', big: 2.2, flash: 1, lab: '' });
+    SV.lab0 = 'КОНТАКТ 0 м'; SV.mark7 = true; SV.glitch = .35; svKnock(3, 1.4);
   });
-  later(14.2, () => { G.flick = .7; later(.2, () => { GH.g.visible = false; }); });
-  later(15.1, () => {
+  later(12.8, () => { SV.off = SV.t; });
+  // el tubo se apaga y el vidrio negro devuelve el reflejo: hay alguien detrás
+  later(13.25, () => {
+    svClose(true); props.crt.u.uOvK.value = 0; props.crt.u.uK.value = 1.5; ghostGlow(.6); ghostBehind(props.crt, .55, .4); G.flick = .25; G.fear = 1;
+  });
+  later(14.9, () => { G.flick = .7; later(.2, () => { GH.g.visible = false; }); });
+  later(15.8, () => {
     props.crt.u.uOvK.value = 1; props.crt.u.uK.value = .07; G.lock = false; SC.on = false; G.sonar = true; G.sonarOn = false; AU.vent(true);
-    voNow('sonar1'); checkpoint(); later(4.6, confession);
+    P.y = 1.62; hudShow(true); voNow('sonar1'); checkpoint(); later(4.6, confession);
   });
 }
 function updateSonarScene(dt) {
   if (!SC.on) return; SC.t += dt;
+  // te sientas frente a la pantalla
+  const k0 = 1 - Math.exp(-dt * 3); P.x += (-.28 - P.x) * k0; P.z += (-37.6 - P.z) * k0; P.y += ((SC.t < 15.4 ? 1.24 : 1.62) - P.y) * k0;
+  // los ecos se acercan al casco mientras hablan
+  if (SC.b && SC.t > 7.4 && SC.t < 12.4) for (const b of SC.b) b.r += (.29 - b.r) * (1 - Math.exp(-dt * .5));
   const c = props.crt.pos; let yaw = Math.atan2(-(c.x - P.x), -(c.z - P.z));
   let dy = yaw - P.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); const k = 1 - Math.exp(-dt * 2.5);
-  P.yaw += dy * k; P.pitch += (Math.atan2(c.y - 1.62, Math.hypot(c.x - P.x, c.z - P.z)) - P.pitch) * k;
+  P.yaw += dy * k; P.pitch += (Math.atan2(c.y - P.y, Math.hypot(c.x - P.x, c.z - P.z)) - P.pitch) * k;
 }
 // Bélov confiesa: él cerró la puerta en el 83. Y el aire para emerger está en el siete.
 function confession() {
   if (G.reveal) return; G.reveal = true; subQ.length = 0;
   AU.thud(null, .25); vo('conf1'); vo('conf2'); vo('conf3'); vo('conf4');
-  obj('El aire para subir está en el 7 · ábrelo'); checkpoint();
+  obj(OBJ.open); checkpoint();
 }
 
 /* --- abrir el siete --- */
@@ -2353,7 +2467,7 @@ function open7Hold(p) {
 }
 function open7() {
   G.c7open = true; openQ = 0; AU.chain(C7POS.clone()); AU.creak(C7POS, .7); AU.thud(C7POS, .8); G.shake = .5; vib([60, 40, 120]);
-  AU.water(.12); obj('Abre el aire de emergencia · al fondo del 7'); checkpoint();
+  AU.water(.12); obj(OBJ.air); checkpoint();
   later(2.5, () => lampDie('lampF'));
 }
 function airHold(p) {
@@ -2362,6 +2476,13 @@ function airHold(p) {
   if (p > .62) once('thanks', () => { voNow('dead4', { pos: camBack(.5), v: 2, lp: 2600 }); vib([20, 60, 20]); G.flick = .3; });
 }
 
+// «Спасибо»: silencio primero. Por primera vez en todo el viaje, nada golpea.
+function airDone() {
+  G.quiet = true; G.lock = true; subQ.length = 0; AU.vent(false); AU.hum(false); AU.water(0); AU.hiss(new THREE.Vector3(-4.8, .8, C7Z));
+  if (AU.droneG) AU.droneG.gain.setTargetAtTime(0, AU.ctx.currentTime, .4);
+  G.flick = .2; vib(15);
+  later(3.4, () => { G.lock = false; startFlood(); });
+}
 /* --- inundación: corre a la palanca --- */
 const FL = { t: 0 };
 function startFlood() {
@@ -2377,7 +2498,7 @@ function updateFlood(dt) {
   FL.t += dt; G.wl = clamp(FL.t / 34, 0, 1);
   props.flood.position.y = lerp(.03, 1.7, G.wl); props.floodU.uTime.value = T;
   AU.water(.55 + G.wl * .45);
-  obj(`¡Corre a la palanca de lastre! · agua ${Math.round(G.wl * 100)}%`, true);
+  obj(`¡Corre a la palanca de lastre, a popa junto al sonar! · agua ${Math.round(G.wl * 100)}%`, true);
   if (G.wl > .55 && !G.said.gasp) { G.said.gasp = 1; AU.breath(.2); }
   if (G.wl >= 1) die('flood');
 }
@@ -2396,7 +2517,7 @@ function updateBlow(dt) {
   if (Math.random() < dt * 2) AU.creak(new THREE.Vector3(rnd(-1.7, 1.7), rnd(.5, 2.4), P.z + rnd(-5, 5)), rnd(.3, .6));
   if (t > 13 && !BL.up) {
     BL.up = true; AU.bang(null, 1.6); AU.thud(null, 1.4); G.shake = 1.5; vib([400]); G.flood = 3; AU.water(.15);
-    later(2.4, () => { G.surfaced = true; setDoor(3, true); G.lightMode = 'power'; obj('Sube a cubierta · escotilla de escape'); checkpoint(); });
+    later(2.4, () => { G.surfaced = true; setDoor(3, true); G.lightMode = 'power'; obj(OBJ.exit); checkpoint(); });
   }
   if (t > 16) { BL.t = -1; G.tilt = 0; }
 }
@@ -2406,10 +2527,9 @@ const DEATHS = {
   o2: ['SIN AIRE', 'El aire se volvió espeso. Lo último que oíste fueron tres golpes.'],
   door: ['EL SIETE SE ABRIÓ', 'A 412 metros, el agua no golpea. Entra.'],
   flood: ['EL AGUA FUE MÁS RÁPIDA', 'Ellos aguantaron cuarenta minutos. Tú tuviste menos.'],
-  sea: ['EL MAR TE LLEVÓ', 'El barco llegó un minuto tarde. Haz señas con la linterna.'],
 };
 function die(kind) {
-  state = 'dead'; deaths++; AU.alarm(false); AU.hold(null); AU.hum(false); AU.red(0); AU.water(0); AU.muffle(); AU.opStop && AU.opStop();
+  state = 'dead'; deaths++; svClose(true); AU.alarm(false); AU.hold(null); AU.hum(false); AU.red(0); AU.water(0); AU.muffle(); AU.opStop && AU.opStop();
   if (AU.vcur) try { AU.vcur.stop(); } catch (e) {}
   hudShow(false); GH.g.visible = false; $('act').classList.add('hidden');
   $('dh').textContent = DEATHS[kind][0]; $('dp').textContent = DEATHS[kind][1];
@@ -2531,8 +2651,15 @@ function updateRescue(dt) {
   }
   ev('a', 1.5, () => voNow('surf1'));
   ev('b', 8, () => { voNow('surf2'); AU.creak(null, .8); G.shake = .5; });
-  ev('c', 14, () => { RS.ship = 1; AU.horn(bp.clone()); });
-  ev('d', 16.5, () => { voNow('surf3', { cls: 'shout' }); hint('Apunta la linterna al barco y TOCA para hacer señas', 7); });
+  // bajo la cubierta, tres golpes, y se alejan por el agua hacia la niebla: van a buscar el barco
+  ev('k1', 9.5, () => { AU.knock(new THREE.Vector3(0, -2.5, 1), 3, .9); vib([40, 300, 40, 300, 40]); G.shake = .3; });
+  ev('k1t', 11.4, () => think('Los golpes. Siguen aquí… debajo.', 3.2));
+  ev('k2', 12.6, () => AU.knock(new THREE.Vector3(12, -1.5, -18), 3, .7));
+  ev('k3', 15.2, () => AU.knock(new THREE.Vector3(24, -1, -36), 3, .55));
+  ev('c', 16.4, () => { RS.ship = 1; AU.horn(bp.clone()); });
+  ev('d', 18.6, () => { voNow('surf3', { cls: 'shout' }); hint('Apunta la linterna al barco y TOCA para hacer señas', 7); });
+  // si no haces señas, los golpes lo traen igual
+  ev('auto', 36, () => { if (RS.sig < 3) { RS.sig = 3; RS.sigT = t; AU.knock(new THREE.Vector3(bp.x * .5, -1, bp.z * .5), 3, .8); later(1.4, () => AU.horn(bp.clone(), 1)); } });
   // señas con la linterna
   const btn = $('act'), lbl = $('actlbl');
   _v.set(bp.x, bp.y + 3, bp.z).sub(camera.position).normalize(); camera.getWorldDirection(_v2);
@@ -2551,12 +2678,12 @@ function updateRescue(dt) {
     if (held.tap) {
       held.tap = false;
       if (canGrab) { rescued(); return; }
-      if (onBoat && RS.sig < 3) { RS.sig++; RS.flash = .25; AU.thud(null, .1); vib(20); if (RS.sig >= 3) { RS.sigT = t; AU.horn(bp.clone(), 1); later(1.6, () => voNow('blow1')); } }
+      if (onBoat && RS.sig < 3) { RS.sig++; RS.flash = .25; AU.bang(null, .55); vib(40); if (RS.sig >= 3) { RS.sigT = t; AU.horn(bp.clone(), 1); later(1.6, () => voNow('blow1')); } }
     }
   }
   RS.flash = Math.max(0, RS.flash - dt);
   oLamp.intensity = RS.flash > 0 ? 40 : 0; oLamp.position.copy(camera.position); camera.getWorldDirection(_v2); oLamp.target.position.copy(camera.position).addScaledVector(_v2, 10);
-  if (camY < .55 && !RS.got) { RS.got = true; die('sea'); return; }
+  if (camY < .55 && !RS.got) { rescued(); return; } // el agua te alcanza justo cuando te sacan
   lookCam(dt, 0, camY, 0); camera.rotation.z += roll;
 }
 function rescued() {
@@ -2567,13 +2694,71 @@ function rescued() {
     ['MAR DE BARENTS · 06:12'],
     ['El pesquero noruego «Havbris» me sacó del agua<br>cuando la cubierta del Zarya ya no se veía.', () => voNow('end1', { pad: .2 })],
     ['La tripulación fue recogida al amanecer, en la cápsula.'],
-    ['INFORME DEL DR. T. HALE A LA FLOTA DEL NORTE<br><br>Origen de los golpes: <b>no térmico</b>.', () => voNow('end2', { pad: .2 })],
-    ['Vólkov · Orlov · Sedykh<br><span style="font-size:13px;letter-spacing:.3em;opacity:.6">14.10.1983</span>'],
-  ], 5.2, 2.6, () => { AU.opStop(); deckG.visible = false; O.boat.g.visible = false; O.boat.ring.visible = O.boat.rope.visible = false; for (const c of O.subParts) { c.position.y = c.userData.y0; c.rotation.x = c.userData.rx0; } showEnd(); });
+    ['El «Havbris» había salido de Bergen esa noche.<br>Lo mandó un acústico que, en 1988,<br>tampoco firmó.'],
+  ], 5.6, 2.6, () => { AU.opStop(); deckG.visible = false; O.boat.g.visible = false; O.boat.ring.visible = O.boat.rope.visible = false; for (const c of O.subParts) { c.position.y = c.userData.y0; c.rotation.x = c.userData.rx0; } startSign(); });
+}
+
+/* --- el informe: te trajeron para firmar. Lo último que haces es firmarlo --- */
+const SG = { step: 0, ink: 0, pts: null, to: 0 };
+const sigc = $('sigc'), sigg = sigc.getContext('2d');
+function sgHint(t) { const h = $('sgH'); h.textContent = t; h.classList.toggle('show', !!t); }
+function startSign() {
+  state = 'sign'; Object.assign(SG, { step: 1, ink: 0, pts: null }); clearTimeout(SG.to); $('sub').style.zIndex = 11; subQ.length = 0;
+  $('sgNo').classList.remove('show'); $('belov').classList.remove('show'); $('stamp').classList.remove('show'); $('annie').classList.remove('show');
+  $('sgT').classList.add('need'); sigc.classList.remove('need');
+  const sh = $('sign'); sh.classList.remove('hidden', 'show'); requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add('show')));
+  const r = sigc.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); sigc.width = r.width * d | 0; sigc.height = r.height * d | 0;
+  sigg.setTransform(d, 0, 0, d, 0, 0); sigg.clearRect(0, 0, r.width, r.height);
+  sigg.strokeStyle = '#1d3d8a'; sigg.lineWidth = 2.2; sigg.lineCap = sigg.lineJoin = 'round';
+  AU.thud(null, .15);
+  later2(1.8, () => sgHint('La Flota ya lo escribió por ti · toca «térmico» para corregirlo'));
+  SG.to = setTimeout(() => { if (SG.step === 1) sgFix(); }, 16000);
+}
+// el fin pasa sin el reloj del juego: temporizadores propios
+function later2(s, fn) { return setTimeout(fn, s * 1000); }
+function sgFix() {
+  if (SG.step !== 1) return; SG.step = 2; clearTimeout(SG.to);
+  $('sgT').classList.remove('need'); $('sgNo').classList.add('show'); AU.bang(null, .3); vib(20); sgHint('');
+  voNow('end2', { pad: .2 });
+  later2(3.4, () => { if (SG.step !== 2) return; SG.step = 3; sigc.classList.add('need'); sgHint('Firma con el dedo'); SG.to = setTimeout(sgAutoSign, 14000); });
+}
+$('sgT').addEventListener('pointerdown', e => { e.preventDefault(); sgFix(); });
+const sgPos = e => { const r = sigc.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+sigc.addEventListener('pointerdown', e => {
+  if (SG.step !== 3) return; e.preventDefault(); try { sigc.setPointerCapture(e.pointerId); } catch (_) {}
+  SG.pts = sgPos(e); sigc.classList.remove('need'); sgHint('');
+});
+sigc.addEventListener('pointermove', e => {
+  if (SG.step !== 3 || !SG.pts) return; const p = sgPos(e);
+  sigg.beginPath(); sigg.moveTo(SG.pts[0], SG.pts[1]); sigg.lineTo(p[0], p[1]); sigg.stroke();
+  SG.ink += Math.hypot(p[0] - SG.pts[0], p[1] - SG.pts[1]); SG.pts = p;
+});
+const sgUp = () => { if (SG.step !== 3 || !SG.pts) return; SG.pts = null; if (SG.ink > 140) sgSigned(); };
+sigc.addEventListener('pointerup', sgUp); sigc.addEventListener('pointercancel', sgUp);
+// si no firma, la mano de Hale firma sola
+function sgAutoSign() {
+  if (SG.step !== 3) return; const r = sigc.getBoundingClientRect(), w = r.width, h = r.height; let i = 0;
+  const pts = []; for (let k = 0; k <= 60; k++) { const u = k / 60; pts.push([w * (.12 + u * .55), h * (.62 - Math.sin(u * 19) * .18 * (1 - u * .4) - u * .1)]); }
+  const id = setInterval(() => { if (i >= pts.length - 1 || SG.step !== 3) { clearInterval(id); sgSigned(); return; } sigg.beginPath(); sigg.moveTo(...pts[i]); sigg.lineTo(...pts[i + 1]); sigg.stroke(); i++; }, 22);
+}
+function sgSigned() {
+  if (SG.step !== 3) return; SG.step = 4; clearTimeout(SG.to); sigc.classList.remove('need'); sgHint(''); AU.ok(); vib(30);
+  // el testigo: el oficial de guardia de 1983 firma lo que no escribió entonces
+  later2(1.2, () => { $('belov').classList.add('show'); AU.thud(null, .12); });
+  later2(4.2, () => { $('stamp').classList.add('show'); AU.thud(null, .6); vib(60); });
+  later2(5.8, () => { $('annie').classList.add('show'); });
+  later2(7.4, () => think('Llegué a su cumpleaños.', 4));
+  later2(12.5, () => {
+    const sh = $('sign'); sh.classList.remove('show');
+    later2(1.7, () => {
+      sh.classList.add('hidden'); state = 'ending';
+      textSeq([['Vólkov · Orlov · Sedykh<br><span style="font-size:13px;letter-spacing:.3em;opacity:.6">14.10.1983</span>']], 6, .4, showEnd);
+    });
+  });
 }
 const fmt = s => { s = Math.floor(s); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 function showEnd() {
-  state = 'end'; hudShow(false); $('endtxt').classList.add('hidden');
+  state = 'end'; hudShow(false); $('endtxt').classList.add('hidden'); $('sub').style.zIndex = ''; $('sub').className = ''; subQ.length = 0; $('end').classList.remove('st');
   $('ek').textContent = 'MAR DE BARENTS · 71° N 38° E · 06:09'; $('eh').textContent = 'EMERGISTE';
   $('ep').innerHTML = 'El K-417 «Zarya» se hundió a las 06:09.<br>Esta vez, con la puerta del siete abierta.';
   $('eo').textContent = 'GRACIAS POR ESCUCHAR';
@@ -2591,7 +2776,7 @@ function updateAmbient(dt) {
   const calm = G.h03 !== 1 && !SC.on && G.walk !== 1 && !G.flood && LS.t < 0;
   if (amb.creak < 0) { amb.creak = rnd(7, 16); AU.creak(new THREE.Vector3(rnd() < .5 ? -1.7 : 1.7, rnd(.5, 2.4), P.z + rnd(-6, 6)), rnd(.2, .4)); }
   if (amb.drip < 0) { amb.drip = rnd(1.2, 3.5); const d = DRIPS.reduce((a, b) => Math.abs(b.z - P.z) < Math.abs(a.z - P.z) ? b : a); AU.drip(d); }
-  if (G.listened && calm && amb.knock < 0) { amb.knock = rnd(26, 44) * (G.oxygen ? .7 : 1); AU.knock(new THREE.Vector3(rnd() < .5 ? -1.8 : 1.8, rnd(.6, 2.2), P.z + rnd(-4, 4)), 3, rnd(.35, .6)); }
+  if (G.listened && calm && !G.quiet && amb.knock < 0) { amb.knock = rnd(26, 44) * (G.oxygen ? .7 : 1); AU.knock(new THREE.Vector3(rnd() < .5 ? -1.8 : 1.8, rnd(.6, 2.2), P.z + rnd(-4, 4)), 3, rnd(.35, .6)); }
   if (G.energy && calm && amb.groan < 0) { amb.groan = rnd(35, 60); AU.groan(new THREE.Vector3(rnd(-20, 20), -5, P.z + rnd(-20, 20)), .35); }
   // contacto de sonar
   if (amb.ping < 0) {
@@ -2609,7 +2794,9 @@ function updateAmbient(dt) {
 }
 function updateResources(dt) {
   playTime += dt; G.tclock += dt;
-  G.o2 -= dt * (G.oxygen ? 100 / 430 : 100 / 285);
+  // en las escenas donde no puedes actuar (radio, golpes que caminan, la oreja en la puerta) el aire no corre
+  const cine = G.lock || G.walk === 1 || (G.energy && !G.walk) || (G.listened && !G.o2Go);
+  if (!cine) G.o2 -= dt * (G.oxygen ? 100 / 430 : 100 / 285);
     if (flashOn()) G.bat = Math.max(0, G.bat - dt * .45);
   if (G.bat <= 0 && G.light && !G.batWarned) { G.batWarned = true; say('Batería agotada.', 2.5); }
   if (G.o2 <= 0) { G.o2 = 0; die('o2'); }
@@ -2635,7 +2822,7 @@ function updateTriggers(dt) {
   if (G.oxygen && G.h03 === 0) { G.oxyT += dt; if (G.oxyT > 24 || (G.oxyT > 14 && !subQ.length && T > subEnd + 1)) start03(); } // las tres llegan cuando Bélov termina
   // adentro del siete
   if (G.c7open && !G.c7in && P.x < -2.3) { G.c7in = true; vo('in1'); vo('in2'); }
-  if (G.c7open && !G.air && P.x < -2 && LS.t < 0) { G.k7 = (G.k7 ?? 3) - dt; if (G.k7 < 0) { G.k7 = rnd(4, 7); AU.knock(new THREE.Vector3(-5, 1.4, C7Z + rnd(-1, 1)), 3, .3); } }
+  if (G.c7open && !G.air && !G.quiet && P.x < -2 && LS.t < 0) { G.k7 = (G.k7 ?? 3) - dt; if (G.k7 < 0) { G.k7 = rnd(4, 7); AU.knock(new THREE.Vector3(-5, 1.4, C7Z + rnd(-1, 1)), 3, .3); } }
   if (!G.enteredD && P.z < -35 && G.h03 === 2) { G.enteredD = true; amb.ping = .5; }
   updateFlood(dt); updateBlow(dt);
 }
@@ -2683,6 +2870,99 @@ function updateSonar(dt) {
   S.t.needsUpdate = true;
 }
 
+/* --- el sonar a pantalla completa (auriculares) y chico en la cúpula (descenso) ---
+   pantalla de fósforo verde: barrido, ecos que se pintan cuando el barrido pasa,
+   el Zarya al centro y la traza del hidrófono arriba */
+const SV = { mode: null, t: 0, blips: [], spikes: [], voice: 0, off: -1, glitch: 0, ping: -9, wave: new Float32Array(160), wi: 0 };
+const svc = $('sonv'), svg = svc.getContext('2d');
+function svOpen(mode) {
+  SV.mode = mode; SV.t = 0; SV.blips.length = 0; SV.spikes.length = 0; SV.voice = 0; SV.off = -1; SV.glitch = 0; SV.ping = -9; SV.wave.fill(0);
+  svc.className = mode === 'mini' ? 'mini' : ''; svResize(); svg.fillStyle = '#000'; svg.fillRect(0, 0, svc.width, svc.height);
+  requestAnimationFrame(() => svc.classList.add('on'));
+}
+function svClose(fast) { if (!SV.mode) return; svc.style.transition = fast ? 'opacity .12s' : ''; svc.classList.remove('on'); const m = SV.mode; SV.mode = null; setTimeout(() => { if (!SV.mode) { svc.className = ''; svc.style.transition = ''; } }, fast ? 150 : 500); return m; }
+function svResize() { const r = svc.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); svc.width = Math.max(1, r.width * d | 0); svc.height = Math.max(1, r.height * d | 0); }
+addEventListener('resize', () => { if (SV.mode) svResize(); });
+// un eco: ángulo (0 = proa, horario), distancia 0..1 del radio, color, rótulo
+function svBlip(a, r, o = {}) { const b = Object.assign({ a, r, life: 1, hot: 0, col: '120,255,170', lab: '' }, o); SV.blips.push(b); return b; }
+function svKnock(n = 3, v = 1) { for (let i = 0; i < n; i++) SV.spikes.push({ at: SV.t + i * .37, v }); }
+function updateSV(dt) {
+  if (!SV.mode) return;
+  SV.t += dt; const t = SV.t, mini = SV.mode === 'mini';
+  const W = svc.width, H = svc.height, g = svg, k = W / (mini ? 128 : 430);
+  const cx = W / 2, cy = mini ? H / 2 : Math.min(H * .43, H - W * .55), R = mini ? W * .47 : Math.min(W * .39, H * .28);
+  const sweep = (t * (mini ? 2.2 : 1.6)) % (Math.PI * 2);
+  // persistencia del fósforo
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = mini ? 'rgba(0,12,7,.22)' : SV.glitch > 0 ? 'rgba(0,9,5,.55)' : 'rgba(0,9,5,.16)'; g.fillRect(0, 0, W, H);
+  const on = SV.off < 0 ? clamp(t / .6, 0, 1) : 1;
+  // encendido / apagado del tubo: una línea que se abre en círculo, o que se cierra en un punto
+  let sy = 1, sx = 1;
+  if (on < 1) { sy = Math.max(.02, smooth(on)); }
+  if (SV.off >= 0) { const u = clamp((t - SV.off) / .45, 0, 1); sy = Math.max(.008, 1 - smooth(clamp(u * 1.6, 0, 1))); sx = 1 - smooth(clamp((u - .5) * 2, 0, 1)) * .98; if (u >= 1) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); return; } }
+  g.save(); g.translate(cx, cy); g.scale(sx, sy);
+  if (SV.glitch > 0) { SV.glitch -= dt; g.translate(rnd(-8, 8) * k, rnd(-3, 3) * k); }
+  // rejilla
+  g.strokeStyle = 'rgba(60,255,140,.22)'; g.lineWidth = 1 * k;
+  for (let i = 1; i <= 4; i++) { g.beginPath(); g.arc(0, 0, R * i / 4, 0, 7); g.stroke(); }
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.beginPath(); g.moveTo(Math.sin(a) * R * .06, -Math.cos(a) * R * .06); g.lineTo(Math.sin(a) * R, -Math.cos(a) * R); g.stroke(); }
+  if (!mini) {
+    g.fillStyle = 'rgba(120,255,170,.55)'; g.font = `${10 * k}px "Share Tech Mono",monospace`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.fillText(String(i * 30).padStart(3, '0'), Math.sin(a) * (R + 14 * k), -Math.cos(a) * (R + 14 * k)); }
+  }
+  // el Zarya al centro, proa arriba; el 7 marcado a babor
+  const hl = R * (mini ? .2 : .26), hw = hl * .16;
+  g.strokeStyle = 'rgba(150,255,190,.7)'; g.lineWidth = 1.4 * k; g.beginPath();
+  g.moveTo(0, -hl); g.quadraticCurveTo(hw, -hl * .7, hw, -hl * .3); g.lineTo(hw, hl * .6); g.quadraticCurveTo(hw * .6, hl, 0, hl);
+  g.quadraticCurveTo(-hw * .6, hl, -hw, hl * .6); g.lineTo(-hw, -hl * .3); g.quadraticCurveTo(-hw, -hl * .7, 0, -hl); g.stroke();
+  if (!mini) {
+    const y7 = -hl + hl * 2 * .27; g.fillStyle = SV.mark7 ? 'rgba(255,90,70,.9)' : 'rgba(150,255,190,.5)'; g.fillRect(-hw, y7 - 2 * k, hw * .9, 4 * k);
+    g.font = `${9 * k}px "Share Tech Mono",monospace`; g.textAlign = 'right'; g.fillText('7', -hw - 4 * k, y7);
+    const ys = -hl + hl * 2 * .7; g.fillStyle = 'rgba(150,255,190,.85)'; g.beginPath(); g.arc(0, ys, 2.2 * k, 0, 7); g.fill();
+  }
+  // pulso del sonar
+  const pu = (t - SV.ping) / 1.8;
+  if (pu > 0 && pu < 1) { g.strokeStyle = `rgba(140,255,190,${(1 - pu) * .6})`; g.lineWidth = 2 * k; g.beginPath(); g.arc(0, 0, R * pu, 0, 7); g.stroke(); }
+  // barrido con estela
+  for (let i = 0; i < 14; i++) {
+    const a = sweep - i * .045; g.strokeStyle = `rgba(120,255,170,${(1 - i / 14) * (i ? .18 : .9)})`; g.lineWidth = (i ? 3 : 1.6) * k;
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.sin(a) * R, -Math.cos(a) * R); g.stroke();
+  }
+  // ecos: se encienden cuando el barrido pasa por encima
+  for (const b of SV.blips) {
+    const diff = ((sweep - b.a) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    if (diff < .12) b.hot = 1; b.hot = Math.max(b.hot - dt * .55, b.flash || 0); if (b.flash) b.flash = Math.max(0, b.flash - dt * 1.2);
+    const x = Math.sin(b.a) * R * b.r, y = -Math.cos(b.a) * R * b.r, al = b.life * (.18 + b.hot * .82);
+    const gr = g.createRadialGradient(x, y, 0, x, y, (7 + b.hot * 6) * k * (b.big || 1));
+    gr.addColorStop(0, `rgba(${b.col},${al})`); gr.addColorStop(1, `rgba(${b.col},0)`); g.fillStyle = gr;
+    g.beginPath(); g.arc(x, y, (7 + b.hot * 6) * k * (b.big || 1), 0, 7); g.fill();
+    if (b.lab && !mini) { g.fillStyle = `rgba(${b.col},${Math.max(al, .5)})`; g.font = `${12 * k}px "Share Tech Mono",monospace`; g.textAlign = 'left'; g.fillText(b.lab, x + 12 * k, y - 8 * k); }
+  }
+  g.restore();
+  if (mini) { g.fillStyle = 'rgba(120,255,170,.8)'; g.font = `${10 * k}px "Share Tech Mono",monospace`; g.textAlign = 'center'; g.fillText(SV.lab || 'ГАК', cx, H - 14 * k); return; }
+  // cabecera (sin persistencia: se repinta entera)
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, 132 * k);
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = 'rgba(120,255,170,.8)'; g.font = `${11 * k}px "Share Tech Mono",monospace`;
+  g.fillText('ГАК «РУБИН» · ШУМОПЕЛЕНГОВАНИЕ', 16 * k, 46 * k);
+  g.fillStyle = 'rgba(120,255,170,.45)'; g.fillText('SONAR PASIVO · ESCUCHA', 16 * k, 62 * k);
+  g.textAlign = 'right'; g.fillStyle = 'rgba(120,255,170,.8)'; g.fillText('ПЕЛЕНГ ' + String(Math.round(sweep / Math.PI * 180)).padStart(3, '0') + '°', W - 16 * k, 46 * k);
+  g.fillStyle = SV.lab0 ? 'rgba(255,90,70,.95)' : 'rgba(120,255,170,.45)'; g.fillText(SV.lab0 || 'ДАЛЬНОСТЬ 500 м', W - 16 * k, 62 * k);
+  // traza del hidrófono: ruido, golpes y, cuando hablan, la voz
+  let amp = .05 + Math.random() * .04;
+  for (let i = SV.spikes.length - 1; i >= 0; i--) { const s = SV.spikes[i], u = t - s.at; if (u < 0) continue; if (u > .5) { SV.spikes.splice(i, 1); continue; } amp += s.v * Math.exp(-u * 9) * (u < .03 ? 1 : .8); }
+  if (SV.voice > 0) amp += SV.voice * (.18 + .22 * Math.abs(Math.sin(t * 7.3) * Math.sin(t * 2.1)));
+  SV.wave[SV.wi = (SV.wi + 1) % SV.wave.length] = Math.min(1, amp);
+  const wy = 96 * k, wh = 28 * k, wx = 16 * k, ww = W - 32 * k;
+  g.fillStyle = 'rgba(0,9,5,.9)'; g.fillRect(wx, wy - wh - 4 * k, ww, wh * 2 + 8 * k);
+  g.strokeStyle = 'rgba(60,255,140,.18)'; g.lineWidth = 1 * k; g.strokeRect(wx, wy - wh - 4 * k, ww, wh * 2 + 8 * k);
+  g.strokeStyle = 'rgba(140,255,190,.9)'; g.lineWidth = 1.3 * k; g.beginPath();
+  for (let i = 0; i < SV.wave.length; i++) { const v = SV.wave[(SV.wi + 1 + i) % SV.wave.length], x = wx + i / (SV.wave.length - 1) * ww, y = wy + Math.sin(i * 2.7 + t * 30) * v * wh; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.stroke();
+  g.fillStyle = 'rgba(120,255,170,.45)'; g.textAlign = 'left'; g.font = `${9 * k}px "Share Tech Mono",monospace`; g.fillText('ГИДРОФОН · HIDRÓFONO', wx + 4 * k, wy - wh + 6 * k);
+  // líneas de barrido del tubo
+  g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 3 * k) g.fillRect(0, y, W, 1 * k);
+}
+
 /* ============================================================
    CICLO
    ============================================================ */
@@ -2719,7 +2999,7 @@ function tick(dt, real) {
   if (state === 'wake') { updateWake(dt); updateInteract(dt); tickSubs(); }
   if (state === 'play') {
     updatePlayer(dt); updateSonarScene(dt); updateCamera(dt); updateResources(dt); updateInteract(dt); updateTriggers(dt);
-    updateListen(dt); updatePort(dt); update03(dt); updateAmbient(dt); tickSubs();
+    updateListen(dt); updatePort(dt); update03(dt); updateAmbient(dt); updateGuide(dt); tickSubs();
   } else if (state === 'jump' || state === 'ending') { updateCamera(dt); if (state === 'ending') tickSubs(); }
   if (!inOpening()) {
     updateC7(dt); updateLamps(dt); updateFlash(dt); updateParticles(dt); updateDoors(dt); updateSonar(dt); updateSelf(); updateMirrors();
@@ -2728,6 +3008,7 @@ function tick(dt, real) {
     if (props.fly) props.fly.rotation.y += dt * (G.energy && G.lightMode === 'power' ? 9 : 0);
   }
   updateHumans(dt);
+  updateSV(real);
   AU.listener(camera);
 }
 
@@ -2735,19 +3016,19 @@ function tick(dt, real) {
    INICIO / REINICIO
    ============================================================ */
 function currentObjective() {
-  if (G.surfaced) return 'Sube a cubierta · escotilla de escape';
+  if (G.surfaced) return OBJ.exit;
   if (G.air) return '¡Corre a la palanca de lastre!';
-  if (G.c7open) return 'Abre el aire de emergencia · al fondo del 7';
-  if (G.reveal) return 'El aire para subir está en el 7 · ábrelo';
-  if (G.h03 === 2) return '¿Es el casco? · escúchalo desde la sala de sonar';
-  if (G.oxygen) return 'Son casi las 03:00 · aléjate del 7';
-  if (G.listened) return 'El aire se acaba · restaura el oxígeno en soporte vital';
-  if (G.walk === 2) return 'Los golpes vienen del 7 · pega la oreja a la puerta';
-  if (G.energy) return 'Espera · la radio vuelve a la vida';
-  return 'Sin energía no hay radio ni aire · arranca el auxiliar en máquinas';
+  if (G.c7open) return OBJ.air;
+  if (G.reveal) return OBJ.open;
+  if (G.h03 === 2) return OBJ.sonar;
+  if (G.oxygen) return OBJ.away;
+  if (G.listened) return OBJ.o2;
+  if (G.walk === 2) return OBJ.listen;
+  if (G.energy) return OBJ.radio;
+  return OBJ.gen;
 }
 function startGame(s) {
-  timers.length = 0; subQ.length = 0; GH.g.visible = false; if (AU.vcur) try { AU.vcur.stop(); } catch (e) {}
+  timers.length = 0; subQ.length = 0; GH.g.visible = false; svClose(true); SC.b = null; if (AU.vcur) try { AU.vcur.stop(); } catch (e) {}
   G = G0(); SC.on = false; MG.t = 0; LS.t = -1; BL.t = -1; openQ = 0; Object.assign(PT, { t: 0, away: 0, wait: 0 });
   if (s) {
     Object.assign(G, JSON.parse(JSON.stringify(s.G))); Object.assign(P, s.P);
@@ -2774,7 +3055,7 @@ function startGame(s) {
   props.genLever.rotation.z = G.energy ? -1.1 : 0; props.bLever.rotation.z = 0; props.kWheel.rotation.x = 0; props.c7wheel.rotation.x = 0;
   props.flood.visible = false; props.flood.position.y = .03;
   props.crt.u.uOvK.value = 1; props.crt.u.uK.value = .07;
-  ['dead', 'end', 'note', 'pause'].forEach(id => $(id).classList.add('hidden')); $('endtxt').classList.add('hidden');
+  ['dead', 'end', 'note', 'pause', 'sign'].forEach(id => $(id).classList.add('hidden')); $('sub').style.zIndex = ''; clearTimeout(SG.to); SG.step = 0; $('endtxt').classList.add('hidden');
   hudShow(true); $('fxb').style.transition = 'opacity 1.5s'; $('fxb').style.opacity = 0; $('fxwake').style.opacity = 0;
   state = 'play'; last = performance.now();
   if (!s) { playTime = 0; deaths = 0; startWake(); }
@@ -2817,6 +3098,7 @@ $('start').addEventListener('click', () => {
 $('retry').addEventListener('click', () => { AU.init(); startGame(snap); });
 $('restart').addEventListener('click', () => { AU.init(); snap = null; startGame(null); });
 $('again').addEventListener('click', () => { snap = null; startGame(null); });
+$('stbtn').addEventListener('click', () => $('end').classList.toggle('st'));
 
 /* ============================================================
    APERTURA: CUBIERTA EN SUPERFICIE Y DESCENSO EN LA CÚPULA
@@ -3482,7 +3764,7 @@ function updateDeck(dt) {
   lookCam(dt, 0, cy, cz);
 }
 function startDive() {
-  state = 'dive'; O.t = 0; O.D = 1; O.yaw = 0; O.pitch = .34; O.ev = {}; O.cut = -1; O.drag = -9;
+  state = 'dive'; O.t = 0; O.D = 1; O.wb = null; O.yaw = 0; O.pitch = .34; O.ev = {}; O.cut = -1; O.drag = -9;
   OS.environment = null;
   deckG.visible = false; diveG.visible = true; dv.fish.visible = dv.whale.g.visible = dv.wreck.visible = dv.floor.visible = false; dv.hull.visible = true;
   skyU.uSun.value.set(-.24, .94, -.24).normalize(); skyU.uGlowC.value.setHex(0xc8fff0); skyU.uPow.value = 1.6;
@@ -3590,7 +3872,11 @@ function updateDive(dt) {
   ev('b2', 31.2, () => voNow('dive4', IC));
   ev('s1b', 8.6, () => { if (!SAID.includes(VO.deck3.es)) voNow('deck3', IC); }); // si abriste la escotilla antes de oírlo
   ev('fl', 18, () => { AU.flurry(); vib(20); }); ev('s2', 19.4, () => voNow('dive2'));
-  ev('p3', 25.6, () => AU.pingEarly(.1)); ev('s3', 27, () => voNow('dive3'));
+  // el sonar de la cúpula: lo grande que se acerca es la ballena; al final, el eco viene de adentro del submarino
+  ev('sv', 24.6, () => { svOpen('mini'); SV.lab = 'ГАК'; O.wb = svBlip(.95, .95); });
+  ev('p3', 25.6, () => { AU.pingEarly(.1); SV.ping = SV.t; }); ev('s3', 27, () => voNow('dive3'));
+  if (O.wb && SV.mode === 'mini') { const u = ramp(25, 35, t); O.wb.r = lerp(.95, .18, u); O.wb.a = lerp(.95, -.4, u); O.wb.big = 1 + u * .8; O.wb.life = 1 - ramp(38, 42, t); SV.lab = t < 42 ? 'КОНТАКТ ' + Math.round(O.wb.r * 420) + ' м' : 'ГАК'; }
+  ev('svin', 55.3, () => { if (SV.mode === 'mini') { svBlip(0, 0, { col: '255,80,60', big: 1.6, flash: 1 }); SV.lab = 'ВНУТРИ · ADENTRO'; } });
   ev('w1', 30.2, () => AU.whale(.24, 1.25)); ev('w2', 34.5, () => { AU.whale(.16, 1.4); AU.swell(); }); ev('s4', 37.3, () => voNow('dive5'));
   ev('lamp', 27.6, () => AU.step(.3));
   ev('p4', 42.5, () => AU.ping(.08, .8)); ev('k1', 45, () => { AU.creak(new THREE.Vector3(0, 0, -6), .4); AU.groan(new THREE.Vector3(-7, -2, 0), .22); });
@@ -3599,7 +3885,7 @@ function updateDive(dt) {
   ev('lf', 54.3, () => AU.creak(null, .3)); ev('kn', 55.3, () => { AU.knock(null, 3, .9); vib([40, 90, 40, 90, 40]); G.shake = .3; }); ev('s6', 56.7, () => voNow('dive8'));
   ev('h1', 57.3, () => { AU.heart(.5); G.fear = 1; }); ev('h2', 58.3, () => AU.heart(.6)); ev('h3', 59.2, () => AU.heart(.7)); ev('h4', 59.8, () => AU.heart(.8));
   ev('bang', DIVE_END, () => {
-    AU.bang(null, 1.7); AU.thud(null, 1); AU.hiss(null); AU.water(1); vib([260]); G.shake = 1.2; O.cut = 0; $('dgauge').classList.add('hidden');
+    AU.bang(null, 1.7); AU.thud(null, 1); AU.hiss(null); AU.water(1); vib([260]); G.shake = 1.2; O.cut = 0; $('dgauge').classList.add('hidden'); svClose(true);
     const f = $('fxf'); f.style.transition = 'none'; f.style.background = '#cfe'; f.style.opacity = .55;
     requestAnimationFrame(() => { f.style.transition = 'opacity .12s'; f.style.opacity = 0; });
   });
@@ -3622,7 +3908,7 @@ function updateDive(dt) {
 function endOpening() {
   if (state !== 'deck' && state !== 'dive') return;
   try { localStorage.setItem('abismo_v2', '1'); } catch (e) {}
-  for (const id of ['dgauge', 'skip']) $(id).classList.add('hidden');
+  for (const id of ['dgauge', 'skip']) $(id).classList.add('hidden'); svClose(true); O.wb = null;
   $('act').querySelector('circle.ring').style.strokeDashoffset = 358; $('actlbl').innerHTML = ''; $('sub').className = '';
   deckG.visible = diveG.visible = false; G.shake = 0; held.act = false;
   renderer.domElement.style.filter = ''; $('fxvig').style.opacity = 0; $('fxwater').style.transform = 'translateY(105%)';
@@ -3658,13 +3944,13 @@ window.ABISMO = {
   get T() { return T; }, get G() { return G; }, P, get state() { return state; },
   go(z, yaw = 0, x = 0) { P.z = z; P.x = x; P.yaw = yaw; },
   energy: () => onEnergy(), walk: () => { G.energy = true; G.lightMode = 'power'; knockWalk(); },
-  listened: () => { G.energy = true; G.call = 1; G.walk = 2; G.listened = 1; setDoor(1, true, true); G.lightMode = 'power'; },
+  listened: () => { G.energy = true; G.call = 1; G.walk = 2; G.listened = 1; G.o2Go = true; setDoor(1, true, true); G.lightMode = 'power'; },
   oxygen: () => { window.ABISMO.listened(); onOxygen(); },
   h03: () => { window.ABISMO.listened(); G.oxygen = true; start03(); },
   post03: () => { window.ABISMO.listened(); G.oxygen = true; G.h03 = 2; G.t03 = G.tclock; setDoor(2, true, true); },
   reveal: () => { window.ABISMO.post03(); G.sonar = true; confession(); },
   flood: () => { window.ABISMO.reveal(); G.c7open = true; c7.cur = 1; startFlood(); },
-  blow: () => { window.ABISMO.flood(); startBlow(); }, rescue: () => startRescue(),
+  blow: () => { window.ABISMO.flood(); startBlow(); }, rescue: () => startRescue(), rescued: () => rescued(), sign: () => { $('fxb').style.opacity = 1; startSign(); }, air: () => airDone(),
   O, c7, said: SAID, skip: () => endOpening(), wake: () => finishWake(), dive: t => { startDive(); O.t = t || 0; }, ft: on => { FT = on ? [] : null; return FT; }, get FT() { return FT; },
   SIGNS, get subQ() { return subQ; }, get subEnd() { return subEnd; }, renderer, dv, SELF, GH, humans, ghostBehind, camera, scene, V3: (x, y, z) => new THREE.Vector3(x, y, z), CR: pts => new THREE.CatmullRomCurve3(pts), acts, held, props, H3, RS, get cand() { return cand; }, doors, AU, VO,
 };
